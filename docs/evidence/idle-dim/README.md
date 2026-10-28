@@ -72,3 +72,17 @@ Run at 15:45-15:47Z: Video playing, a Timer started, then Home through the
 overview footer (last input 15:46:19Z). `get_tree`: video and Timer
 unfocused, both `inhibit_idle: false`. Brightness 37 at 15:46:55, and the
 compositor logged `output * power off` at 15:47:17.
+
+## Slider while dim (task 3.6, build `3vk5qy3a…`, 2026-10-28)
+
+Injected board run, `board/slider-while-dim.sh.txt` with its output in
+`board/slider-while-dim.txt`. The charger was in, so the idle-on-charger
+preference was set to `sleep` for the run, which kept the exhibition from
+opening on dim. It was removed afterwards. An injected key woke the panel
+(148). At 18:15:42Z the panel was dimmed to 37, with state `saved 148,
+dimmed 37`. `k230-settings brightness 80` then wrote 204. This is the
+command the shade's Brightness request runs (`ServiceRequest::Brightness`
+in `service_data.rs`). Dragging the slider on the glass was not used,
+because the touch would itself wake the panel. An injected key at 18:15:51Z
+woke it: brightness stayed 204 and did not return to 148, and the state file
+was cleared. Brightness was then set back to 58 % (148).

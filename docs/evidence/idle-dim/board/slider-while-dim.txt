@@ -1,0 +1,19 @@
+# build /nix/store/3vk5qy3a3vxj0yx6swg14iki1qq4i36x-nixos-system-nixos-26.11.20260919.20b1ddd; charger online 1
+18:15:09Z b=37 state={"saved": 148, "dimmed": 37, "off": false}
+after wake key:
+cat: /run/shell/idle-dimmer.json: No such file or directory
+18:15:14Z b=148 state=
+dimmed:
+18:15:42Z b=37 state={"saved": 148, "dimmed": 37, "off": false}
+{"state":"applied","requested":80,"control":{"state":"writable","value":80,"label":"Brightness","unit":"percent"}}
+
+after k230-settings brightness 80:
+18:15:43Z b=204 state={"saved": 148, "dimmed": 37, "off": false}
+after wake key:
+cat: /run/shell/idle-dimmer.json: No such file or directory
+18:15:51Z b=204 state=
+18:15:55Z b=204 state=
+cat: /run/shell/idle-dimmer.json: No such file or directory
+restored:
+cat: /run/shell/idle-dimmer.json: No such file or directory
+18:15:56Z b=148 state=

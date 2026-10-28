@@ -47,8 +47,9 @@ Every board command needs the sole board reservation and the flock on
   `get_outputs` power stays true. Return Home and confirm dim at 30 s and off at 60 s.
   Repeat with the Timer app.
   Done 2026-10-27 (injected): Timer focused held 148 for 103 s; Video focused held it ~98 s; at Home with Video playing behind, build `zs05li2k…` (commit `be58ff02`) dimmed to 37 at 15:46:55Z and turned the output off at 15:47:17Z. Two earlier builds failed the Home part (unfocused video kept inhibiting). `docs/evidence/idle-dim/`.
-- [ ] 3.6 Slider while dim: dim, set brightness through the shade, then wake; `cat $D/brightness`
+- [x] 3.6 Slider while dim: dim, set brightness through the shade, then wake; `cat $D/brightness`
   keeps the slider value.
+  Done 2026-10-28 (injected, build `3vk5qy3a…`): dimmed to 37, the shade's `k230-settings brightness 80` wrote 204, a key wake kept 204. `docs/evidence/idle-dim/README.md`.
 - [ ] 3.7 Base-keyboard key on a dark panel lights the display (accepted to reach the app).
 
 ## 4. Follow-ups, not part of this slice

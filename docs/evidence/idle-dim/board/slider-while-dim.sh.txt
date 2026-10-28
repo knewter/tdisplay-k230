@@ -1,0 +1,14 @@
+#!/bin/sh
+# slider-while-dim.sh -- task 3.6: dim, set brightness through the shade's settings command, wake with a key
+PY=/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3
+D=$(ls -d /sys/class/backlight/* | head -1)
+st() { echo "$(date -u +%T)Z b=$(cat $D/brightness) state=$(cat /run/shell/idle-dimmer.json)"; }
+key() { flock -n /tmp/k230-board.lock $PY /var/tmp/ui.py /var/tmp/verify "key $1" >/dev/null; }
+printf sleep | sudo -u shell tee /var/lib/k230-shell-prefs/idle-on-charger >/dev/null
+st; key LEFTSHIFT; sleep 2; echo "after wake key:"; st
+until [ "$(cat $D/brightness)" -lt 100 ]; do sleep 2; done; echo "dimmed:"; st
+sudo -u shell k230-settings brightness 80; echo; echo "after k230-settings brightness 80:"; st
+sleep 3; key LEFTSHIFT; sleep 2; echo "after wake key:"; st
+sleep 3; st
+sudo -u shell k230-settings brightness 58 >/dev/null; sudo rm -f /var/lib/k230-shell-prefs/idle-on-charger
+echo "restored:"; st
