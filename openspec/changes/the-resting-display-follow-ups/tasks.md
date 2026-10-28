@@ -9,9 +9,12 @@
 
 ## 2. HDMI unplug wake (from idle 4.2)
 
-- [ ] 2.1 The HDMI-unplug wake in `nix/touch-trackpad/src/shell_ipc.rs` powers the display on
-  without reporting activity; make it run `k230-idle-dimmer wake` so the panel does not stay
+- [x] 2.1 The HDMI-unplug wake in `nix/touch-trackpad/src/shell_ipc.rs` powers the display on
+  without reporting activity; make it report activity so the panel does not stay
   dim. Proof: `cargo test` in `nix/touch-trackpad`.
+  Done 2026-10-28 (host): it sends `seat * cursor move 0 0` after `output * power on` (see
+  design.md for why the dimmer is not called directly); `cargo test`: 51 + 2 passed, and the
+  direct-mapping test asserts the new command order.
 - [ ] 2.2 Board: dim the panel, then unplug HDMI (operator); brightness returns to the saved
   value and the next dim comes a full timeout later.
 

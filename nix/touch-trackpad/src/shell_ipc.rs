@@ -230,7 +230,10 @@ fn connect(path: &PathBuf) -> io::Result<UnixStream> {
 /// After an HDMI unplug the panel must also light, even if the power key
 /// had blanked the display: Sway stores power for `output *`, so the panel
 /// would otherwise come back with the stored "off" and the person sees
-/// nothing to tell them the unplug worked.
+/// nothing to tell them the unplug worked. The zero cursor move is
+/// activity to swayidle, so the idle dimmer's resume restores the saved
+/// brightness and the idle timer starts again; powering on alone left the
+/// panel at the dimmed value.
 #[derive(Default)]
 pub struct DirectTouchMapping {
     restored: Option<(u64, u64)>,
@@ -251,8 +254,8 @@ impl DirectTouchMapping {
             return Ok(());
         }
         let mut stream = connect(path)?;
-        let wake = self.wake.then_some("output * power on");
-        for text in wake.into_iter().chain([
+        let wake = self.wake.then_some(["output * power on", "seat * cursor move 0 0"]);
+        for text in wake.into_iter().flatten().chain([
             "input type:touch map_to_output DSI-1",
             "input type:touch calibration_matrix 1 0 0 0 1 0",
         ]) {
@@ -507,6 +510,7 @@ mod tests {
         let server = std::thread::spawn(move || {
             let (mut stream, _) = unplugged.accept().unwrap();
             assert_eq!(read_command(&mut stream, true), "output * power on");
+            assert_eq!(read_command(&mut stream, true), "seat * cursor move 0 0");
             assert_eq!(read_command(&mut stream, true), "input type:touch map_to_output DSI-1");
             assert_eq!(read_command(&mut stream, true), "input type:touch calibration_matrix 1 0 0 0 1 0");
             let (mut again, _) = unplugged.accept().unwrap();

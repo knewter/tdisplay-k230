@@ -23,9 +23,15 @@ dim, off, wake or the clock screen already behave.
   `shell-idle`. This is the same pattern as `idle-on-charger`. Rejected:
   making the dimmer track time itself, which duplicates swayidle's
   idle-notify handling.
-- **The HDMI unplug calls `k230-idle-dimmer wake`** instead of a bare
-  `output * power on`, so the dimmer, which owns the saved brightness, does
-  the restore. Rejected: a second copy of the restore logic in Rust.
+- **The HDMI unplug reports activity to swayidle.** After
+  `output * power on` it sends `seat * cursor move 0 0`, so swayidle's resume
+  runs the dimmer, which owns the saved brightness, and the dimmer does the
+  restore. This is the same activity signal the power key's wake uses.
+  Rejected: running `k230-idle-dimmer wake` from the relay. The relay runs
+  as root under `ProtectSystem=strict`, so the dimmer would have no write
+  access to `/run/shell`, and any state file it did create would be owned by
+  root and unwritable for the shell-user dimmer. Also rejected: a second
+  copy of the restore logic in Rust.
 - **The charging-defers-off and wallpaper-decode questions are decisions,
   not builds.** Record the answer and its evidence in this change first,
   then propose any build.
