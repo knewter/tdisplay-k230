@@ -49,6 +49,15 @@
   handler (if any) is listed. Proof: grim captures from the injector in
   `docs/evidence/open-with/board/`. Injected touch, not glass.
   Done 2026-10-28 (injected double tap): PNG→Viewnior, PDF→Zathura, folder navigated; the chooser lists Viewnior (default) and Zathura.
+- [ ] 2.4 Viewnior's rotate buttons draw their icons. Defect seen in
+  `docs/evidence/open-with/board/open-png.png`: the two toolbar buttons for
+  `object-rotate-left` and `object-rotate-right` were blank. Cause: GTK3 falls
+  back to Adwaita, which has no such icons, and the Yaru copies sit in themes
+  that fallback never reaches. Fix: `nix/handheld-theme-icons` puts the four
+  `object-rotate-*` / `object-flip-*` icons in `hicolor/scalable/actions`, the
+  last stop of every theme chain. Host proof: GTK3 icon lookup with Adwaita as
+  the theme resolves the names from the built tree. Board proof still open:
+  `grim` of Viewnior shows both rotate icons.
 
 ## 3. Glass (physical)
 

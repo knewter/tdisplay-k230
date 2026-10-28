@@ -13,4 +13,16 @@ runCommand "handheld-theme-icons-${buildPackages.yaru-theme.version}" {
   for theme in Yaru Yaru-purple Yaru-blue Humanity hicolor; do
     cp -a ${buildPackages.yaru-theme}/share/icons/$theme $out/share/icons/
   done
+  # Viewnior's toolbar names object-rotate-left/right (and the Image menu the
+  # flips) as plain icon names. Adwaita, the theme GTK3 apps fall back to when
+  # no settings.ini is active, has no such icons, and the Yaru copies are in
+  # themes that fallback never reaches, so the two rotate buttons drew blank.
+  # hicolor is the last stop of every theme's chain: give it the same Yaru
+  # legacy artwork as scalable icons.
+  chmod -R u+w $out/share/icons/hicolor
+  mkdir -p $out/share/icons/hicolor/scalable/actions
+  for name in object-rotate-left object-rotate-right object-flip-horizontal object-flip-vertical; do
+    install -m644 ${buildPackages.yaru-theme}/share/icons/Yaru/16x16/legacy/$name.svg \
+      $out/share/icons/hicolor/scalable/actions/$name.svg
+  done
 ''
