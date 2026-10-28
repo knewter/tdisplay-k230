@@ -24,9 +24,11 @@ Every board command needs the sole board reservation and the flock on
   Verify: `nix build .#nixosConfigurations.k230.config.system.build.toplevel --out-link "$SCRATCH/top"`
   then `cat "$SCRATCH/top/etc/systemd/system/shell-idle.service"` shows the swayidle arguments.
   Done 2026-10-27 with the landscape system (`kllh24ww…`): `shell-idle.service` runs `k230-swayidle`, which execs `swayidle -w timeout 30 "… dim …" resume "… resume …" timeout 60 "… off …"`.
-- [ ] 2.3 QEMU or headless smoke: on a headless Sway run `swaymsg output '*' power off`,
+- [x] 2.3 QEMU or headless smoke: on a headless Sway run `swaymsg output '*' power off`,
   inject a touch with the existing card-shell test input, and show the swallowed
   sequence never reaches a probe client. Record the evidence class as QEMU/headless.
+  Verify: `python3 tests/test_card_shell_wake_gate_runtime.py --sway <unwrapped sway> --output /tmp/wgcs`.
+  Done 2026-10-28 (headless): `output * power off` then an injected down/motion/up woke the output (power false to true) and the probe received 0 touch events; a second touch with the output on reached it. `docs/evidence/idle-dim/headless/`.
 
 ## 3. Board proof (UNVERIFIED until run)
 

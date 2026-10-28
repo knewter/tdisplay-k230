@@ -1,0 +1,33 @@
+{
+  "evidence_class": "headless",
+  "sway": "/nix/store/0695y4qc3k3w5zq11ci292q8mn8xw5x3-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "steps": [
+    "2026-10-28T18:22:14Z probe mapped, output power true",
+    "2026-10-28T18:22:14Z output * power off; get_outputs power [False]",
+    "2026-10-28T18:22:14Z touch down id 7 injected; get_outputs power [True]",
+    "2026-10-28T18:22:15Z down/motion/motion/up completed; power [True]; probe touch events during sequence: 0",
+    "2026-10-28T18:22:15Z positive control: id 8 down and up reached the probe with output on"
+  ],
+  "probe_events": [
+    {
+      "event": "down",
+      "role": "app",
+      "id": 8,
+      "active": 1,
+      "x": 260.0,
+      "y": 330.0
+    },
+    {
+      "event": "up",
+      "role": "app",
+      "id": 8,
+      "active": 0,
+      "x": 0.0,
+      "y": 0.0
+    }
+  ],
+  "limits": [
+    "Injected wlr_touch device on the headless backend; no panel, DRM output or finger.",
+    "Output power is wlr_output enabled state of the headless output."
+  ]
+}

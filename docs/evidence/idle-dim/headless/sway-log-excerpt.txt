@@ -1,0 +1,12 @@
+00:00:00.079 [DEBUG] [sway/config/output.c:279] Config stored for output HEADLESS-1 (enabled: -1) (568x1232@-1.000000Hz position 2147483647,2147483647 scale -1.000000 subpixel unknown transform -1) (bg (null) (null)) (power -1) (max render time: -1) (allow tearing: -1) (hdr: -1)
+00:00:01.075 [INFO] [sway/card_shell.c:4218] K230_CARD_SHELL input=injected operation=test-touch accepted=1
+00:00:01.142 [INFO] [sway/commands.c:262] Handling command 'output '*' power off'
+00:00:01.143 [DEBUG] [sway/config/output.c:279] Config stored for output * (enabled: -1) (-1x-1@-1.000000Hz position 2147483647,2147483647 scale -1.000000 subpixel unknown transform -1) (bg (null) (null)) (power 0) (max render time: -1) (allow tearing: -1) (hdr: -1)
+00:00:01.149 [INFO] [sway/commands.c:262] Handling command 'output * power on'
+00:00:01.149 [DEBUG] [sway/config/output.c:279] Config stored for output * (enabled: -1) (-1x-1@-1.000000Hz position 2147483647,2147483647 scale -1.000000 subpixel unknown transform -1) (bg (null) (null)) (power 1) (max render time: -1) (allow tearing: -1) (hdr: -1)
+00:00:01.157 [INFO] [sway/card_shell.c:4218] K230_CARD_SHELL input=injected operation=test-touch accepted=1
+00:00:01.158 [INFO] [sway/card_shell.c:4218] K230_CARD_SHELL input=injected operation=test-touch accepted=1
+00:00:01.159 [INFO] [sway/card_shell.c:4218] K230_CARD_SHELL input=injected operation=test-touch accepted=1
+00:00:01.159 [INFO] [sway/card_shell.c:4218] K230_CARD_SHELL input=injected operation=test-touch accepted=1
+00:00:02.163 [INFO] [sway/card_shell.c:4218] K230_CARD_SHELL input=injected operation=test-touch accepted=1
+00:00:02.164 [INFO] [sway/card_shell.c:4218] K230_CARD_SHELL input=injected operation=test-touch accepted=1
