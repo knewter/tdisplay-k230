@@ -3,13 +3,13 @@
 
 Opened by `k230-idle-dimmer dim` (nix/idle-dimmer/idle_dimmer.py) in a Foot
 card, on black, at the dimmed backlight. It shows the time and date, moves
-them a little every minute against burn-in, and about every five minutes plays
+them a little every minute against burn-in, and about every five minutes (Settings: 5 min, 15 min or Off) plays
 one `ttfx` text effect over the committed K230 banner. Any touch or key closes
 it. When the notification broker holds events a small dot and their number
 sit under the date (read once per minute redraw; nothing when there are none
 or the broker does not answer). `--on-close` runs when input or lost focus
 ends the card, for a card the idle timer did not start. It also closes, after asking the idle step to blank the display, when the
-charger goes away or after two hours.
+charger goes away or after two hours (Settings: 2 h, 8 h or None).
 
 CPU is the budget: the board has one online CPU and Foot repaints in software.
 So the clock changes once a minute (no seconds), the card sleeps in select()
@@ -39,6 +39,9 @@ import k230_term_apps as apps  # noqa: E402  (sibling module in the same lib dir
 POLL_SECONDS = 10
 FIRST_EFFECT_DELAY = 8
 EFFECT_INTERVAL = 300
+PREFS_DIR = "/var/lib/k230-shell-prefs"
+CLOCK_EFFECTS_FILE = "clock-effects"
+CLOCK_LIMIT_FILE = "clock-limit"
 EFFECT_MAX_SECONDS = 20
 BANNER_HOLD_SECONDS = 4
 EFFECT_FRAME_RATE = 15
@@ -64,6 +67,30 @@ DRM_ROOT = "/sys/class/drm"
 
 # ---------------------------------------------------------------------------
 # Pure decisions
+
+def _read_pref(prefs_dir, name, words, default):
+    """The seconds for the word in prefs file `name`; a missing, unreadable
+    or unrecognised file means `default`. None means the feature is off.
+    The Settings rows (shell_prefs.rs) write the same words."""
+    try:
+        text = (Path(prefs_dir) / name).read_text().strip()
+    except (OSError, ValueError):
+        return default
+    return words.get(text, default)
+
+
+def read_effect_interval(prefs_dir=PREFS_DIR):
+    """Seconds between effects, or None for "Clock effects" Off. Default 5 min."""
+    return _read_pref(prefs_dir, CLOCK_EFFECTS_FILE,
+                      {"5m": 300, "15m": 900, "off": None}, EFFECT_INTERVAL)
+
+
+def read_max_up(prefs_dir=PREFS_DIR):
+    """Seconds before the card closes itself, or None for "Clock limit" None.
+    Default 2 h."""
+    return _read_pref(prefs_dir, CLOCK_LIMIT_FILE,
+                      {"2h": 2 * 3600, "8h": 8 * 3600, "none": None}, MAX_UP_SECONDS)
+
 
 def effect_for(index):
     """The effect for the `index`th play, in a fixed rotation."""
@@ -332,7 +359,7 @@ class Exhibition:
 
     # -- effect ---------------------------------------------------------
     def effect_due(self, now):
-        if not self.cfg.get("ttfx"):
+        if not self.cfg.get("ttfx") or self.interval is None:
             return False
         return now >= next_effect_at(self.started, self.last_effect, self.interval)
 
@@ -400,7 +427,7 @@ class Exhibition:
                 if not self.charger():
                     self.end()
                     return "unplugged"
-                if now - self.started >= self.max_up:
+                if self.max_up is not None and now - self.started >= self.max_up:
                     self.end()
                     return "cap"
                 lit = self.display()
@@ -434,7 +461,7 @@ class Exhibition:
         targets = [self.next_poll]
         if lit:
             targets.append((int(now // 60) + 1) * 60 + 0.05)
-            if self.cfg.get("ttfx"):
+            if self.cfg.get("ttfx") and self.interval is not None:
                 targets.append(next_effect_at(self.started, self.last_effect, self.interval))
         return max(0.05, min(targets) - now)
 
@@ -465,9 +492,11 @@ def main(argv=None):
     parser.add_argument("--on-end", help="command run before closing for the charger or the cap")
     parser.add_argument("--on-close", help="command run when input or lost focus closes the card")
     parser.add_argument("--notification-socket", help="the broker socket, for the count dot")
-    parser.add_argument("--interval", type=int, default=EFFECT_INTERVAL,
-                        help="seconds between effects (debug)")
-    parser.add_argument("--max-up", type=int, default=MAX_UP_SECONDS)
+    parser.add_argument("--prefs-dir", default=PREFS_DIR)
+    parser.add_argument("--interval", type=int,
+                        help="seconds between effects (debug; default: the Clock effects setting)")
+    parser.add_argument("--max-up", type=int,
+                        help="seconds before closing (debug; default: the Clock limit setting)")
     parser.add_argument("--render-once", metavar="WIDTHxHEIGHT")
     args = parser.parse_args(argv)
     if args.render_once:
@@ -480,7 +509,9 @@ def main(argv=None):
         return 1
     cfg = {"ttfx": args.ttfx, "banner": args.banner, "on_end": args.on_end,
            "on_close": args.on_close, "notification_socket": args.notification_socket,
-           "interval": args.interval, "max_up": args.max_up}
+           "interval": (read_effect_interval(args.prefs_dir)
+                         if args.interval is None else args.interval),
+           "max_up": read_max_up(args.prefs_dir) if args.max_up is None else args.max_up}
     pid_file_write(args.pid_file)
     try:
         with ExhibitSession() as sess:

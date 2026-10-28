@@ -3,7 +3,11 @@
 //! `nix/shell.nix`. Do Not Disturb is the first: one word, `on` or `off`.
 //! "Idle on charger" is the second: `clock` or `sleep`, read by the idle
 //! step (`nix/idle-dimmer/idle_dimmer.py`), which keeps its own copy of the
-//! parse rule.
+//! parse rule. "Idle timeout" (`idle-timeout`: `off`, `1m`, `5m`) is read by
+//! `k230-swayidle` at its start, and "Clock brightness" (`dim`, `half`,
+//! `full`), "Clock effects" (`5m`, `15m`, `off`) and "Clock limit" (`2h`,
+//! `8h`, `none`) by the idle step and the clock screen
+//! (`nix/term-apps/k230_exhibition.py`), each with its own copy of the rule.
 //!
 //! The directory is new rather than `/var/lib/k230-keyboard-base`, which is
 //! named for the base. A missing, unreadable or unrecognised file means off,
@@ -53,6 +57,87 @@ impl ChargerIdle {
         }
     }
 }
+
+/// A Settings row that cycles through a few words stored in one file. Only
+/// an exact word (whitespace aside) selects a choice; a missing, unreadable
+/// or unrecognised file is the default, which is today's behaviour.
+macro_rules! cycling_pref {
+    ($(#[$meta:meta])* $name:ident, $file:expr, $path:ident, $read:ident, $write:ident,
+     $default:ident, [$($variant:ident => ($word:expr, $label:expr)),+ $(,)?]) => {
+        $(#[$meta])*
+        #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+        pub enum $name {
+            $($variant,)+
+        }
+
+        impl Default for $name {
+            fn default() -> Self {
+                $name::$default
+            }
+        }
+
+        impl $name {
+            pub const ALL: &'static [$name] = &[$($name::$variant),+];
+
+            pub fn word(self) -> &'static str {
+                match self { $($name::$variant => $word,)+ }
+            }
+
+            /// The Settings row's value text.
+            pub fn label(self) -> &'static str {
+                match self { $($name::$variant => $label,)+ }
+            }
+
+            /// The next choice, wrapping after the last.
+            pub fn next(self) -> Self {
+                let at = Self::ALL.iter().position(|choice| *choice == self).unwrap_or(0);
+                Self::ALL[(at + 1) % Self::ALL.len()]
+            }
+
+            pub fn parse(text: &str) -> Self {
+                let text = text.trim();
+                Self::ALL.iter().copied().find(|choice| choice.word() == text).unwrap_or_default()
+            }
+        }
+
+        pub fn $path() -> PathBuf {
+            Path::new(PREFERENCE_DIR).join($file)
+        }
+
+        pub fn $read(path: &Path) -> $name {
+            std::fs::read_to_string(path).map_or($name::default(), |text| $name::parse(&text))
+        }
+
+        pub fn $write(path: &Path, choice: $name) -> std::io::Result<()> {
+            std::fs::write(path, format!("{}\n", choice.word()))
+        }
+    };
+}
+
+cycling_pref!(
+    /// When the idle display dims and turns off (`k230-swayidle`): 30 s / 60 s
+    /// at one minute, 150 s / 300 s at five, or never.
+    IdleTimeout, "idle-timeout", idle_timeout_path, read_idle_timeout, write_idle_timeout,
+    OneMinute, [Off => ("off", "Off"), OneMinute => ("1m", "1 min"), FiveMinutes => ("5m", "5 min")]
+);
+
+cycling_pref!(
+    /// How bright the clock screen runs, as a share of the saved brightness.
+    ClockBrightness, "clock-brightness", clock_brightness_path, read_clock_brightness,
+    write_clock_brightness, Dim, [Dim => ("dim", "Dim"), Half => ("half", "Half"), Full => ("full", "Full")]
+);
+
+cycling_pref!(
+    /// How often the clock screen plays a text effect.
+    ClockEffects, "clock-effects", clock_effects_path, read_clock_effects, write_clock_effects,
+    FiveMinutes, [FiveMinutes => ("5m", "5 min"), FifteenMinutes => ("15m", "15 min"), Off => ("off", "Off")]
+);
+
+cycling_pref!(
+    /// How long the clock screen stays up before it closes itself.
+    ClockLimit, "clock-limit", clock_limit_path, read_clock_limit, write_clock_limit,
+    TwoHours, [TwoHours => ("2h", "2 h"), EightHours => ("8h", "8 h"), Unlimited => ("none", "None")]
+);
 
 pub fn idle_on_charger_path() -> PathBuf {
     Path::new(PREFERENCE_DIR).join(IDLE_ON_CHARGER_FILE)
@@ -205,6 +290,99 @@ mod tests {
         assert_eq!(ChargerIdle::Sleep.toggled(), ChargerIdle::Clock);
         assert_eq!((ChargerIdle::Clock.label(), ChargerIdle::Sleep.label()), ("Clock", "Sleep"));
         assert!(write_idle_on_charger(&dir.join("gone").join(IDLE_ON_CHARGER_FILE), ChargerIdle::Sleep).is_err());
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn idle_timeout_defaults_to_one_minute_and_reads_only_exact_words() {
+        let dir = tempdir("idle-timeout");
+        let path = dir.join("idle-timeout");
+        assert_eq!(read_idle_timeout(&path), IdleTimeout::OneMinute, "missing");
+        assert_eq!(IdleTimeout::default(), IdleTimeout::OneMinute);
+        for (junk, want) in [
+            ("off\n", IdleTimeout::Off),
+            ("1m\n", IdleTimeout::OneMinute),
+            (" 5m ", IdleTimeout::FiveMinutes),
+            ("", IdleTimeout::OneMinute),
+            ("OFF", IdleTimeout::OneMinute),
+            ("5", IdleTimeout::OneMinute),
+            ("5m 1m", IdleTimeout::OneMinute),
+        ] {
+            std::fs::write(&path, junk).unwrap();
+            assert_eq!(read_idle_timeout(&path), want, "{junk:?}");
+        }
+        std::fs::write(&path, [0xff_u8, 0xfe]).unwrap();
+        assert_eq!(read_idle_timeout(&path), IdleTimeout::OneMinute, "invalid UTF-8");
+        assert_eq!(idle_timeout_path(), Path::new(PREFERENCE_DIR).join("idle-timeout"));
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn clock_prefs_default_to_todays_behaviour_and_cycle_through_their_words() {
+        assert_eq!(ClockBrightness::default(), ClockBrightness::Dim);
+        assert_eq!(ClockEffects::default(), ClockEffects::FiveMinutes);
+        assert_eq!(ClockLimit::default(), ClockLimit::TwoHours);
+        fn cycle<T: Copy>(start: T, next: fn(T) -> T, show: fn(T) -> String) -> Vec<String> {
+            let mut seen = Vec::new();
+            let mut at = start;
+            for _ in 0..3 {
+                at = next(at);
+                seen.push(show(at));
+            }
+            seen
+        }
+        assert_eq!(
+            cycle(ClockBrightness::Dim, ClockBrightness::next, |c| format!("{}/{}", c.word(), c.label())),
+            ["half/Half", "full/Full", "dim/Dim"]
+        );
+        assert_eq!(
+            cycle(ClockEffects::FiveMinutes, ClockEffects::next, |c| format!("{}/{}", c.word(), c.label())),
+            ["15m/15 min", "off/Off", "5m/5 min"]
+        );
+        assert_eq!(
+            cycle(ClockLimit::TwoHours, ClockLimit::next, |c| format!("{}/{}", c.word(), c.label())),
+            ["8h/8 h", "none/None", "2h/2 h"]
+        );
+        assert_eq!(
+            cycle(IdleTimeout::Off, IdleTimeout::next, |c| format!("{}/{}", c.word(), c.label())),
+            ["1m/1 min", "5m/5 min", "off/Off"]
+        );
+        for junk in ["", "DIM", "bright", "half full"] {
+            assert_eq!(ClockBrightness::parse(junk), ClockBrightness::Dim, "{junk:?}");
+        }
+        for junk in ["", "1m", "OFF", "15", "off now"] {
+            assert_eq!(ClockEffects::parse(junk), ClockEffects::FiveMinutes, "{junk:?}");
+        }
+        assert_eq!(ClockLimit::parse("NONE"), ClockLimit::TwoHours);
+        assert_eq!(ClockLimit::parse("off"), ClockLimit::TwoHours);
+        assert_eq!(ClockLimit::parse(" none\n"), ClockLimit::Unlimited);
+    }
+
+    #[test]
+    fn clock_prefs_write_one_word_to_their_own_files() {
+        let dir = tempdir("clock-prefs");
+        let write = |name: &str, f: &dyn Fn(&Path) -> std::io::Result<()>| {
+            let path = dir.join(name);
+            f(&path).unwrap();
+            std::fs::read_to_string(path).unwrap()
+        };
+        assert_eq!(write("b", &|p| write_clock_brightness(p, ClockBrightness::Half)), "half\n");
+        assert_eq!(write("e", &|p| write_clock_effects(p, ClockEffects::Off)), "off\n");
+        assert_eq!(write("l", &|p| write_clock_limit(p, ClockLimit::Unlimited)), "none\n");
+        assert_eq!(write("t", &|p| write_idle_timeout(p, IdleTimeout::FiveMinutes)), "5m\n");
+        assert_eq!(read_clock_brightness(&dir.join("b")), ClockBrightness::Half);
+        assert_eq!(read_clock_effects(&dir.join("e")), ClockEffects::Off);
+        assert_eq!(read_clock_limit(&dir.join("l")), ClockLimit::Unlimited);
+        assert_eq!(read_idle_timeout(&dir.join("t")), IdleTimeout::FiveMinutes);
+        assert_eq!(read_clock_limit(&dir.join("missing")), ClockLimit::TwoHours);
+        for (path, name) in [
+            (clock_brightness_path(), "clock-brightness"),
+            (clock_effects_path(), "clock-effects"),
+            (clock_limit_path(), "clock-limit"),
+        ] {
+            assert_eq!(path, Path::new(PREFERENCE_DIR).join(name));
+        }
+        assert!(write_clock_limit(&dir.join("gone").join("x"), ClockLimit::TwoHours).is_err());
         std::fs::remove_dir_all(&dir).unwrap();
     }
 

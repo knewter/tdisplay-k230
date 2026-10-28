@@ -86,6 +86,12 @@ pub struct ServiceView {
     /// What an idle display does on the charger (`shell_prefs`); Settings'
     /// "Idle on charger" row reads and flips it.
     pub idle_on_charger: crate::shell_prefs::ChargerIdle,
+    /// "Idle timeout", "Clock brightness", "Clock effects" and "Clock limit"
+    /// (`shell_prefs`): Settings rows that cycle a stored word.
+    pub idle_timeout: crate::shell_prefs::IdleTimeout,
+    pub clock_brightness: crate::shell_prefs::ClockBrightness,
+    pub clock_effects: crate::shell_prefs::ClockEffects,
+    pub clock_limit: crate::shell_prefs::ClockLimit,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -279,6 +285,13 @@ pub enum PanelIntent {
     /// The wide Shade's Clock tile: close the shade and start the clock
     /// screen now (`main.rs`; refused on battery).
     StartClock,
+    /// Settings' "Idle timeout", "Clock brightness", "Clock effects" and
+    /// "Clock limit" rows: each a local preference write (`shell_prefs`)
+    /// that steps to the next choice.
+    CycleIdleTimeout,
+    CycleClockBrightness,
+    CycleClockEffects,
+    CycleClockLimit,
 }
 
 /// Room for the shared brightness slider (task: "brightness should be a
@@ -1536,6 +1549,10 @@ pub fn panel_intent(
                 intents.extend([
                     PanelIntent::ToggleDoNotDisturb,
                     PanelIntent::ToggleChargerIdle,
+                    PanelIntent::CycleIdleTimeout,
+                    PanelIntent::CycleClockBrightness,
+                    PanelIntent::CycleClockEffects,
+                    PanelIntent::CycleClockLimit,
                     PanelIntent::OpenDateTime,
                     PanelIntent::OpenAbout,
                 ]);
@@ -3467,7 +3484,7 @@ mod tests {
     }
 
     #[test]
-    fn settings_ends_its_rows_with_do_not_disturb_charger_idle_date_and_time_then_about() {
+    fn settings_ends_its_rows_with_do_not_disturb_idle_and_clock_rows_date_and_time_then_about() {
         use crate::render::{
             settings_info_row_index, settings_modem_row_h, settings_modem_row_y, settings_wide_offset_for,
         };
@@ -3485,8 +3502,12 @@ mod tests {
                 for (info, expected) in [
                     (0u32, PanelIntent::ToggleDoNotDisturb),
                     (1, PanelIntent::ToggleChargerIdle),
-                    (2, PanelIntent::OpenDateTime),
-                    (3, PanelIntent::OpenAbout),
+                    (2, PanelIntent::CycleIdleTimeout),
+                    (3, PanelIntent::CycleClockBrightness),
+                    (4, PanelIntent::CycleClockEffects),
+                    (5, PanelIntent::CycleClockLimit),
+                    (6, PanelIntent::OpenDateTime),
+                    (7, PanelIntent::OpenAbout),
                 ] {
                     let index = settings_info_row_index(modem, info);
                     let y = settings_modem_row_y(key_backlight, index);
@@ -3516,7 +3537,7 @@ mod tests {
                     );
                 }
                 // About is the last row: Power follows it.
-                let about = settings_modem_row_y(key_backlight, settings_info_row_index(modem, 3));
+                let about = settings_modem_row_y(key_backlight, settings_info_row_index(modem, 7));
                 assert!(crate::render::settings_layout_for(key_backlight, modem).power_heading_y > about + row_h);
             }
         }

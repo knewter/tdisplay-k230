@@ -607,10 +607,11 @@ pub const SETTINGS_KEY_BACKLIGHT_ROW: u32 = 5;
 /// answered (`ServiceView::modem`). They are plain label-and-value rows, so
 /// they are placed from the base rows' bottom rather than by row index.
 pub const SETTINGS_MODEM_ROWS: u32 = 2;
-/// Do Not Disturb, Idle on charger, Date and time, and About, the last plain
+/// Do Not Disturb, Idle on charger, Idle timeout, the three Clock rows (brightness,
+/// effects, limit), Date and time, and About, the last plain
 /// rows before Power; always present.
 /// They follow the modem rows when those exist, so About is the last row.
-pub const SETTINGS_INFO_ROWS: u32 = 4;
+pub const SETTINGS_INFO_ROWS: u32 = 8;
 
 /// How many plain label-and-value rows lead the Power column.
 pub fn settings_plain_row_count(modem: bool) -> u32 {
@@ -618,7 +619,8 @@ pub fn settings_plain_row_count(modem: bool) -> u32 {
 }
 
 /// Index among the plain rows of Do Not Disturb (`0`), Idle on charger (`1`),
-/// Date and time (`2`) or About (`3`).
+/// Idle timeout (`2`), Clock brightness (`3`), effects (`4`), limit (`5`),
+/// Date and time (`6`) or About (`7`).
 pub fn settings_info_row_index(modem: bool, info: u32) -> u32 {
     if modem { SETTINGS_MODEM_ROWS + info } else { info }
 }
@@ -4390,6 +4392,13 @@ fn scene(
                 rows.push(("Do Not Disturb", Glyph::Moon, if quiet { "On" } else { "Off" }.to_string()));
                 let charger_idle = services.map_or(crate::shell_prefs::ChargerIdle::default(), |view| view.idle_on_charger);
                 rows.push(("Idle on charger", Glyph::Clock, charger_idle.label().to_string()));
+                let pref = |pick: fn(&ServiceView) -> &'static str, default: &'static str| {
+                    services.map_or(default, pick).to_string()
+                };
+                rows.push(("Idle timeout", Glyph::Clock, pref(|view| view.idle_timeout.label(), crate::shell_prefs::IdleTimeout::default().label())));
+                rows.push(("Clock brightness", Glyph::Clock, pref(|view| view.clock_brightness.label(), crate::shell_prefs::ClockBrightness::default().label())));
+                rows.push(("Clock effects", Glyph::Clock, pref(|view| view.clock_effects.label(), crate::shell_prefs::ClockEffects::default().label())));
+                rows.push(("Clock limit", Glyph::Clock, pref(|view| view.clock_limit.label(), crate::shell_prefs::ClockLimit::default().label())));
                 rows.push(("Date & time \u{203a}", Glyph::Clock, "Clock and time zone".to_string()));
                 rows.push(("About \u{203a}", Glyph::Info, "Device and build".to_string()));
                 for (index, (name, icon, value)) in rows.iter().enumerate() {

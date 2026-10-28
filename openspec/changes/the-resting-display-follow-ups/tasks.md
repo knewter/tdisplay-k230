@@ -1,9 +1,13 @@
 ## 1. Idle timeout setting (from idle 4.1)
 
-- [ ] 1.1 Add the Settings row for the timeout (Off / 1 min / 5 min), persisted beside the
+- [x] 1.1 Add the Settings row for the timeout (Off / 1 min / 5 min), persisted beside the
   existing settings and read by `shell-idle` at start. Needs its own Rust service request.
-- [ ] 1.2 Host: unit tests for the pref read and the swayidle arguments it produces.
+  Done (host): `idle-timeout` pref, `k230-idle-dimmer timeouts` read by `k230-swayidle`, and
+  `shell-idle-timeout.path` restarts `shell-idle` on a change; not yet seen on the board (1.3).
+- [x] 1.2 Host: unit tests for the pref read and the swayidle arguments it produces.
   Proof: `python3 -m pytest tests/ -k idle` and `cargo test` for the settings request.
+  Done (host): `python3 -m pytest tests/test_idle_dimmer.py tests/test_exhibition.py` and
+  `cargo test --lib` in `nix/rust-shell-client` (see the commit message for counts).
 - [ ] 1.3 Board, injected: pick 5 min; the panel dims at 150 s and turns off at 300 s; pick
   Off; neither happens in 6 min. Proof: journal `output * power` and DCS brightness lines.
 
@@ -48,7 +52,12 @@
   minute `grim` of the panel shows the dot and 3, `dismiss-all` removes it, and `top` shows
   the card's CPU unchanged.
 - [ ] 4.2 A separate Exhibition brightness, and a setting for the two-hour cap and the effect
-  interval.
+  interval. Host done: Clock brightness / Clock effects / Clock limit rows, the dimmer applies
+  the brightness at open and the card reads the other two at start (unit tests). Board proof:
+  on the charger pick Full, idle 30 s, `cat $D/brightness` equals the pre-dim value while
+  `get_tree` shows `k230-exhibition`; pick Half (about half) and Dim (about a quarter); pick
+  Clock limit None and Clock effects Off and confirm no `ttfx` child in 6 min and no cap close
+  in the journal, then restore the defaults.
 - [ ] 4.3 Close the card on pointer-only activity (HDMI mouse) as well. Board proof with a
   mouse: the card closes and the app beneath gets nothing.
   Host, 2026-10-28: the card turns on any-motion reports (mode 1003) and motion is input, so a

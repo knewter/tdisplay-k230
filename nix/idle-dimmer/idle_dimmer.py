@@ -17,6 +17,8 @@ of these subcommands per event; this process never waits or polls.
           exhibition at once, as if idle had; does nothing on battery. The
           card it opens calls `resume` itself when input closes it, since
           swayidle never saw the idle and will not.
+  timeouts  print "DIM OFF" seconds for the "Idle timeout" setting, or "off";
+          k230-swayidle reads it at start
 
 Restoring is conditional: the saved brightness comes back only when the
 backlight still holds the value dim wrote, so a slider move made meanwhile
@@ -35,6 +37,13 @@ LOG = logging.getLogger("k230-idle-dimmer")
 DIM_FRACTION = 0.25
 PREFS_DIR = "/var/lib/k230-shell-prefs"
 IDLE_ON_CHARGER_FILE = "idle-on-charger"
+IDLE_TIMEOUT_FILE = "idle-timeout"
+CLOCK_BRIGHTNESS_FILE = "clock-brightness"
+# "Idle timeout" word -> (dim, off) seconds; None disables both steps.
+IDLE_TIMEOUTS = {"off": None, "1m": (30, 60), "5m": (150, 300)}
+DEFAULT_IDLE_TIMEOUT = "1m"
+# "Clock brightness" word -> fraction of the saved brightness.
+CLOCK_BRIGHTNESS = {"dim": DIM_FRACTION, "half": 0.5, "full": 1.0}
 POWER_SUPPLY_ROOT = "/sys/class/power_supply"
 EXHIBITION_PID_FILE = "/run/shell/exhibition.pid"
 
@@ -48,6 +57,27 @@ def read_idle_on_charger(prefs_dir=PREFS_DIR):
     except (OSError, ValueError):
         return "clock"
     return "sleep" if text.strip() == "sleep" else "clock"
+
+
+def read_idle_timeout(prefs_dir=PREFS_DIR):
+    """(dim, off) seconds, or None for Off. Only the exact words off, 1m and
+    5m count; anything else is the default, 1m. The Settings row
+    (shell_prefs.rs) writes the same file."""
+    try:
+        text = (Path(prefs_dir) / IDLE_TIMEOUT_FILE).read_text().strip()
+    except (OSError, ValueError):
+        text = DEFAULT_IDLE_TIMEOUT
+    return IDLE_TIMEOUTS[text if text in IDLE_TIMEOUTS else DEFAULT_IDLE_TIMEOUT]
+
+
+def read_clock_brightness(prefs_dir=PREFS_DIR):
+    """Fraction of the saved brightness the clock screen runs at: dim 0.25
+    (the default), half 0.5, full 1.0. Anything else is the default."""
+    try:
+        text = (Path(prefs_dir) / CLOCK_BRIGHTNESS_FILE).read_text().strip()
+    except (OSError, ValueError):
+        text = "dim"
+    return CLOCK_BRIGHTNESS.get(text, DIM_FRACTION)
 
 
 def charger_online(root=POWER_SUPPLY_ROOT):
@@ -127,11 +157,11 @@ class Dimmer:
             return False
 
     @staticmethod
-    def dim_target(current):
-        """25% of the current raw value, at least 1, never above it."""
+    def dim_target(current, fraction=DIM_FRACTION):
+        """`fraction` (25%) of the current raw value, at least 1, never above it."""
         if current is None or current <= 1:
             return None
-        target = max(1, round(current * DIM_FRACTION))
+        target = max(1, round(current * fraction))
         return target if target < current else None
 
     # -- sway ---------------------------------------------------------------
@@ -174,8 +204,10 @@ class Dimmer:
 
     # -- steps --------------------------------------------------------------
     def dim(self):
-        self.dim_backlight()
-        if self.exhibit_wanted():
+        wanted = self.exhibit_wanted()
+        # The clock screen has its own brightness ("Clock brightness").
+        self.dim_backlight(read_clock_brightness(self.prefs_dir) if wanted else DIM_FRACTION)
+        if wanted:
             self.start_exhibit()
 
     def exhibit_now(self):
@@ -187,15 +219,15 @@ class Dimmer:
             return
         if self.exhibit_pid() is not None:
             return
-        self.dim_backlight()
+        self.dim_backlight(read_clock_brightness(self.prefs_dir))
         self.start_exhibit(command)
 
-    def dim_backlight(self):
+    def dim_backlight(self, fraction=DIM_FRACTION):
         state = self.load()
         if state["dimmed"] is not None:
             return  # already dimmed; never dim the dimmed value again
         current = self.read_raw()
-        target = self.dim_target(current)
+        target = self.dim_target(current, fraction)
         if target is None:
             return
         # Record first: a crash after the write must still be restorable.
@@ -249,7 +281,8 @@ def find_backlight(sys_class=Path("/sys/class/backlight")):
 
 def main(argv=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument("action", choices=["dim", "off", "resume", "wake", "exhibit-end", "exhibit-now"])
+    parser.add_argument("action", choices=["dim", "off", "resume", "wake", "exhibit-end", "exhibit-now",
+                                           "timeouts"])
     parser.add_argument("--exhibit-exec", help="command that opens the exhibition card")
     parser.add_argument("--exhibit-now-exec", help="command that opens the card for exhibit-now")
     parser.add_argument("--prefs-dir", default=PREFS_DIR)
@@ -260,6 +293,10 @@ def main(argv=None):
     parser.add_argument("--state", default="/run/k230-idle/idle-dimmer.json")
     parser.add_argument("--backlight")
     args = parser.parse_args(argv)
+    if args.action == "timeouts":
+        timeouts = read_idle_timeout(args.prefs_dir)
+        print("off" if timeouts is None else "%d %d" % timeouts)
+        return 0
     logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s")
     backlight = Path(args.backlight) if args.backlight else find_backlight()
     dimmer = Dimmer(backlight, args.state, args.swaymsg, args.sway_socket,

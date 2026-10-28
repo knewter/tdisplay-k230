@@ -2640,6 +2640,42 @@ impl ShellClient {
         });
     }
 
+    /// Steps "Idle timeout" and the three clock screen rows to their next
+    /// choice and stores it; `shell-idle-timeout.path` restarts the idle
+    /// service for the first, and the others are read when the clock screen
+    /// opens. A failed write is logged and the value still changes for this
+    /// session.
+    fn cycle_idle_pref(&mut self, intent: &PanelIntent) {
+        use k230_shell_rust::shell_prefs as prefs;
+        let result = match intent {
+            PanelIntent::CycleIdleTimeout => {
+                let choice = self.service_view.idle_timeout.next();
+                self.service_view.idle_timeout = choice;
+                prefs::write_idle_timeout(&prefs::idle_timeout_path(), choice)
+            }
+            PanelIntent::CycleClockBrightness => {
+                let choice = self.service_view.clock_brightness.next();
+                self.service_view.clock_brightness = choice;
+                prefs::write_clock_brightness(&prefs::clock_brightness_path(), choice)
+            }
+            PanelIntent::CycleClockEffects => {
+                let choice = self.service_view.clock_effects.next();
+                self.service_view.clock_effects = choice;
+                prefs::write_clock_effects(&prefs::clock_effects_path(), choice)
+            }
+            _ => {
+                let choice = self.service_view.clock_limit.next();
+                self.service_view.clock_limit = choice;
+                prefs::write_clock_limit(&prefs::clock_limit_path(), choice)
+            }
+        };
+        if let Err(error) = result {
+            self.log(&format!("idle-preference-failed {error}"));
+        }
+        self.renderer.set_services(self.service_view.clone());
+        self.dirty = true;
+    }
+
     /// Stores the slider's level for `keyboard_based.py`, which polls it.
     fn commit_key_backlight(&mut self) {
         let Some(level) = self.service_view.key_backlight else {
@@ -3178,6 +3214,10 @@ impl ShellClient {
             PanelIntent::ToggleDoNotDisturb => self.toggle_do_not_disturb(),
             PanelIntent::ToggleChargerIdle => self.toggle_charger_idle(),
             PanelIntent::StartClock => self.start_clock(),
+            PanelIntent::CycleIdleTimeout
+            | PanelIntent::CycleClockBrightness
+            | PanelIntent::CycleClockEffects
+            | PanelIntent::CycleClockLimit => self.cycle_idle_pref(&intent),
             PanelIntent::OpenDateTime | PanelIntent::OpenAbout => {
                 if self.route != Route::Settings && !self.show(qh, Route::Settings) {
                     return;
@@ -7289,6 +7329,18 @@ fn serve() -> Result<(), String> {
             ),
             idle_on_charger: k230_shell_rust::shell_prefs::read_idle_on_charger(
                 &k230_shell_rust::shell_prefs::idle_on_charger_path(),
+            ),
+            idle_timeout: k230_shell_rust::shell_prefs::read_idle_timeout(
+                &k230_shell_rust::shell_prefs::idle_timeout_path(),
+            ),
+            clock_brightness: k230_shell_rust::shell_prefs::read_clock_brightness(
+                &k230_shell_rust::shell_prefs::clock_brightness_path(),
+            ),
+            clock_effects: k230_shell_rust::shell_prefs::read_clock_effects(
+                &k230_shell_rust::shell_prefs::clock_effects_path(),
+            ),
+            clock_limit: k230_shell_rust::shell_prefs::read_clock_limit(
+                &k230_shell_rust::shell_prefs::clock_limit_path(),
             ),
             ..ServiceView::default()
         },

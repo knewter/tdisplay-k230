@@ -1887,13 +1887,43 @@ in
           # with the saved one in /run/k230-idle; give it back now rather
           # than after the next idle-and-input cycle.
           $d resume $a || true
+          # "Idle timeout" in Settings: "DIM OFF" seconds, or "off" for no
+          # steps. swayidle cannot reload, so changing it restarts this unit
+          # (shell-idle-timeout.path).
+          set -- $($d timeouts $a)
+          [ "$1" = off ] || [ -n "''${2:-}" ] || set -- 30 60
+          # swayidle takes `resume` only after a `timeout`, so with no steps
+          # there is nothing for it to do; stay up so the unit reads active.
+          if [ "$1" = off ]; then
+            exec ${pkgs.coreutils}/bin/sleep infinity
+          fi
           exec ${pkgs.swayidle}/bin/swayidle -w \
-            timeout 30 "$d dim $a" resume "$d resume $a" \
-            timeout 60 "$d off $a"
+            timeout "$1" "$d dim $a" resume "$d resume $a" \
+            timeout "$2" "$d off $a"
         '';
         Restart = "on-failure";
         RestartSec = 2;
         UMask = "0077";
+      };
+    };
+
+    # Settings' "Idle timeout" row writes this file; swayidle has no live
+    # reload, so a change restarts the idle service.
+    systemd.paths.shell-idle-timeout = lib.mkIf cfg.coherentShell {
+      description = "Restart the idle service when the idle timeout setting changes";
+      wantedBy = [ "shell.service" ];
+      bindsTo = [ "shell.service" ];
+      partOf = [ "shell.service" ];
+      pathConfig = {
+        PathChanged = "/var/lib/k230-shell-prefs/idle-timeout";
+        Unit = "shell-idle-restart.service";
+      };
+    };
+    systemd.services.shell-idle-restart = lib.mkIf cfg.coherentShell {
+      description = "Restart the idle service for a new idle timeout";
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = "${pkgs.systemd}/bin/systemctl restart shell-idle.service";
       };
     };
 

@@ -98,6 +98,26 @@ class PureTests(unittest.TestCase):
         self.assertNotIn("decrypt", EX.EFFECTS)  # does not end within the cap
         self.assertNotIn("matrix", EX.EFFECTS)
 
+    def test_settings_words_map_to_the_interval_and_the_cap_and_junk_is_the_default(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            prefs = Path(tmp)
+            self.assertEqual(EX.read_effect_interval(prefs), 300, "missing")
+            self.assertEqual(EX.read_max_up(prefs), 7200, "missing")
+            self.assertEqual(EX.read_effect_interval(prefs / "gone"), 300)
+            for text, want in (("5m\n", 300), ("15m\n", 900), (" 15m ", 900), ("off\n", None),
+                               ("", 300), ("OFF", 300), ("1m", 300), ("15", 300)):
+                (prefs / EX.CLOCK_EFFECTS_FILE).write_text(text)
+                self.assertEqual(EX.read_effect_interval(prefs), want, repr(text))
+            for text, want in (("2h\n", 7200), ("8h\n", 28800), (" 8h ", 28800), ("none\n", None),
+                               ("", 7200), ("NONE", 7200), ("off", 7200), ("3h", 7200)):
+                (prefs / EX.CLOCK_LIMIT_FILE).write_text(text)
+                self.assertEqual(EX.read_max_up(prefs), want, repr(text))
+            for name, read, default in ((EX.CLOCK_EFFECTS_FILE, EX.read_effect_interval, 300),
+                                        (EX.CLOCK_LIMIT_FILE, EX.read_max_up, 7200)):
+                (prefs / name).write_bytes(b"\xff\xfe")
+                self.assertEqual(read(prefs), default, "invalid UTF-8")
+        self.assertEqual((EX.EFFECT_INTERVAL, EX.MAX_UP_SECONDS), (300, 7200))
+
     def test_first_effect_is_soon_then_every_interval(self):
         self.assertEqual(EX.next_effect_at(100, None), 100 + EX.FIRST_EFFECT_DELAY)
         self.assertEqual(EX.next_effect_at(100, 200, 300), 500)
@@ -317,6 +337,22 @@ class LoopTests(unittest.TestCase):
         self.assertEqual(ex.run(), "cap")
         self.assertEqual(len(ends), 1)
         self.assertLessEqual(ends[0] - START, 600 + EX.POLL_SECONDS + 0.1)
+
+    def test_effects_off_plays_nothing(self):
+        ex, sess, clock, plays, ends = make(ttfx="/bin/ttfx", interval=None, inputs={START + 1000: b"x"})
+        self.assertEqual(ex.run(), "input")
+        self.assertEqual(plays, [])
+
+    def test_no_cap_runs_past_two_hours(self):
+        ex, sess, clock, plays, ends = make(max_up=None, inputs={START + 9 * 3600: b"x"})
+        self.assertEqual(ex.run(), "input")
+        self.assertEqual(ends, [])
+
+    def test_a_longer_interval_spaces_the_effects(self):
+        ex, sess, clock, plays, ends = make(ttfx="/bin/ttfx", interval=900, inputs={START + 1000: b"x"})
+        ex.run()
+        self.assertEqual([round(t - START) for t, _ in plays],
+                         [EX.FIRST_EFFECT_DELAY, EX.FIRST_EFFECT_DELAY + 900])
 
     def test_nothing_is_drawn_while_the_display_is_off(self):
         state = {"lit": False}

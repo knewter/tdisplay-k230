@@ -166,6 +166,68 @@ class ExhibitionTests(Fixture):
         (self.prefs / MODULE.IDLE_ON_CHARGER_FILE).write_bytes(b"\xff\xfe")
         self.assertEqual(MODULE.read_idle_on_charger(self.prefs), "clock")
 
+    def test_idle_timeout_words_map_to_swayidle_seconds_and_junk_is_the_default(self):
+        name = MODULE.IDLE_TIMEOUT_FILE
+        self.assertEqual(MODULE.read_idle_timeout(self.prefs), (30, 60), "missing")
+        self.assertEqual(MODULE.read_idle_timeout(self.prefs / "gone"), (30, 60))
+        for text, want in (("1m\n", (30, 60)), ("5m\n", (150, 300)), (" 5m ", (150, 300)),
+                           ("off\n", None), ("", (30, 60)), ("5", (30, 60)), ("OFF", (30, 60)),
+                           ("5m 1m", (30, 60)), ("10m", (30, 60))):
+            (self.prefs / name).write_text(text)
+            self.assertEqual(MODULE.read_idle_timeout(self.prefs), want, repr(text))
+        (self.prefs / name).write_bytes(b"\xff\xfe")
+        self.assertEqual(MODULE.read_idle_timeout(self.prefs), (30, 60), "invalid UTF-8")
+
+    def test_dim_comes_at_half_the_off_time_for_every_choice(self):
+        for choice in MODULE.IDLE_TIMEOUTS.values():
+            if choice is not None:
+                self.assertEqual(choice[0] * 2, choice[1])
+
+    def test_timeouts_subcommand_prints_what_the_wrapper_passes_to_swayidle(self):
+        import contextlib
+        import io
+
+        def run():
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                self.assertEqual(MODULE.main(["timeouts", "--swaymsg", "x", "--prefs-dir", str(self.prefs)]), 0)
+            return out.getvalue()
+        self.assertEqual(run(), "30 60\n")
+        (self.prefs / MODULE.IDLE_TIMEOUT_FILE).write_text("5m\n")
+        self.assertEqual(run(), "150 300\n")
+        (self.prefs / MODULE.IDLE_TIMEOUT_FILE).write_text("off\n")
+        self.assertEqual(run(), "off\n")
+
+    def test_clock_brightness_words_and_default(self):
+        name = MODULE.CLOCK_BRIGHTNESS_FILE
+        self.assertEqual(MODULE.read_clock_brightness(self.prefs), 0.25, "missing")
+        for text, want in (("dim\n", 0.25), ("half\n", 0.5), (" full ", 1.0), ("", 0.25),
+                           ("FULL", 0.25), ("bright", 0.25)):
+            (self.prefs / name).write_text(text)
+            self.assertEqual(MODULE.read_clock_brightness(self.prefs), want, repr(text))
+        (self.prefs / name).write_bytes(b"\xff\xfe")
+        self.assertEqual(MODULE.read_clock_brightness(self.prefs), 0.25)
+
+    def test_the_clock_screen_runs_at_the_chosen_brightness(self):
+        self.plug()
+        for word, raw in (("dim", 64), ("half", 127), ("full", 254)):
+            (self.prefs / MODULE.CLOCK_BRIGHTNESS_FILE).write_text(word)
+            self.set_raw(254)
+            self.dimmer.dim()
+            self.assertEqual(self.raw(), raw, word)
+            self.dimmer.resume()
+            self.assertEqual(self.raw(), 254, word + " restored")
+
+    def test_clock_brightness_does_not_touch_an_ordinary_dim(self):
+        (self.prefs / MODULE.CLOCK_BRIGHTNESS_FILE).write_text("full")
+        self.dimmer.dim()  # on battery
+        self.assertEqual(self.raw(), 64)
+        self.dimmer.resume()
+        self.prefer("sleep")
+        self.plug()
+        self.dimmer.dim()  # charger, but Idle on charger is Sleep
+        self.assertEqual(self.raw(), 64)
+
     def test_charger_is_any_non_battery_supply_online(self):
         self.assertFalse(MODULE.charger_online(self.supplies))
         self.plug()
