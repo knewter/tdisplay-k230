@@ -51,13 +51,23 @@
   Done 2026-10-28 (injected double tap): PNG→Viewnior, PDF→Zathura, folder navigated; the chooser lists Viewnior (default) and Zathura.
 - [ ] 2.4 Viewnior's rotate buttons draw their icons. Defect seen in
   `docs/evidence/open-with/board/open-png.png`: the two toolbar buttons for
-  `object-rotate-left` and `object-rotate-right` were blank. Cause: GTK3 falls
+  `object-rotate-left` and `object-rotate-right` were blank. Likely cause (not seen on the board): GTK3 falls
   back to Adwaita, which has no such icons, and the Yaru copies sit in themes
   that fallback never reaches. Fix: `nix/handheld-theme-icons` puts the four
   `object-rotate-*` / `object-flip-*` icons in `hicolor/scalable/actions`, the
   last stop of every theme chain. Host proof: GTK3 icon lookup with Adwaita as
   the theme resolves the names from the built tree. Board proof still open:
   `grim` of Viewnior shows both rotate icons.
+- [ ] 2.5 Files opens as a full card. Reported: Files opened floating, about
+  890 px wide. Host reading: the Sway rule `for_window [app_id=".+"] card_shell
+  ordinary, floating enable, resize set 100 ppt 100 ppt, move position 0 0`
+  already matches `org.gnome.Nautilus`, and 890x550 is Nautilus's own default
+  window size (also in its "890 px available" warning in `files-home.png`);
+  `files-home.png` shows the card mid-open, and `files-open-with-list.png`
+  shows Files filling 1232x568. No rule change was made. Board proof still
+  open: after launch, `swaymsg -t get_tree` rect for `org.gnome.Nautilus` over
+  10 s, and a `grim` once settled, to tell a slow first layout from a window
+  that stays small.
 
 ## 3. Glass (physical)
 
