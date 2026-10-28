@@ -38,13 +38,15 @@ Every board command needs the sole board reservation and the flock on
 - [x] 3.2 Idle 60 s: `$SM -t get_outputs -r | jq '.[].power'` prints `false`; `cat /run/shell/idle-dimmer.json`
   shows `"off": true`; the session and open apps survive.
   Done 2026-10-27T03:43:03Z: `"power": false`, `idle-dimmer.json` `{"saved": 148, "dimmed": 37, "off": true}`, and the terminal survived. `docs/evidence/idle-dim/`.
-- [ ] 3.3 Wake by power key: the display lights, `cat $D/brightness` equals the prior value, and a
+- [x] 3.3 Wake by power key: the display lights, `cat $D/brightness` equals the prior value, and a
   further 30 s idle dims again (proves the `seat * cursor move 0 0` re-arm).
-- [ ] 3.4 Wake by touch with an app open whose button sits under the finger: the display lights,
+  Done 2026-10-28 (glass, journal-timed): power-key wake from dark at 13:49:10 CDT restored 148; re-dimmed at +32 s, off at +62 s. `docs/evidence/idle-dim/README.md`.
+- [x] 3.4 Wake by touch with an app open whose button sits under the finger: the display lights,
   the app does not act on the tap (check the app's log or state), `cat $D/brightness` is restored,
   and a lone `journalctl -u shell` shows no touch delivery. Use the webcam, not a user report.
   First confirm Sway still receives touch on the off output; if not, record that and design a
   libinput-level wake instead.
+  Done 2026-10-28 (glass, logger-timed): finger on a dark panel woke it in 1 ms with 148 restored. No-delivery rests on the headless and injected runs; no webcam (operator reassigned it). `docs/evidence/idle-dim/README.md`.
 - [x] 3.5 Video inhibit: start the video app, leave it 90 s with no input; brightness stays and
   `get_outputs` power stays true. Return Home and confirm dim at 30 s and off at 60 s.
   Repeat with the Timer app.
@@ -52,7 +54,8 @@ Every board command needs the sole board reservation and the flock on
 - [x] 3.6 Slider while dim: dim, set brightness through the shade, then wake; `cat $D/brightness`
   keeps the slider value.
   Done 2026-10-28 (injected, build `3vk5qy3a…`): dimmed to 37, the shade's `k230-settings brightness 80` wrote 204, a key wake kept 204. `docs/evidence/idle-dim/README.md`.
-- [ ] 3.7 Base-keyboard key on a dark panel lights the display (accepted to reach the app).
+- [x] 3.7 Base-keyboard key on a dark panel lights the display (accepted to reach the app).
+  Done 2026-10-28 (glass, logger-timed): base key on a dark panel lit it 0.8 s later. `docs/evidence/idle-dim/README.md`.
 
 ## 4. Follow-ups, not part of this slice
 

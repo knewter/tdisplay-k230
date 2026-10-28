@@ -86,3 +86,31 @@ in `service_data.rs`). Dragging the slider on the glass was not used,
 because the touch would itself wake the panel. An injected key at 18:15:51Z
 woke it: brightness stayed 204 and did not return to 148, and the state file
 was cleared. Brightness was then set back to 58 % (148).
+
+## Glass wakes: finger, keyboard base, power key (tasks 3.3, 3.4, 3.7)
+
+Evidence class: glass. The operator did the touching and said what they did.
+Each input is timed by `board/wakelog.py.txt` and the journal, in
+`board/glass-wakes.txt` (CDT). Build `3vk5qy3a…`, 2026-10-28. The charger
+was in, and the idle-on-charger preference was `sleep` from 13:43:49 to
+13:50, so the panel went dark instead of opening the exhibition. Each wake
+started from `output * power off` (brightness 0).
+
+- **Finger (3.4).** Dark from 13:44:24. Touch down at 13:44:32.967, and
+  `output * power on` at 13:44:32.966. Brightness went to 37, then 148 (the
+  prior value) at 13:44:34. The terminal was in front and was focused after
+  the wake. The no-delivery part rests on the headless proof
+  (`headless/README.md`, 0 probe events for the waking sequence) and on the
+  injected tap on Home's Video icon above. It was not observed for this
+  glass tap. No webcam was used: the operator reassigned it on 2026-10-28.
+- **Keyboard base (3.7).** Dark from 13:45:34. A base key went down at
+  13:45:49.687 and the output came on at 13:45:50.49, with brightness 148.
+  The key is accepted to reach the app.
+- **Power key (3.3).** Dark from 13:46:50. Power came on at 13:49:10.51,
+  with no touch or base key logged, and the operator reported pressing the
+  power key. `wakelog.py` cannot read the PMU key, because the power-key
+  daemon appears to hold it exclusively. Brightness went to 148, equal to
+  the prior value. With no further input, it dimmed to 37 at 13:49:42.48
+  (32 s) and the output went off at 13:50:12.48. This shows the re-arm.
+
+The preference file was removed afterwards, so the default is Clock again.
