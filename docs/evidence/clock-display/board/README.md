@@ -141,3 +141,14 @@ was then removed (default Clock again).
 
 The webcam was low and side-on to the panel during these runs; its frames
 show reflections, not the clock, so there is no camera record (4.7).
+
+## Operator glass report (task 4.8)
+
+Evidence class: glass, operator report (not injected, not camera). The
+operator used the board on 2026-10-27 while build `3vk5qy3a…` (commit
+`8352919b`) was test-activated (13:09–18:35 and from 19:30 CDT) and the
+exhibition was showing. Asked on 2026-10-28 whether they had tapped the
+exhibition and pressed a key, with the app beneath not reacting and the prior
+card returning, they answered: "it seems all good", "it works fine", and, to
+that exact question, "yup go". The report does not say which key or which
+app was beneath; the injected runs above cover those details.

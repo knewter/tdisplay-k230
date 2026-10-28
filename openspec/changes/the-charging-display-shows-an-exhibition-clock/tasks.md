@@ -93,7 +93,7 @@ Charger operations need the operator at the cable; say so before asking.
   `docs/evidence/clock-display/board/`. Pass: clock-only phase under 1%. If the
   effect phase pins the CPU, lower `--frame-rate` or cut effects and rerun. Take
   samples with a sleep-paced shell loop, never a busy wait.
-- [ ] 4.8 Glass: the operator taps and presses a key on the exhibition and reports
+- [x] 4.8 Glass: the operator taps and presses a key on the exhibition and reports
   that the app beneath did not react and the prior card returned. Physical proof:
   a timestamped operator report tied to the installed build in the same
   directory. Keep open until it exists.
