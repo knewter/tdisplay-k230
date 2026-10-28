@@ -101,6 +101,21 @@ pub mod battery {
         BatteryState::Absent
     }
 
+    /// True when any supply that is not the Battery reports `online` 1: the
+    /// same rule as the idle dimmer's `charger_online`, which decides whether
+    /// the clock screen may start.
+    pub fn charger_online(power_supply_root: &Path) -> bool {
+        let Ok(entries) = std::fs::read_dir(power_supply_root) else {
+            return false;
+        };
+        entries.filter_map(|entry| entry.ok()).any(|entry| {
+            let path = entry.path();
+            let read = |name: &str| std::fs::read_to_string(path.join(name)).ok();
+            read("type").is_some_and(|kind| kind.trim() != "Battery")
+                && read("online").is_some_and(|online| online.trim() == "1")
+        })
+    }
+
     // ---- Battery - Details -------------------------------------------------
 
     /// Poll period while a Battery - Details widget is placed on Home.
@@ -536,6 +551,23 @@ pub mod battery {
             ));
             std::fs::create_dir_all(&dir).unwrap();
             dir
+        }
+
+        #[test]
+        fn the_charger_is_a_non_battery_supply_that_is_online() {
+            let dir = tempdir("charger");
+            assert!(!charger_online(&dir.join("missing")));
+            assert!(!charger_online(&dir));
+            for (name, kind, online) in [("bat", "Battery", "1"), ("usb", "USB", "0")] {
+                let entry = dir.join(name);
+                std::fs::create_dir_all(&entry).unwrap();
+                std::fs::write(entry.join("type"), format!("{kind}\n")).unwrap();
+                std::fs::write(entry.join("online"), format!("{online}\n")).unwrap();
+            }
+            assert!(!charger_online(&dir), "a Battery's online and an offline USB do not count");
+            std::fs::write(dir.join("usb/online"), "1\n").unwrap();
+            assert!(charger_online(&dir));
+            std::fs::remove_dir_all(&dir).unwrap();
         }
 
         #[test]

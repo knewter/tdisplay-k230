@@ -13,6 +13,10 @@ of these subcommands per event; this process never waits or polls.
   wake    end the exhibition, resume, then tell Sway there was activity
           (power-key wake path)
   exhibit-end  the exhibition's own request (charger gone, or its cap): off
+  exhibit-now  the shade's Clock tile: on the charger, dim and open the
+          exhibition at once, as if idle had; does nothing on battery. The
+          card it opens calls `resume` itself when input closes it, since
+          swayidle never saw the idle and will not.
 
 Restoring is conditional: the saved brightness comes back only when the
 backlight still holds the value dim wrote, so a slider move made meanwhile
@@ -73,13 +77,15 @@ def exhibit_wanted(preference, charging):
 class Dimmer:
     def __init__(self, backlight, state_path, swaymsg, sway_socket, exhibit_exec=None,
                  prefs_dir=PREFS_DIR, power_supply=POWER_SUPPLY_ROOT,
-                 pid_file=EXHIBITION_PID_FILE, proc_root="/proc"):
+                 pid_file=EXHIBITION_PID_FILE, proc_root="/proc", exhibit_now_exec=None):
         self.backlight = Path(backlight)  # the backlight class directory
         self.state_path = Path(state_path)
         self.swaymsg = swaymsg
         self.sway_socket = sway_socket
         # The command that opens the exhibition card; None disables it.
         self.exhibit_exec = exhibit_exec
+        # The same card for the shade's tile, which also resumes on close.
+        self.exhibit_now_exec = exhibit_now_exec
         self.prefs_dir = prefs_dir
         self.power_supply = power_supply
         self.pid_file = Path(pid_file)
@@ -154,9 +160,9 @@ class Dimmer:
             return None
         return pid if b"k230_exhibition" in cmdline else None
 
-    def start_exhibit(self):
+    def start_exhibit(self, command=None):
         if self.exhibit_pid() is None:
-            self.sway("exec", self.exhibit_exec)
+            self.sway("exec", command or self.exhibit_exec)
 
     def stop_exhibit(self):
         pid = self.exhibit_pid()
@@ -171,6 +177,18 @@ class Dimmer:
         self.dim_backlight()
         if self.exhibit_wanted():
             self.start_exhibit()
+
+    def exhibit_now(self):
+        """Start the clock screen on request. The preference is not read: it
+        picks what idle does, and the person has just asked. On battery
+        nothing starts, so a flat battery is never spent on the clock."""
+        command = self.exhibit_now_exec or self.exhibit_exec
+        if not command or not charger_online(self.power_supply):
+            return
+        if self.exhibit_pid() is not None:
+            return
+        self.dim_backlight()
+        self.start_exhibit(command)
 
     def dim_backlight(self):
         state = self.load()
@@ -231,8 +249,9 @@ def find_backlight(sys_class=Path("/sys/class/backlight")):
 
 def main(argv=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument("action", choices=["dim", "off", "resume", "wake", "exhibit-end"])
+    parser.add_argument("action", choices=["dim", "off", "resume", "wake", "exhibit-end", "exhibit-now"])
     parser.add_argument("--exhibit-exec", help="command that opens the exhibition card")
+    parser.add_argument("--exhibit-now-exec", help="command that opens the card for exhibit-now")
     parser.add_argument("--prefs-dir", default=PREFS_DIR)
     parser.add_argument("--power-supply", default=POWER_SUPPLY_ROOT)
     parser.add_argument("--exhibition-pid", default=EXHIBITION_PID_FILE)
@@ -244,7 +263,8 @@ def main(argv=None):
     logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s")
     backlight = Path(args.backlight) if args.backlight else find_backlight()
     dimmer = Dimmer(backlight, args.state, args.swaymsg, args.sway_socket,
-                    exhibit_exec=args.exhibit_exec, prefs_dir=args.prefs_dir,
+                    exhibit_exec=args.exhibit_exec, exhibit_now_exec=args.exhibit_now_exec,
+                    prefs_dir=args.prefs_dir,
                     power_supply=args.power_supply, pid_file=args.exhibition_pid)
     getattr(dimmer, args.action.replace("-", "_"))()
 

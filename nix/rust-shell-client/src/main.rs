@@ -1222,6 +1222,9 @@ struct ShellClient {
     /// own next ~200ms poll and exits on its own.
     splash_watch_stop: Option<Arc<AtomicBool>>,
     swaymsg: Option<PathBuf>,
+    /// `K230_EXHIBIT_NOW`: runs `k230-idle-dimmer exhibit-now` with its
+    /// arguments (nix/shell.nix); the Shade's Clock tile starts it.
+    exhibit_now: Option<PathBuf>,
     renderer: RendererCache,
     services: ServiceWorker,
     service_view: ServiceView,
@@ -2614,6 +2617,29 @@ impl ShellClient {
         self.dirty = true;
     }
 
+    /// The Shade's Clock tile. On the charger: close the shade so the card
+    /// takes focus, then run the dimmer's `exhibit-now` (it dims and opens the
+    /// card; the card restores brightness when input closes it). On battery
+    /// nothing starts and the shade stays open with a line saying why.
+    fn start_clock(&mut self) {
+        let Some(command) = self.exhibit_now.clone() else {
+            self.log("clock-start-failed K230_EXHIBIT_NOW is unavailable");
+            return;
+        };
+        if !k230_shell_rust::home_widgets::battery::charger_online(std::path::Path::new("/sys/class/power_supply")) {
+            self.service_view.message = Some("The clock screen needs the charger".into());
+            self.renderer.set_services(self.service_view.clone());
+            self.dirty = true;
+            return;
+        }
+        self.begin_animated_close();
+        thread::spawn(move || {
+            // Let the shade's close settle so the card, not the shade, takes focus.
+            thread::sleep(Duration::from_millis(350));
+            let _ = Command::new(command).status();
+        });
+    }
+
     /// Stores the slider's level for `keyboard_based.py`, which polls it.
     fn commit_key_backlight(&mut self) {
         let Some(level) = self.service_view.key_backlight else {
@@ -3151,6 +3177,7 @@ impl ShellClient {
             }
             PanelIntent::ToggleDoNotDisturb => self.toggle_do_not_disturb(),
             PanelIntent::ToggleChargerIdle => self.toggle_charger_idle(),
+            PanelIntent::StartClock => self.start_clock(),
             PanelIntent::OpenDateTime | PanelIntent::OpenAbout => {
                 if self.route != Route::Settings && !self.show(qh, Route::Settings) {
                     return;
@@ -7223,6 +7250,7 @@ fn serve() -> Result<(), String> {
         splash_sender,
         splash_watch_stop: None,
         swaymsg: std::env::var_os("K230_SWAYMSG").map(PathBuf::from),
+        exhibit_now: std::env::var_os("K230_EXHIBIT_NOW").map(PathBuf::from),
         renderer: RendererCache::default(),
         services,
         service_view: ServiceView {

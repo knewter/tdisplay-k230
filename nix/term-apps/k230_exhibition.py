@@ -5,7 +5,10 @@ Opened by `k230-idle-dimmer dim` (nix/idle-dimmer/idle_dimmer.py) in a Foot
 card, on black, at the dimmed backlight. It shows the time and date, moves
 them a little every minute against burn-in, and about every five minutes plays
 one `ttfx` text effect over the committed K230 banner. Any touch or key closes
-it. It also closes, after asking the idle step to blank the display, when the
+it. When the notification broker holds events a small dot and their number
+sit under the date (read once per minute redraw; nothing when there are none
+or the broker does not answer). `--on-close` runs when input or lost focus
+ends the card, for a card the idle timer did not start. It also closes, after asking the idle step to blank the display, when the
 charger goes away or after two hours.
 
 CPU is the budget: the board has one online CPU and Foot repaints in software.
@@ -15,13 +18,16 @@ most EFFECT_MAX_SECONDS from a fixed list of finite effects, and nothing is
 drawn while the display is off.
 
     k230_exhibition.py --ttfx PATH --banner PATH [--pid-file PATH] [--on-end CMD]
+                       [--on-close CMD] [--notification-socket PATH]
     k230_exhibition.py --render-once WIDTHxHEIGHT      (debug: one frame)
 """
 import argparse
 import math
 import os
+import json
 import select
 import shlex
+import socket
 import subprocess
 import sys
 import time
@@ -46,6 +52,9 @@ EFFECTS = ("slice", "expand", "slide", "middleout", "scattered", "wipe",
 
 CLOCK_SGR = "\x1b[2;94m"
 DATE_SGR = "\x1b[2m"
+DOT_SGR = "\x1b[2;93m"
+DOT = "\u25cf"
+NOTIFICATION_TIMEOUT = 0.5
 DRIFT_COLS = 6
 DRIFT_ROWS = 2
 
@@ -78,16 +87,46 @@ def drift(minute_index, max_dx=DRIFT_COLS, max_dy=DRIFT_ROWS):
     return k % width - max_dx, k // width - max_dy
 
 
-def clock_layout(cols, rows, tm, minute_index):
+def notification_count(path, timeout=NOTIFICATION_TIMEOUT):
+    """The number of events the broker retains (the same `history` count Home
+    and the shade show), or 0 when the path is unset or anything goes wrong:
+    a missing socket, a slow or malformed reply, a bad count."""
+    if not path:
+        return 0
+    try:
+        with socket.socket(socket.AF_UNIX) as connection:
+            connection.settimeout(timeout)
+            connection.connect(str(path))
+            connection.sendall(b'{"operation":"history"}\n')
+            reply = b""
+            while b"\n" not in reply:
+                chunk = connection.recv(8192)
+                if not chunk or len(reply) + len(chunk) > 256 * 1024:
+                    return 0
+                reply += chunk
+        count = json.loads(reply)["count"]
+    except (OSError, ValueError, KeyError, TypeError):
+        return 0
+    return count if type(count) is int and count > 0 else 0
+
+
+def count_text(count):
+    return f"{DOT} {count}" if count < 100 else f"{DOT} 99+"
+
+
+def clock_layout(cols, rows, tm, minute_index, count=0):
     """The frame for one minute: big HH:MM, a rule-free gap, the date, all
-    shifted by that minute's drift but kept entirely inside the frame."""
+    shifted by that minute's drift but kept entirely inside the frame. With
+    `count` waiting notifications a dot and the number sit two rows under the
+    date, centred on it."""
     frame = apps.Frame(cols, rows)
     text = time.strftime("%H:%M", tm)
     date = time.strftime("%A %-d %B", tm)
     sx, sy = apps.pick_scale(text, cols, rows, reserve_rows=9, width_fraction=0.6)
     big_h = apps.GLYPH_ROWS * sy
     big_w = apps.text_units(text) * sx
-    block_h = big_h + 2
+    badge = count_text(count) if count > 0 else ""
+    block_h = big_h + 2 + (2 if badge else 0)
     block_w = max(big_w, len(date))
     max_dx = max(0, min(DRIFT_COLS, (cols - block_w) // 2))
     max_dy = max(0, min(DRIFT_ROWS, (rows - block_h) // 2))
@@ -97,6 +136,8 @@ def clock_layout(cols, rows, tm, minute_index):
     left = 1 + apps.centre(block_w, cols) + dx
     frame.put_big(top, text, sx, sy, CLOCK_SGR, col=left + apps.centre(big_w, block_w))
     frame.put(top + big_h + 1, left + apps.centre(len(date), block_w), date, DATE_SGR)
+    if badge:
+        frame.put(top + big_h + 3, left + apps.centre(len(badge), block_w), badge, DOT_SGR)
     return frame
 
 
@@ -261,7 +302,8 @@ class Exhibition:
     """The loop, with the clock, the machine's state and ttfx injectable."""
 
     def __init__(self, sess, cfg, clock=time.time, charger=charger_online,
-                 display=display_on, play=None, end=None, localtime=time.localtime):
+                 display=display_on, play=None, end=None, localtime=time.localtime,
+                 count=notification_count):
         self.sess = sess
         self.cfg = cfg
         self.clock = clock
@@ -270,6 +312,7 @@ class Exhibition:
         self.play = play or self.play_ttfx
         self.end = end or self.run_on_end
         self.localtime = localtime
+        self.count = count
         self.started = clock()
         self.last_effect = None
         self.effects_played = 0
@@ -282,7 +325,8 @@ class Exhibition:
     def draw(self, now):
         cols, rows = self.sess.size()
         minute = int(now // 60)
-        self.sess.draw(clock_layout(cols, rows, self.localtime(now), minute))
+        count = self.count(self.cfg.get("notification_socket"))
+        self.sess.draw(clock_layout(cols, rows, self.localtime(now), minute, count))
         self.sess._write("\x1b[?25l")
         self.drawn_minute = minute
 
@@ -333,14 +377,17 @@ class Exhibition:
         return "done"
 
     # -- ending ---------------------------------------------------------
-    def run_on_end(self):
-        command = self.cfg.get("on_end")
+    def run_on_end(self, key="on_end"):
+        command = self.cfg.get(key)
         if not command:
             return
         try:
             subprocess.run(shlex.split(command), timeout=15, check=False)
         except (OSError, subprocess.SubprocessError):
             pass
+
+    def run_on_close(self):
+        self.run_on_end("on_close")
 
     # -- the loop -------------------------------------------------------
     def run(self):
@@ -416,6 +463,8 @@ def main(argv=None):
     parser.add_argument("--banner")
     parser.add_argument("--pid-file")
     parser.add_argument("--on-end", help="command run before closing for the charger or the cap")
+    parser.add_argument("--on-close", help="command run when input or lost focus closes the card")
+    parser.add_argument("--notification-socket", help="the broker socket, for the count dot")
     parser.add_argument("--interval", type=int, default=EFFECT_INTERVAL,
                         help="seconds between effects (debug)")
     parser.add_argument("--max-up", type=int, default=MAX_UP_SECONDS)
@@ -430,11 +479,14 @@ def main(argv=None):
         print("k230-exhibition: needs a terminal", file=sys.stderr)
         return 1
     cfg = {"ttfx": args.ttfx, "banner": args.banner, "on_end": args.on_end,
+           "on_close": args.on_close, "notification_socket": args.notification_socket,
            "interval": args.interval, "max_up": args.max_up}
     pid_file_write(args.pid_file)
     try:
         with ExhibitSession() as sess:
-            Exhibition(sess, cfg).run()
+            exhibition = Exhibition(sess, cfg)
+            if exhibition.run() in ("input", "quit"):
+                exhibition.run_on_close()
     finally:
         pid_file_remove(args.pid_file)
     return 0

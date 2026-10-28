@@ -1,5 +1,8 @@
 """Exhibition card: schedule, drift, layout, dismissal and the loop, on the host."""
 import importlib.util
+import json
+import socket
+import threading
 import tempfile
 import time
 import unittest
@@ -117,6 +120,26 @@ class PureTests(unittest.TestCase):
         text = EX.clock_layout(100, 30, tm, 0).plain()
         self.assertIn(time.strftime("%A %-d %B", tm), text)
 
+    def test_a_waiting_count_adds_a_dot_and_number_under_the_date(self):
+        tm = time.gmtime(1_800_000_000)
+        bare = EX.clock_layout(100, 30, tm, 0).plain()
+        self.assertNotIn(EX.DOT, bare)
+        lines = EX.clock_layout(100, 30, tm, 0, 3).plain().splitlines()
+        date_row = next(i for i, line in enumerate(lines) if time.strftime("%A %-d %B", tm) in line)
+        self.assertEqual(lines[date_row + 2].strip(), f"{EX.DOT} 3")
+        self.assertEqual(lines[date_row + 1].strip(), "")
+        self.assertIn(f"{EX.DOT} 99+", EX.clock_layout(100, 30, tm, 0, 250).plain())
+        self.assertNotIn(EX.DOT, EX.clock_layout(100, 30, tm, 0, 0).plain())
+
+    def test_the_layout_with_a_count_stays_on_the_frame(self):
+        for cols, rows in ((100, 30), (60, 14), (40, 12), (160, 45)):
+            for minute in range(70):
+                frame = EX.clock_layout(cols, rows, time.gmtime(START), minute, 12)
+                ink = [(r, c) for r, line in enumerate(frame.cells) for c, (ch, _) in enumerate(line) if ch != " "]
+                self.assertTrue(all(0 <= r < rows and 0 <= c < cols for r, c in ink))
+                if rows >= 14:
+                    self.assertIn(EX.DOT, frame.plain(), (cols, rows, minute))
+
     def test_release_is_awaited_only_for_a_press_without_its_lift(self):
         press = b"\x1b[<0;10;20M"
         lift = b"\x1b[<0;10;20m"
@@ -183,6 +206,68 @@ class PureTests(unittest.TestCase):
         # font has to carry them.
         self.assertTrue(set(text) <= set(" \n█╗╔╝╚═║"), set(text))
         self.assertLessEqual(max(len(r) for r in rows), 60)
+
+
+def serve_once(path, reply):
+    """A broker stand-in on a Unix socket answering one request with `reply`."""
+    server = socket.socket(socket.AF_UNIX)
+    server.bind(str(path))
+    server.listen(1)
+
+    def run():
+        connection, _ = server.accept()
+        with connection:
+            connection.recv(4096)
+            if reply is not None:
+                connection.sendall(reply)
+        server.close()
+
+    thread = threading.Thread(target=run)
+    thread.start()
+    return thread
+
+
+class NotificationCountTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.sock = Path(self.tmp.name) / "events.sock"
+
+    def count_for(self, reply):
+        thread = serve_once(self.sock, reply)
+        try:
+            return EX.notification_count(self.sock, timeout=1)
+        finally:
+            thread.join()
+
+    def test_it_reads_the_history_count(self):
+        reply = json.dumps({"schema": 1, "count": 4, "events": [], "preview": None}).encode() + b"\n"
+        self.assertEqual(self.count_for(reply), 4)
+
+    def test_zero_unset_missing_and_malformed_all_read_as_nothing(self):
+        self.assertEqual(EX.notification_count(None), 0)
+        self.assertEqual(EX.notification_count(self.sock), 0)  # no socket there
+        for reply in (b'{"count":0}\n', b'{"count":-2}\n', b'{"count":"3"}\n', b'{"count":true}\n',
+                      b'{"events":[]}\n', b'[1]\n', b'not json\n', b'', None):
+            self.sock.unlink(missing_ok=True)
+            self.assertEqual(self.count_for(reply), 0, reply)
+
+    def test_a_silent_broker_costs_the_timeout_not_a_hang(self):
+        server = socket.socket(socket.AF_UNIX)
+        server.bind(str(self.sock))
+        server.listen(1)
+        self.addCleanup(server.close)
+        started = time.monotonic()
+        self.assertEqual(EX.notification_count(self.sock, timeout=0.2), 0)
+        self.assertLess(time.monotonic() - started, 2)
+
+    def test_each_minute_redraw_reads_the_count_and_draws_it(self):
+        counts = iter([2, 0, 5])
+        ex, sess, clock, plays, ends = make(inputs={START + 125: b"x"}, notification_socket="s")
+        ex.count = lambda path: next(counts)
+        ex.run()
+        texts = [frame.plain() for _, frame in sess.frames]
+        self.assertEqual([EX.DOT in t for t in texts], [True, False, True])
 
 
 class LoopTests(unittest.TestCase):

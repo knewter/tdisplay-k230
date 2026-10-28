@@ -26,14 +26,22 @@ let
   # the-charging-display-shows-an-exhibition-clock). The card asks for the
   # blank itself when the charger goes away.
   ttfx = pkgs.callPackage ./ttfx.nix { };
-  exhibitionCard = pkgs.writeShellScript "k230-exhibition-card" ''
+  exhibitionCardFor = extra: pkgs.writeShellScript "k230-exhibition-card" ''
     exec ${themedFoot}/bin/k230-foot terminal --app-id=k230-exhibition \
       -e ${termApps}/bin/k230-exhibition \
       --ttfx ${ttfx}/bin/ttfx --banner ${./exhibition/K230.txt} \
       --pid-file /run/shell/exhibition.pid \
-      --on-end '${idleDimmerCommand} exhibit-end ${idleDimmerBaseArgs}'
+      --notification-socket /run/shell-notifications/events.sock \
+      --on-end '${idleDimmerCommand} exhibit-end ${idleDimmerBaseArgs}' ${extra}
   '';
-  idleDimmerArgs = "${idleDimmerBaseArgs} --exhibit-exec ${exhibitionCard}";
+  exhibitionCard = exhibitionCardFor "";
+  # The shade's Clock tile: swayidle never saw an idle, so it will not send
+  # `resume`; the card does when input or lost focus closes it.
+  exhibitionCardNow = exhibitionCardFor "--on-close '${idleDimmerCommand} resume ${idleDimmerBaseArgs}'";
+  idleDimmerArgs = "${idleDimmerBaseArgs} --exhibit-exec ${exhibitionCard} --exhibit-now-exec ${exhibitionCardNow}";
+  exhibitNow = pkgs.writeShellScript "k230-exhibit-now" ''
+    exec ${idleDimmerCommand} exhibit-now ${idleDimmerArgs}
+  '';
   keyboardBased = pkgs.callPackage ./keyboard-base.nix { };
   # Clock, Timer and Weather: one Python TUI behind three k230-* commands.
   termApps = pkgs.callPackage ./term-apps { };
@@ -779,6 +787,7 @@ let
     export K230_KEYBOARD_SIGNAL=${keyboardGestureSignal}/bin/k230-keyboard-gesture-signal
     export K230_KEYBOARD_HEIGHT=${toString cfg.keyboardHeight}
     export K230_NOTIFICATION_SOCKET=/run/shell-notifications/events.sock
+    export K230_EXHIBIT_NOW=${exhibitNow}
     export K230_THEME_STATE_ROOT="${config.users.users.shell.home}/.local/state/omarchy/current"
     export K230_THEME_DEFAULT_GENERATION="${themeDefault}/generations/${themeDefaultId}"
     # Read-only, content-hash-keyed build-time thumbnails for every bundled

@@ -42,6 +42,11 @@
 ## 4. Clock screen follow-ups (from exhibition 5.1–5.5)
 
 - [ ] 4.1 Notification-count dot on the card (needs the broker count).
+  Host 2026-10-28: `k230-exhibition` asks the broker socket for `history` on each minute
+  redraw and draws a dot and the count under the date (`tests/test_exhibition.py`; host-only).
+  Board proof: with the card up on the charger, `notify-send test` three times; within a
+  minute `grim` of the panel shows the dot and 3, `dismiss-all` removes it, and `top` shows
+  the card's CPU unchanged.
 - [ ] 4.2 A separate Exhibition brightness, and a setting for the two-hour cap and the effect
   interval.
 - [ ] 4.3 Close the card on pointer-only activity (HDMI mouse) as well. Board proof with a
@@ -50,6 +55,14 @@
   moved mouse closes it the way a press does; `needs_release` ignores motion reports
   (`tests/test_exhibition.py`, 20 passed). Board proof with a mouse still open.
 - [ ] 4.4 A shade tile or a Home action to start the exhibition on demand.
+  Host 2026-10-28: a "Clock" tile (last in the wide shade's grid) closes the shade and runs
+  `k230-idle-dimmer exhibit-now`, which on the charger dims and opens the card with
+  `--on-close ... resume`, so input restores brightness though swayidle never went idle. On
+  battery the tile stays on the shade with a line saying it needs the charger (inert with
+  feedback, not absent). Host-only: `tests/test_idle_dimmer.py`, `cargo test`.
+  Board proof: on the charger, open the shade and tap Clock; the card shows and brightness
+  reads a quarter in `$D/brightness`; one touch closes it without reaching an app and
+  brightness returns to the saved value. Unplug and tap again: nothing starts.
 - [ ] 4.5 Camera (exhibition 4.7, moved 2026-10-28 when the operator reassigned the webcam;
   optional, gates nothing): the webcam on the panel records a clock minute change, one
   position drift and one effect. Look at consecutive raw frames first. Camera evidence, not

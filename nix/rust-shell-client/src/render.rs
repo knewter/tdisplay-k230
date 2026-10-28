@@ -3422,6 +3422,7 @@ fn paint_shade_wide_controls(
                 let on = view.modem.as_ref().is_some_and(|m| m.cellular);
                 (Glyph::Signal, "Cellular", if on { "On" } else { "Off" }.to_string(), on, true)
             }
+            ShadeTile::Clock => (Glyph::Clock, "Clock", "Start".to_string(), false, true),
         };
         cells.push((x, y, w, h, icon, label, state, on, available));
     }

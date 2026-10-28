@@ -430,7 +430,7 @@ mod tests {
                 !matches!(
                     dest.route(),
                     Panel(PanelIntent::ToggleDoNotDisturb | PanelIntent::ToggleLocation
-                        | PanelIntent::ToggleChargerIdle | PanelIntent::Request(_))
+                        | PanelIntent::ToggleChargerIdle | PanelIntent::StartClock | PanelIntent::Request(_))
                 ),
                 "{dest:?} must only navigate"
             );

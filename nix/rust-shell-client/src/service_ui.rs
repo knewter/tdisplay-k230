@@ -270,6 +270,9 @@ pub enum PanelIntent {
     /// Settings' "Idle on charger" row: Clock or Sleep, a local preference
     /// write (`shell_prefs`) read by the idle step.
     ToggleChargerIdle,
+    /// The wide Shade's Clock tile: close the shade and start the clock
+    /// screen now (`main.rs`; refused on battery).
+    StartClock,
 }
 
 /// Room for the shared brightness slider (task: "brightness should be a
@@ -338,6 +341,7 @@ pub enum ShadeTile {
     DoNotDisturb,
     Location,
     Cellular,
+    Clock,
 }
 
 /// The tiles the wide Shade shows: Location and Cellular only once the
@@ -347,6 +351,7 @@ pub fn shade_tiles(view: &ServiceView) -> Vec<ShadeTile> {
     if view.modem.is_some() {
         tiles.extend([ShadeTile::Location, ShadeTile::Cellular]);
     }
+    tiles.push(ShadeTile::Clock);
     tiles
 }
 
@@ -1383,6 +1388,7 @@ pub fn panel_intent(
                     ShadeTile::DoNotDisturb => Some(PanelIntent::ToggleDoNotDisturb),
                     ShadeTile::Location => Some(PanelIntent::ToggleLocation),
                     ShadeTile::Cellular => Some(PanelIntent::OpenCellular),
+                    ShadeTile::Clock => Some(PanelIntent::StartClock),
                 };
             }
             // The wide Shade's "Dismiss all" heads the list column, beside
@@ -3310,14 +3316,14 @@ mod tests {
         let mut view = wide_shade_view(2, true);
         assert_eq!(
             shade_tiles(&view),
-            vec![ShadeTile::Wifi, ShadeTile::Keyboard, ShadeTile::DoNotDisturb],
+            vec![ShadeTile::Wifi, ShadeTile::Keyboard, ShadeTile::DoNotDisturb, ShadeTile::Clock],
             "no modem, no modem tiles"
         );
         view.modem = Some(present_modem());
         let tiles = shade_tiles(&view);
         assert_eq!(
             tiles,
-            vec![ShadeTile::Wifi, ShadeTile::Keyboard, ShadeTile::DoNotDisturb, ShadeTile::Location, ShadeTile::Cellular]
+            vec![ShadeTile::Wifi, ShadeTile::Keyboard, ShadeTile::DoNotDisturb, ShadeTile::Location, ShadeTile::Cellular, ShadeTile::Clock]
         );
         let slider_top = shade_wide_slider_top();
         let slider_bottom = slider_top + SHADE_VOLUME_TOP + SHADE_VOLUME_H - SHADE_SLIDER_TOP;
@@ -3335,6 +3341,7 @@ mod tests {
                 ShadeTile::DoNotDisturb => Some(PanelIntent::ToggleDoNotDisturb),
                 ShadeTile::Location => Some(PanelIntent::ToggleLocation),
                 ShadeTile::Cellular => Some(PanelIntent::OpenCellular),
+                ShadeTile::Clock => Some(PanelIntent::StartClock),
             };
             assert_eq!(panel_intent(Route::Shade, centre, centre, 1232, 568, &view), expected, "{tile:?}");
         }
@@ -3352,7 +3359,7 @@ mod tests {
         for step in [1.0, 1.25, 1.5, 1.75, 2.0] {
             crate::set_layout_text_scale(step);
             let tiles = shade_tiles(&view);
-            assert_eq!(tiles.len(), 5);
+            assert_eq!(tiles.len(), 6);
             let slider_top = shade_wide_slider_top();
             let slider_bottom = slider_top + SHADE_VOLUME_TOP + SHADE_VOLUME_H - SHADE_SLIDER_TOP;
             assert!(slider_bottom <= 568.0, "step {step}: the volume slider ends at {slider_bottom}");

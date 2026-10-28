@@ -240,6 +240,44 @@ class ExhibitionTests(Fixture):
         self.dimmer.off()
         self.assertEqual(self.sent, ["output * power off"])
 
+    def test_exhibit_now_on_the_charger_dims_and_opens_the_card_whatever_the_preference(self):
+        self.plug()
+        self.prefer("sleep")  # the preference picks what idle does, not an explicit request
+        self.dimmer.exhibit_now_exec = "/bin/k230-exhibition-card-now"
+        self.dimmer.exhibit_now()
+        self.assertEqual(self.raw(), 64)
+        self.assertEqual(self.sent, ["exec /bin/k230-exhibition-card-now"])
+        self.dimmer.resume()  # what the card's close hook runs; swayidle never will
+        self.assertEqual(self.raw(), 254)
+
+    def test_exhibit_now_falls_back_to_the_idle_card(self):
+        self.plug()
+        self.dimmer.exhibit_now()
+        self.assertEqual(self.sent, ["exec /bin/k230-exhibition-card"])
+
+    def test_exhibit_now_on_battery_does_nothing(self):
+        self.dimmer.exhibit_now()
+        self.assertEqual(self.raw(), 254)
+        self.assertEqual(self.sent, [])
+        self.assertFalse(self.dimmer.state_path.exists())
+
+    def test_exhibit_now_with_a_card_up_or_no_command_does_nothing(self):
+        self.plug()
+        self.card_running()
+        self.dimmer.exhibit_now()
+        self.assertEqual((self.raw(), self.sent), (254, []))
+        self.pid_file.unlink()
+        self.dimmer.exhibit_exec = None
+        self.dimmer.exhibit_now()
+        self.assertEqual((self.raw(), self.sent), (254, []))
+
+    def test_exhibit_now_after_idle_dimmed_keeps_the_saved_brightness(self):
+        self.plug()
+        self.dimmer.dim_backlight()
+        self.dimmer.exhibit_now()
+        self.dimmer.resume()
+        self.assertEqual(self.raw(), 254)
+
     def test_exhibit_end_blanks_and_resume_restores(self):
         self.plug()
         self.dimmer.dim()

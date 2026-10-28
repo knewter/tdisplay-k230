@@ -23,7 +23,7 @@ same way a touch or key does, and SHALL NOT reach the app beneath it.
 
 ### Requirement: The clock screen starts on demand
 
-<!-- UNVERIFIED: not built. -->
+<!-- UNVERIFIED: host-only. `k230-idle-dimmer exhibit-now` and the shade's Clock tile are covered by `tests/test_idle_dimmer.py` and `cargo test`; the tile, the dim, the focus handover from the closing shade and the brightness restore have not been run on the board. -->
 A person SHALL be able to start the clock screen from the shade or Home
 without waiting for the idle timeout. It SHALL then behave as if idle opened
 it: input closes it, and on battery it SHALL NOT start.
@@ -31,3 +31,20 @@ it: input closes it, and on battery it SHALL NOT start.
 #### Scenario: Start from the shade on the charger
 - **WHEN** the charger is connected and the person taps the clock tile
 - **THEN** the clock screen opens, and the next touch closes it without reaching an app
+
+#### Scenario: Tap the clock tile on battery
+- **WHEN** no charger is connected and the person taps the clock tile
+- **THEN** the clock screen does not start, brightness does not change, and the shade stays open with a line saying the clock screen needs the charger
+
+### Requirement: The clock screen shows how many notifications wait
+
+<!-- UNVERIFIED: host-only. The count reader and the layout are unit-tested against a fake broker socket (`tests/test_exhibition.py`); the broker's real reply, the dot's legibility on the panel and the card's CPU with the read have not been observed on the board. -->
+When the notification broker holds one or more events, the clock screen SHALL
+show a small dot and the number under the date, refreshed with the minute
+redraw. It SHALL show nothing when there are none or the broker cannot be
+read, and the read SHALL NOT add wakeups beyond the existing minute and poll
+timers.
+
+#### Scenario: Notifications wait while the clock shows
+- **WHEN** the clock screen is up and the broker holds three events
+- **THEN** within a minute a dot and "3" appear under the date, and no dot appears when the broker holds none
