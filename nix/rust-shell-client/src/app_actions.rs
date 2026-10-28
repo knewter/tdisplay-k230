@@ -404,7 +404,7 @@ mod tests {
     #[test]
     fn menu_cancel_and_drag_do_not_activate_rows() {
         let mut menu = AppMenu::new(
-            AppEntry {
+            AppEntry { actions: Vec::new(),
                 id: "a".into(),
                 name: "App".into(),
                 icon: None,
@@ -435,7 +435,7 @@ mod tests {
     }
     #[test]
     fn window_list_states_name_back_or_apps_and_never_focus_another_window() {
-        let entry = AppEntry {
+        let entry = AppEntry { actions: Vec::new(),
             id: "a".into(),
             name: "App".into(),
             icon: None,
@@ -474,7 +474,7 @@ mod tests {
         let path = root.join("app.desktop");
         let source="[Desktop Entry]\nType=Application\nName=Fixture\nExec=/bin/true\nActions=new-window;preferences;\n[Desktop Action new-window]\nName=New Window\nExec=/bin/true\n[Desktop Action preferences]\nName=Preferences\nExec=/bin/true\n";
         std::fs::write(&path, source).unwrap();
-        let entry = AppEntry {
+        let entry = AppEntry { actions: Vec::new(),
             id: "app.desktop".into(),
             name: "Fixture".into(),
             icon: None,

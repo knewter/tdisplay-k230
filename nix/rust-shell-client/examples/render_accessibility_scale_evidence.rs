@@ -84,7 +84,7 @@ fn render(path: PathBuf, theme: &AppearanceSnapshot, vision: &VisionChoice, w: u
     }
     let apps: Vec<AppEntry> = ["Terminal", "Files", "Video Player", "Settings", "Text Editor", "System Monitor", "Calculator", "Image Viewer"]
         .into_iter()
-        .map(|name| AppEntry { id: format!("{name}.desktop"), name: name.into(), icon: None, path: PathBuf::new() })
+        .map(|name| AppEntry { actions: Vec::new(), id: format!("{name}.desktop"), name: name.into(), icon: None, path: PathBuf::new() })
         .collect();
     let mut pixels = vec![0; (w * h * 4) as usize];
     if page == "menu" {
@@ -175,7 +175,7 @@ fn render_home_small(path: PathBuf, theme: &AppearanceSnapshot, w: u32, h: u32) 
     let names = ["Terminal", "Settings", "Video", "Files", "Calculator", "System Monitor"];
     let apps: Vec<AppEntry> = names
         .iter()
-        .map(|name| AppEntry { id: format!("{name}.desktop"), name: (*name).into(), icon: None, path: PathBuf::new() })
+        .map(|name| AppEntry { actions: Vec::new(), id: format!("{name}.desktop"), name: (*name).into(), icon: None, path: PathBuf::new() })
         .collect();
     let per_page = home_grid::apps_per_page(w, h);
     let mut layout = HomeLayout {

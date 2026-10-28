@@ -32,7 +32,7 @@ use std::path::{Path, PathBuf};
 /// the drawer's per-viewport row count.
 pub fn synthetic_apps(count: usize) -> Vec<AppEntry> {
     (0..count)
-        .map(|index| AppEntry {
+        .map(|index| AppEntry { actions: Vec::new(),
             id: format!("evidence.app{index}.desktop"),
             name: format!("App {index}"),
             icon: None,

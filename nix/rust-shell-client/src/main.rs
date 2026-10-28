@@ -27,9 +27,9 @@ use k230_shell_rust::{
     service_ui::{
         action_message, backdrop_tap, close_drag_engaged, close_drag_progress,
         close_drag_release_target, close_drag_zone, drawer_close_candidate_after_scroll,
-        drawer_close_drag_zone, filter_app_indices, key_backlight_level_at,
+        drawer_close_drag_zone, key_backlight_level_at,
         key_backlight_slider_frame, key_backlight_slider_hit, shade_panel_close_zone,
-        notification_max_scroll, settings_body_top, settings_max_scroll, notification_swipe_hit, notification_swipe_offset,
+        notification_max_scroll, settings_body_top, settings_max_scroll, settings_reveal_scroll, notification_swipe_hit, notification_swipe_offset,
         notification_swipe_release, notification_swipe_start, notification_swipe_valid,
         panel_intent, settings_output_picker_hit, settings_slider_column_hit, settings_slider_frame, settings_slider_y,
         slider_band, volume_icon_tap_zone,
@@ -42,6 +42,7 @@ use k230_shell_rust::{
         fade_alpha, should_auto_dismiss_failed, should_time_out, window_event_matches, Splash,
         SplashStatus, SplashTarget,
     },
+    search::{Activation, Hardware, SettingsDest, SettingsRoute},
     sway_ipc,
     theme_carousel::{Carousel, CarouselOutcome, BACKGROUND_GEOMETRY, THEME_GEOMETRY},
     theme_catalog::{ThemeReply, ThemeRequest, ThemeResponse, ThemeWorker},
@@ -1060,7 +1061,7 @@ fn run_app_action(id:&str,path:Option<&std::path::Path>,swaymsg:&std::path::Path
         AppAction::NewWindow(None)=>None,
         _=>return Err("not a launch action".into()),
     };
-    let entry=AppEntry {id:id.into(),name:app.display_name().into(),icon:None,path:path.into()};
+    let entry=AppEntry { actions: Vec::new(),id:id.into(),name:app.display_name().into(),icon:None,path:path.into()};
     let allowed=app_actions::rows(&entry,&[],false);
     if !allowed.iter().any(|row| row.action==action) {return Err("app action is no longer supported".into());}
     if let Some(action_id)=action_id {
@@ -3731,21 +3732,47 @@ impl ShellClient {
         true
     }
 
-    /// Every catalog index currently shown in the drawer grid, in display
-    /// order -- see `service_ui::filter_app_indices`'s own doc for why
-    /// this is cheap enough to recompute on demand rather than cache.
-    /// `DrawerAction::Launch`/`LongPress` give a *display* index (their
-    /// only source, `navigation::tile_at`, only ever sees what
-    /// `renderer.draw`'s own filtered grid painted); this is how that
-    /// maps back to a real `self.apps` index.
-    fn drawer_filtered_apps(&self) -> Vec<usize> {
-        filter_app_indices(&self.apps, &self.drawer_search.query)
+    /// How many things the drawer shows: result rows once the search holds
+    /// text, otherwise the catalog's grid tiles. `search::search` is a linear
+    /// pass over at most about 150 short strings, so asking on demand costs
+    /// less than caching it would complicate.
+    fn drawer_item_count(&self) -> usize {
+        self.drawer_search
+            .results(&self.apps)
+            .map_or(self.apps.len(), |results| results.len())
+    }
+
+    /// The real `self.apps` index behind a drawer *display* index
+    /// (`navigation::tile_at` or `result_at`, whichever the drawer is
+    /// showing): a grid tile is the catalog position itself, a result row is
+    /// an app only when it is an App result.
+    fn drawer_app_at(&self, display_index: usize) -> Option<usize> {
+        match self.drawer_search.results(&self.apps) {
+            None => (display_index < self.apps.len()).then_some(display_index),
+            Some(results) => match results.get(display_index)?.activation() {
+                Activation::Launch(index) => Some(index),
+                _ => None,
+            },
+        }
     }
 
     /// Pushes `self.drawer_search` to the renderer (forcing a grid
     /// rebuild if it actually changed) and marks the frame dirty so the
     /// result is visible on the next `draw`.
     fn sync_drawer_search(&mut self) {
+        // The Settings rows that depend on hardware are offered by the same
+        // facts the Settings screen draws from.
+        self.drawer_search.hardware = Hardware {
+            modem: self.service_view.modem.is_some(),
+            key_backlight: self.service_view.key_backlight.is_some(),
+        };
+        // A query swaps the icon grid for the result list; its rows have
+        // their own geometry and start at the top.
+        let list = !self.drawer_search.query.trim().is_empty();
+        if self.nav.list != list {
+            self.nav = DrawerNavigation::default();
+            self.nav.list = list;
+        }
         self.sync_drawer_keyboard();
         if self
             .renderer
@@ -3817,19 +3844,76 @@ impl ShellClient {
         match self.drawer_search.key_action(u32::from(event.keysym), event.utf8.as_deref()) {
             SearchKey::Ignored => {}
             SearchKey::Edited => {
+                // The first character is when hardware rows start to matter;
+                // read the base and the modem then, not on every key.
+                if self.drawer_search.query.chars().count() == 1 {
+                    self.refresh_keyboard_base();
+                    self.refresh_modem();
+                }
+                let list = self.nav.list;
                 self.nav = DrawerNavigation::default();
+                self.nav.list = list;
                 self.sync_drawer_search();
             }
-            // The first match, which the drawer outlines while keys type.
-            SearchKey::Launch => self.launch_drawer_app(qh, 0),
+            // The first result, which the drawer outlines.
+            SearchKey::Launch => self.choose_drawer_item(qh, 0),
             SearchKey::Close => self.hide(),
         }
     }
 
-    /// `DrawerAction::Launch(display_index)` -> the real catalog app.
-    fn launch_drawer_app(&mut self, qh: &QueueHandle<Self>, display_index: usize) {
-        if let Some(&real_index) = self.drawer_filtered_apps().get(display_index) {
-            self.launch_app(qh, real_index);
+    /// `DrawerAction::Launch(display_index)` -> what that grid tile or result
+    /// row stands for: an app launches, an app action runs, a Settings
+    /// destination opens Settings on it.
+    fn choose_drawer_item(&mut self, qh: &QueueHandle<Self>, display_index: usize) {
+        let Some(results) = self.drawer_search.results(&self.apps) else {
+            if display_index < self.apps.len() {
+                self.launch_app(qh, display_index);
+            }
+            return;
+        };
+        let Some(result) = results.get(display_index) else {
+            return;
+        };
+        match result.activation() {
+            Activation::Launch(index) => self.launch_app(qh, index),
+            Activation::AppAction(index, action) => {
+                if self.launch_in_flight || self.route != Route::Drawer {
+                    return;
+                }
+                let Some(id) = self.apps.get(index).map(|app| app.id.clone()) else {
+                    return;
+                };
+                // As the app menu does: a failed launch reopens the drawer.
+                self.launching = true;
+                self.launch_home_action(qh, id, action);
+                if !self.launch_in_flight {
+                    self.launching = false;
+                }
+            }
+            Activation::Settings(dest) => self.open_settings_dest(qh, dest),
+        }
+    }
+
+    /// Opens Settings on a destination found by search: the page a tap
+    /// through the shade would open, or Settings scrolled to an inline row.
+    /// Navigation only; no setting is changed.
+    fn open_settings_dest(&mut self, qh: &QueueHandle<Self>, dest: SettingsDest) {
+        match dest.route() {
+            SettingsRoute::Panel(intent) => self.panel_action(qh, intent),
+            SettingsRoute::Theme(intent) => {
+                if self.show(qh, Route::Settings) {
+                    self.theme_action(intent);
+                }
+            }
+            SettingsRoute::Inline(row) => {
+                if !self.show(qh, Route::Settings) {
+                    return;
+                }
+                self.service_view.settings_scroll =
+                    settings_reveal_scroll(row, self.width, self.height, &self.service_view);
+                self.renderer.set_services(self.service_view.clone());
+                self.dirty = true;
+            }
         }
     }
 
@@ -4018,14 +4102,14 @@ impl ShellClient {
     /// of the drawer's ordinary scroll/close-drag handling. `display_index`
     /// is the search-filtered index `take_long_press_drag` resolved
     /// against (`navigation::tile_at`'s own domain), mapped back to the
-    /// real catalog app exactly like `launch_drawer_app` does.
+    /// real catalog app exactly like `choose_drawer_item` does.
     /// A drawer tile held still for `LONG_PRESS_MS` opens that app's menu
     /// (window list, New Window, Add to Home) while the finger stays down;
     /// `contact_motion` turns the hold into the drag to Home once it moves.
     /// If the menu cannot open, the hold falls straight through to the drag.
     fn hold_drawer_app_menu(&mut self, qh: &QueueHandle<Self>, touch_id: i32, display_index: usize, point: (f64, f64)) {
-        let id = self.drawer_filtered_apps().get(display_index)
-            .and_then(|&index| self.apps.get(index)).map(|app| app.id.clone());
+        let id = self.drawer_app_at(display_index)
+            .and_then(|index| self.apps.get(index)).map(|app| app.id.clone());
         if let Some(id) = id {
             self.app_menu_hold = Some(app_actions::MenuHold { touch: touch_id, index: display_index, start: point });
             self.open_app_menu(qh, id, false);
@@ -4039,7 +4123,7 @@ impl ShellClient {
     }
 
     fn begin_drawer_home_drag(&mut self, touch_id: i32, display_index: usize, point: (f64, f64)) {
-        let Some(&real_index) = self.drawer_filtered_apps().get(display_index) else {
+        let Some(real_index) = self.drawer_app_at(display_index) else {
             return;
         };
         let Some(id) = self.apps.get(real_index).map(|app| app.id.clone()) else {
@@ -5437,7 +5521,7 @@ impl ShellClient {
                     if self.renderer.set_drawer_pressed(self.nav.pressed(
                         self.width,
                         self.drawer_search.viewport_height(self.height),
-                        self.drawer_filtered_apps().len(),
+                        self.drawer_item_count(),
                     )) {
                         self.dirty = true;
                     }
@@ -5871,9 +5955,9 @@ impl ShellClient {
                         time_ms,
                         self.width,
                         self.drawer_search.viewport_height(self.height),
-                        self.drawer_filtered_apps().len(),
+                        self.drawer_item_count(),
                     ) {
-                        Some(DrawerAction::Launch(index)) => self.launch_drawer_app(qh, index),
+                        Some(DrawerAction::Launch(index)) => self.choose_drawer_item(qh, index),
                         // `nav`'s own release-only "dy > 110 && scroll <=
                         // 0.5" check is now just a backstop for whatever
                         // reason the live drag above never engaged (see
@@ -6298,7 +6382,7 @@ impl ShellClient {
                     }
                 }
                 if !engaged_this_sample {
-                    let filtered_count = self.drawer_filtered_apps().len();
+                    let filtered_count = self.drawer_item_count();
                     if self.nav.motion(id, pos, time_ms, self.width, self.drawer_search.viewport_height(self.height), filtered_count) {
                         self.dirty = true;
                     }
@@ -6681,7 +6765,7 @@ impl ShellClient {
         let mut changed = false;
         match self.route {
             Route::Drawer => {
-                let count = self.drawer_filtered_apps().len();
+                let count = self.drawer_item_count();
                 changed = self.nav.scroll_by(dy, self.width, self.height, count);
             }
             Route::Shade => {
@@ -6737,9 +6821,11 @@ impl PointerHandler for ShellClient {
                 let from_home=self.home_surface.layer.as_ref().is_some_and(|l|l.wl_surface()==&event.surface);
                 let id=if from_home {self.home.app_at(event.position,self.home_surface.width,self.home_surface.height)}
                 else if self.route==Route::Drawer && self.layer.as_ref().is_some_and(|l|l.wl_surface()==&event.surface) {
-                    let filtered=self.drawer_filtered_apps();
-                    navigation::tile_at(event.position,self.width,self.drawer_search.viewport_height(self.height),filtered.len(),self.nav.scroll)
-                        .and_then(|index|filtered.get(index)).and_then(|index|self.apps.get(*index)).map(|a|a.id.clone())
+                    let height=self.drawer_search.viewport_height(self.height);
+                    let count=self.drawer_item_count();
+                    let hit=if self.nav.list {navigation::result_at(event.position,self.width,height,count,self.nav.scroll)}
+                        else {navigation::tile_at(event.position,self.width,height,count,self.nav.scroll)};
+                    hit.and_then(|index|self.drawer_app_at(index)).and_then(|index|self.apps.get(index)).map(|a|a.id.clone())
                 } else {None};
                 if let Some(id)=id {self.open_app_menu(qh,id,from_home);}
                 else if from_home && self.home.rearrange_at(event.position,self.home_surface.width,self.home_surface.height) {
@@ -7839,7 +7925,7 @@ fn serve() -> Result<(), String> {
             .min(u128::from(u32::MAX)) as u32;
         state.nav_tick = now;
         if state.route == Route::Drawer && state.drawer_home_drag.is_none() && state.touch.id != Some(TRACKPAD_PAN_ID) {
-            let filtered = state.drawer_filtered_apps().len();
+            let filtered = state.drawer_item_count();
             if let Some((display_index, point)) =
                 state.nav.take_long_press_drag(elapsed, state.width, state.drawer_search.viewport_height(state.height), filtered)
             {
@@ -7848,7 +7934,7 @@ fn serve() -> Result<(), String> {
                 }
             }
         }
-        if state.route == Route::Drawer && state.nav.tick(elapsed, state.width, state.drawer_search.viewport_height(state.height), state.drawer_filtered_apps().len()) {
+        if state.route == Route::Drawer && state.nav.tick(elapsed, state.width, state.drawer_search.viewport_height(state.height), state.drawer_item_count()) {
             state.dirty = true;
         }
         // Keeps the drawer-drag reveal animation (task 1) advancing every

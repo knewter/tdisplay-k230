@@ -861,7 +861,7 @@ mod tests {
     use super::*;
 
     fn app(id: &str, name: &str) -> AppEntry {
-        AppEntry {
+        AppEntry { actions: Vec::new(),
             id: id.into(),
             name: name.into(),
             icon: None,

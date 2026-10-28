@@ -1727,6 +1727,7 @@ DATA b5c553f6b0d419371460c005b7aaaff96ffce504794591f336e113fb3f688b5e docs/evide
 DATA group:20-files docs/evidence/shell-polish/{before,after}/*.png matched production host paints with real pinned dark/light appearances, synthetic services, and no board claim
 DATA group:2-files docs/evidence/theme-picker/row-repaint/pair/*.png native scale-0.6 board captures after injected-input timing; not real-finger acceptance
 DATA group:16-files docs/evidence/shell-responsive/*.png host renders (render_responsive_evidence example) of Home/Drawer/Settings/wallpaper at 568x1232, 768x1024, 1080x1920 and 1920x1080 for the-shell-adapts-to-output-resolution
+DATA group:24-files docs/evidence/drawer-search/host/*.png host renders (render_drawer_search_evidence example) of the drawer search results at 1232x568 and 568x1232, 100% and 200%, from a fixture catalog for the-drawer-search-finds-settings-and-app-actions
 DATA group:40-files docs/evidence/panel-landscape/**/*.{png,jpg} landscape panel: host renders (Wi-Fi pages, theme chooser, open folder, shade with notifications), native board captures (CLI-opened and injected-touch, trial and installed image), one bench camera frame; not real-finger acceptance
 
 DATA 3972517849acf787538122127db17d5a4875a82a53cdba427ee25d5d16629af4 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/pointer-drawer.jpg

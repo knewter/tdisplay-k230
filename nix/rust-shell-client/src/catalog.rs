@@ -32,7 +32,14 @@ pub struct AppEntry {
     /// `terminal_like`) read it directly, without this struct itself
     /// growing a field for every such rarely-needed key.
     pub path: PathBuf,
+    /// The desktop-entry actions (`Actions=` / `[Desktop Action ...]`) as
+    /// `(action id, display name)`, read once here so the drawer search
+    /// never opens a file per keystroke. Bounded like the catalog itself.
+    pub actions: Vec<(String, String)>,
 }
+
+/// Most actions kept per entry; a desktop file declaring more is not a menu.
+const MAX_ACTIONS: usize = 8;
 
 /// The `applications` directories this client searches, in XDG precedence
 /// order (`XDG_DATA_HOME` first, then each `XDG_DATA_DIRS` entry). Also the
@@ -216,7 +223,21 @@ fn parse_entry(id: String, path: PathBuf) -> Option<AppEntry> {
     if name.trim().is_empty() {
         return None;
     }
-    Some(AppEntry {
+    let actions = app
+        .list_actions()
+        .iter()
+        .take(MAX_ACTIONS)
+        .filter_map(|action| {
+            let label: String = app
+                .action_name(action)
+                .chars()
+                .filter(|character| !character.is_control())
+                .take(96)
+                .collect();
+            (!label.trim().is_empty()).then(|| (action.to_string(), label))
+        })
+        .collect();
+    Some(AppEntry { actions,
         id,
         name,
         icon: app
@@ -417,6 +438,32 @@ mod tests {
         let apps = scan_apps(&[applications]);
         assert_eq!(apps.len(), 1);
         assert_eq!(apps[0].id, "visible.desktop");
+        std::fs::remove_dir_all(&root).unwrap();
+    }
+
+    #[test]
+    fn actions_are_read_once_during_the_scan() {
+        let root = temp_root("actions");
+        let applications = root.join("applications");
+        let path = write_entry(
+            &applications,
+            "term.desktop",
+            "Name=Term\nExec=true\nActions=new-window;prefs;\n\
+             [Desktop Action new-window]\nName=New Window\nExec=true\n\
+             [Desktop Action prefs]\nName=Preferences\nExec=true\n",
+        );
+        let apps = scan_apps(&[applications.clone()]);
+        assert_eq!(
+            apps[0].actions,
+            vec![
+                ("new-window".to_string(), "New Window".to_string()),
+                ("prefs".to_string(), "Preferences".to_string())
+            ]
+        );
+        // The names live in the entry: with the file gone they are still
+        // there, so nothing reads it per keystroke.
+        std::fs::remove_file(&path).unwrap();
+        assert_eq!(apps[0].actions.len(), 2);
         std::fs::remove_dir_all(&root).unwrap();
     }
 

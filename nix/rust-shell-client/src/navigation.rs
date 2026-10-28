@@ -197,6 +197,57 @@ pub fn tile_at(
     None
 }
 
+/// One search result row: a card at least 99 px tall (the tap floor) that
+/// holds a Label line over a Caption line at the current text step, plus the
+/// gap to the next. The whole pitch is tappable, so no gap is dead space.
+pub fn result_card_height() -> f64 {
+    let lines = (crate::render::TYPE_LABEL + crate::render::TYPE_CAPTION)
+        * crate::layout_text_scale().max(1.0)
+        * 1.25;
+    (lines + 2.0 * 16.0).ceil().max(crate::service_ui::SHADE_TAP_MIN)
+}
+
+const RESULT_GAP: f64 = 8.0;
+
+pub fn result_pitch() -> f64 {
+    result_card_height() + RESULT_GAP
+}
+
+/// Result row `index`'s tap rect in absolute screen coordinates, one full
+/// width row each below the search field.
+pub fn result_rect(width: u32, height: u32, index: usize, scroll: f64) -> (f64, f64, f64, f64) {
+    (
+        0.0,
+        list_top(height) + index as f64 * result_pitch() - scroll,
+        f64::from(width),
+        result_pitch(),
+    )
+}
+
+/// The result row under `point`, if any; the list counterpart of `tile_at`.
+pub fn result_at(point: (f64, f64), width: u32, height: u32, count: usize, scroll: f64) -> Option<usize> {
+    if !point.0.is_finite()
+        || !point.1.is_finite()
+        || point.0 < 0.0
+        || point.0 >= f64::from(width)
+        || point.1 < list_top(height)
+        || point.1 >= f64::from(height) - GRID_BOTTOM_INSET
+    {
+        return None;
+    }
+    let index = ((point.1 + scroll - list_top(height)) / result_pitch()).floor() as usize;
+    (index < count).then_some(index)
+}
+
+/// `tile_at` for the grid, `result_at` for the search list.
+fn item_at(list: bool, point: (f64, f64), width: u32, height: u32, count: usize, scroll: f64) -> Option<usize> {
+    if list {
+        result_at(point, width, height, count, scroll)
+    } else {
+        tile_at(point, width, height, count, scroll)
+    }
+}
+
 fn max_scroll(width: u32, height: u32, apps: usize) -> f64 {
     let viewport = (f64::from(height) - GRID_BOTTOM_INSET - list_top(height)).max(0.0);
     let grid_rows = apps.div_ceil(columns_for_width(width));
@@ -264,12 +315,26 @@ struct Contact {
 
 #[derive(Default)]
 pub struct DrawerNavigation {
+    /// The drawer is showing search results (a list of full-width rows)
+    /// rather than the icon grid. Everything below that hit-tests or bounds
+    /// scrolling reads it, so a row is the thing a tap, a hover and Enter
+    /// agree on.
+    pub list: bool,
     pub scroll: f64,
     velocity: f64,
     contact: Option<Contact>,
 }
 
 impl DrawerNavigation {
+    fn max_scroll(list: bool, width: u32, height: u32, count: usize) -> f64 {
+        if list {
+            let viewport = (f64::from(height) - GRID_BOTTOM_INSET - list_top(height)).max(0.0);
+            (count as f64 * result_pitch() - viewport).max(0.0)
+        } else {
+            max_scroll(width, height, count)
+        }
+    }
+
     pub fn down(&mut self, id: i32, point: (f64, f64), time_ms: u32) -> bool {
         if let Some(contact) = self.contact.as_mut() {
             contact.cancelled = true;
@@ -317,7 +382,7 @@ impl DrawerNavigation {
         contact.last_ms = time_ms;
         let old = self.scroll;
         self.scroll = (contact.start_scroll - (point.1 - contact.start.1))
-            .clamp(0.0, max_scroll(width, height, rows));
+            .clamp(0.0, Self::max_scroll(self.list, width, height, rows));
         if self.scroll > 0.5 {
             contact.scrolled_away = true;
         }
@@ -357,9 +422,11 @@ impl DrawerNavigation {
             // in that case a long, stationary hold now resolves to nothing
             // rather than an old "Add to Home" pin, matching the drag-based
             // replacement's own resolution (nothing is placed until a drop).
-            if held_ms < LONG_PRESS_MS {
-                if let Some(index) = tile_at(point, width, height, apps, self.scroll) {
-                    if tile_at(contact.start, width, height, apps, contact.start_scroll) == Some(index) {
+            // A result row has no hold gesture, so a long press on one is
+            // still a choice.
+            if held_ms < LONG_PRESS_MS || self.list {
+                if let Some(index) = item_at(self.list, point, width, height, apps, self.scroll) {
+                    if item_at(self.list, contact.start, width, height, apps, contact.start_scroll) == Some(index) {
                         return Some(DrawerAction::Launch(index));
                     }
                 }
@@ -378,7 +445,7 @@ impl DrawerNavigation {
         let elapsed = elapsed_ms.min(50);
         let old = self.scroll;
         self.scroll = (self.scroll + self.velocity * f64::from(elapsed) / 1000.0)
-            .clamp(0.0, max_scroll(width, height, rows));
+            .clamp(0.0, Self::max_scroll(self.list, width, height, rows));
         self.velocity *= 0.88_f64.powf(f64::from(elapsed) / 16.0);
         if self.scroll == old || self.velocity.abs() < 20.0 {
             self.velocity = 0.0;
@@ -391,7 +458,7 @@ impl DrawerNavigation {
         if self.contact.is_some() || !delta.is_finite() { return false; }
         self.velocity = 0.0;
         let old = self.scroll;
-        self.scroll = (old + delta).clamp(0.0, max_scroll(width, height, apps));
+        self.scroll = (old + delta).clamp(0.0, Self::max_scroll(self.list, width, height, apps));
         self.scroll != old
     }
 
@@ -428,6 +495,9 @@ impl DrawerNavigation {
     /// so the lifted icon starts exactly where the finger already is,
     /// rather than snapping from the original touch-down point.
     pub fn take_long_press_drag(&mut self, elapsed_ms: u32, width: u32, height: u32, apps: usize) -> Option<(usize, (f64, f64))> {
+        if self.list {
+            return None;
+        }
         let contact = self.contact.as_mut()?;
         if contact.cancelled || contact.long_fired {
             return None;
@@ -458,8 +528,8 @@ impl DrawerNavigation {
         {
             return None;
         }
-        let start = tile_at(contact.start, width, height, apps, contact.start_scroll)?;
-        (tile_at(contact.last, width, height, apps, self.scroll) == Some(start)).then_some(start)
+        let start = item_at(self.list, contact.start, width, height, apps, contact.start_scroll)?;
+        (item_at(self.list, contact.last, width, height, apps, self.scroll) == Some(start)).then_some(start)
     }
 
     pub fn cancel(&mut self) {
@@ -864,5 +934,68 @@ mod tests {
         nav.scroll_by(10000.0, 568, 1232, 100);
         assert_eq!(nav.scroll, max_scroll(568, 1232, 100));
         assert!(!nav.tick(16, 568, 1232, 100));
+    }
+    #[test]
+    fn result_rows_are_at_least_99_px_and_tile_the_list_without_gaps() {
+        for step in [1.0, 1.3, 1.6, 2.0] {
+            crate::set_layout_text_scale(step);
+            assert!(result_card_height() >= 99.0, "step {step}: {} px", result_card_height());
+            assert!(result_pitch() >= result_card_height());
+            for (width, height) in [(1232u32, 568u32), (568, 1232)] {
+                let mut previous_bottom = list_top(height);
+                for index in 0..4 {
+                    let (x, y, w, h) = result_rect(width, height, index, 0.0);
+                    assert_eq!((x, w), (0.0, f64::from(width)));
+                    assert_eq!(y, previous_bottom, "row {index} leaves a dead gap");
+                    previous_bottom = y + h;
+                }
+            }
+        }
+        crate::set_layout_text_scale(1.0);
+    }
+
+    #[test]
+    fn result_at_agrees_with_result_rect_and_scroll() {
+        crate::set_layout_text_scale(2.0);
+        for (width, height) in [(1232u32, 568u32), (568, 1232)] {
+            for scroll in [0.0, 37.0] {
+                let mut seen = 0;
+                for index in 0..6 {
+                    let (x, y, w, h) = result_rect(width, height, index, scroll);
+                    let centre = (x + w / 2.0, y + h / 2.0);
+                    let hit = result_at(centre, width, height, 6, scroll);
+                    let visible = centre.1 >= list_top(height) && centre.1 < f64::from(height) - GRID_BOTTOM_INSET;
+                    assert_eq!(hit, visible.then_some(index), "row {index} at {width}x{height} scroll {scroll}");
+                    seen += usize::from(hit.is_some());
+                }
+                assert!(seen >= 1, "at least one row fits at {width}x{height} scroll {scroll}");
+            }
+            // Past the last row, and above the list, are not rows.
+            assert_eq!(result_at((10.0, f64::from(height) - GRID_BOTTOM_INSET - 1.0), width, height, 1, 0.0), None);
+            assert_eq!(result_at((10.0, list_top(height) - 1.0), width, height, 6, 0.0), None);
+        }
+        crate::set_layout_text_scale(1.0);
+    }
+
+    #[test]
+    fn a_tap_on_a_result_row_chooses_it_even_when_held_and_never_starts_a_drag() {
+        let (width, height) = (1232u32, 568u32);
+        let mut nav = DrawerNavigation { list: true, ..DrawerNavigation::default() };
+        let (x, y, w, h) = result_rect(width, height, 1, 0.0);
+        let point = (x + w / 2.0, y + h / 2.0);
+        nav.down(1, point, 0);
+        assert_eq!(nav.pressed(width, height, 5), Some(1));
+        assert_eq!(nav.take_long_press_drag(LONG_PRESS_MS + 100, width, height, 5), None, "no hold gesture on a result");
+        assert_eq!(nav.up(1, point, LONG_PRESS_MS + 100, width, height, 5), Some(DrawerAction::Launch(1)));
+    }
+
+    #[test]
+    fn the_result_list_scrolls_to_its_own_length() {
+        let (width, height) = (1232u32, 568u32);
+        let mut nav = DrawerNavigation { list: true, ..DrawerNavigation::default() };
+        let viewport = f64::from(height) - GRID_BOTTOM_INSET - list_top(height);
+        assert!(!nav.scroll_by(500.0, width, height, 1), "one row fits: nothing to scroll");
+        assert!(nav.scroll_by(10_000.0, width, height, 20));
+        assert_eq!(nav.scroll, 20.0 * result_pitch() - viewport);
     }
 }

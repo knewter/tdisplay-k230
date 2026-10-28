@@ -35,7 +35,7 @@ fn apps() -> Vec<AppEntry> {
     ]
     .iter()
     .enumerate()
-    .map(|(i, (name, icon))| AppEntry {
+    .map(|(i, (name, icon))| AppEntry { actions: Vec::new(),
         id: format!("fixture-{i}"),
         name: name.to_string(),
         icon: Some(icon.to_string()),

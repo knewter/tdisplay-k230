@@ -153,9 +153,9 @@ fn paint_wallpaper(cr: &Context, cache: &mut BackgroundCache, path: &Path, fallb
 
 fn sample_apps() -> Vec<AppEntry> {
     vec![
-        AppEntry { id: "org.k230.files".into(), name: "Files".into(), icon: None, path: PathBuf::new() },
-        AppEntry { id: "org.k230.terminal".into(), name: "Terminal".into(), icon: None, path: PathBuf::new() },
-        AppEntry { id: "org.k230.camera".into(), name: "Camera".into(), icon: None, path: PathBuf::new() },
+        AppEntry { actions: Vec::new(), id: "org.k230.files".into(), name: "Files".into(), icon: None, path: PathBuf::new() },
+        AppEntry { actions: Vec::new(), id: "org.k230.terminal".into(), name: "Terminal".into(), icon: None, path: PathBuf::new() },
+        AppEntry { actions: Vec::new(), id: "org.k230.camera".into(), name: "Camera".into(), icon: None, path: PathBuf::new() },
     ]
 }
 

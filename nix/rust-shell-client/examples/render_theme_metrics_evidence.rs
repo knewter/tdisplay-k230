@@ -101,7 +101,7 @@ fn render(path: PathBuf, theme: AppearanceSnapshot, route: Route, mode: &str) ->
         search.focus();
         cache.set_drawer_search(search);
     }
-    let apps: Vec<AppEntry> = ["Terminal", "Files", "Video", "Settings"].into_iter().map(|name| AppEntry {
+    let apps: Vec<AppEntry> = ["Terminal", "Files", "Video", "Settings"].into_iter().map(|name| AppEntry { actions: Vec::new(),
         id: format!("{name}.desktop"), name: name.into(), icon: None, path: PathBuf::new(),
     }).collect();
     let mut pixels = vec![0; (W * H * 4) as usize];

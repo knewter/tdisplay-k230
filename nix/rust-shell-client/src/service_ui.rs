@@ -130,11 +130,12 @@ pub fn action_message(outcome: &ActionOutcome, exit: &str) -> String {
 
 /// The drawer's own search field state: a plain query string and whether
 /// the on-screen keyboard is currently up. Deliberately holds nothing
-/// about *which* apps match -- `filter_app_indices` recomputes that
+/// about *which* results match -- `search::search` recomputes that
 /// fresh from the live catalog every time it is asked, which is cheap
 /// enough (a linear scan of a bounded, at most 128-entry catalog,
-/// `catalog::scan_apps`'s own cap) that caching the match set separately
-/// would only be complexity, not a real saving; the *expensive* part this
+/// `catalog::scan_apps`'s own cap, plus the static Settings table) that
+/// caching the match set separately would only be complexity, not a real
+/// saving; the *expensive* part this
 /// exists to keep off the hot path -- painting -- is cached elsewhere
 /// (`render::DrawerGridCache`, keyed in part on this same query string).
 #[derive(Clone, Debug, Default, PartialEq)]
@@ -145,8 +146,12 @@ pub struct DrawerSearch {
     pub keyboard_inset: f64,
     /// Focused by the base's LILYGO key rather than a tap: typing goes
     /// straight to the query, the on-screen keyboard stays down, Enter
-    /// launches the first match and Esc clears, then closes.
+    /// chooses the first result and Esc clears, then closes.
     pub from_keys: bool,
+    /// Which hardware-gated Settings destinations may be offered; refreshed
+    /// from the service view whenever the search is synced, so painting and
+    /// Enter see the same list.
+    pub hardware: crate::search::Hardware,
 }
 
 /// What a key did to a key-focused drawer search (`DrawerSearch::key_action`).
@@ -154,13 +159,20 @@ pub struct DrawerSearch {
 pub enum SearchKey {
     Ignored,
     Edited,
-    /// Launch the first match.
+    /// Choose the first result.
     Launch,
     /// Close the drawer.
     Close,
 }
 
 impl DrawerSearch {
+    /// The ranked results once the field holds text; `None` while it is
+    /// empty or blank, when the drawer shows its full grid. Painting and the
+    /// touch layer both call this, so a row index means the same to each.
+    pub fn results(&self, apps: &[AppEntry]) -> Option<Vec<crate::search::SearchResult>> {
+        (!self.query.trim().is_empty()).then(|| crate::search::search(apps, &self.query, self.hardware))
+    }
+
     /// The base key's entry: focus without the on-screen keyboard.
     pub fn focus_from_keys(&mut self) {
         self.focused = true;
@@ -172,7 +184,7 @@ impl DrawerSearch {
     pub fn key_action(&mut self, keysym: u32, utf8: Option<&str>) -> SearchKey {
         if self.focused && self.from_keys {
             match keysym {
-                0xff0d | 0xff8d if !self.query.is_empty() => return SearchKey::Launch,
+                0xff0d | 0xff8d if !self.query.trim().is_empty() => return SearchKey::Launch,
                 0xff0d | 0xff8d => return SearchKey::Ignored,
                 0xff1b if !self.query.is_empty() => {
                     self.query.clear();
@@ -232,29 +244,6 @@ impl DrawerSearch {
     pub fn clear(&mut self) {
         self.query.clear();
     }
-}
-
-/// Every catalog index (not a filtered clone -- the caller already owns
-/// `apps`, and `DrawerAction::Launch`/`LongPress` need the *filtered
-/// display position* to map back to one of these, so returning indices
-/// rather than entries keeps that mapping trivial: `matches[display_index]`)
-/// whose name contains `query`, case-insensitively, as a substring
-/// (covers a prefix match too, since a prefix is a substring). An empty
-/// query matches everything, in catalog order, unfiltered. This is the
-/// entire cost of "searching": a single linear pass over a bounded
-/// (`catalog::scan_apps` caps at 128) list of short strings -- cheap
-/// enough to redo on every keystroke without its own cache, unlike the
-/// *painting* of the results (`render::DrawerGridCache`).
-pub fn filter_app_indices(apps: &[AppEntry], query: &str) -> Vec<usize> {
-    if query.is_empty() {
-        return (0..apps.len()).collect();
-    }
-    let needle = query.to_lowercase();
-    apps.iter()
-        .enumerate()
-        .filter(|(_, app)| app.name.to_lowercase().contains(&needle))
-        .map(|(index, _)| index)
-        .collect()
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -1097,6 +1086,44 @@ pub fn settings_max_scroll(width: u32, height: u32, view: &ServiceView) -> f64 {
     (bottom * scale - f64::from(height)).max(0.0)
 }
 
+/// The Settings scroll that brings `row` fully into view under the header, as
+/// little scrolled as that takes: what choosing an inline control from the
+/// drawer search opens Settings at. The rect is the one `render.rs` paints
+/// and `panel_intent` hit-tests, mapped through the same wide offset or
+/// centred-column scale.
+pub fn settings_reveal_scroll(
+    row: crate::search::SettingsRow,
+    width: u32,
+    height: u32,
+    view: &ServiceView,
+) -> f64 {
+    use crate::render::{
+        settings_info_row_index, settings_modem_row_h, settings_modem_row_y, settings_row_column,
+        settings_wide_offset_for,
+    };
+    use crate::search::SettingsRow;
+    let key_backlight = view.key_backlight.is_some();
+    let modem = view.modem.is_some();
+    let (scale, _) = crate::settings_content_transform(width, height);
+    let wide = crate::settings_wide(width, height);
+    let (column, top, rows_h) = match row {
+        SettingsRow::Capability(index) => (settings_row_column(index), settings_row_y(index), settings_row_h(index)),
+        SettingsRow::Info(info) => (
+            2,
+            settings_modem_row_y(key_backlight, settings_info_row_index(modem, info)),
+            settings_modem_row_h(),
+        ),
+    };
+    let dy = if wide { settings_wide_offset_for(column, key_backlight, modem).1 } else { 0.0 };
+    let (top, bottom) = ((top + dy) * scale, (top + dy + rows_h) * scale);
+    let body_top = settings_body_top(width, height);
+    // Show the row's bottom with a little air, but never push its top under
+    // the header.
+    let scroll = (bottom + 8.0 - f64::from(height)).max(0.0);
+    let scroll = scroll.min(top - body_top);
+    scroll.clamp(0.0, settings_max_scroll(width, height, view))
+}
+
 pub fn notification_max_scroll(count: usize, width: u32, height: u32) -> f64 {
     let layout = shade_layout(width, height);
     (layout.list_top + count as f64 * notification_row() - layout.list_bottom).max(0.0)
@@ -1548,7 +1575,6 @@ mod tests {
     use crate::render::settings_layout;
     use crate::pipewire_ipc::Sink;
     use crate::service_data::{Control, ControlValue, NotificationEvent, Priority};
-    use std::path::PathBuf;
 
     #[test]
     fn the_landscape_shade_reaches_its_first_notification_row() {
@@ -1561,26 +1587,47 @@ mod tests {
         assert!(SHADE_TOGGLE_TOP + shade_toggle_h() <= h, "the controls column holds the quick toggle");
     }
 
-    fn app(name: &str) -> AppEntry {
-        AppEntry {
-            id: format!("{name}.desktop"),
-            name: name.into(),
-            icon: None,
-            path: PathBuf::new(),
-        }
-    }
-
     #[test]
-    fn filter_app_indices_matches_case_insensitive_substrings() {
-        let apps = vec![app("Camera"), app("Calculator"), app("Files"), app("Gallery")];
-        assert_eq!(filter_app_indices(&apps, ""), vec![0, 1, 2, 3], "empty query matches all, in order");
-        assert_eq!(filter_app_indices(&apps, "ca"), vec![0, 1], "prefix match, case-insensitive");
-        assert_eq!(filter_app_indices(&apps, "CAM"), vec![0], "uppercase query still matches");
-        assert_eq!(filter_app_indices(&apps, "ery"), vec![3], "substring, not just prefix");
-        assert!(
-            filter_app_indices(&apps, "zzz").is_empty(),
-            "no match is an empty list, not a panic"
-        );
+    fn drawer_search_activation_reveals_each_inline_row_under_the_header() {
+        use crate::search::SettingsRow;
+        use crate::render::{settings_info_row_index, settings_modem_row_h, settings_modem_row_y, settings_row_column, settings_wide_offset_for};
+        for step in [1.0, 2.0] {
+            crate::set_layout_text_scale(step);
+            for (width, height) in [(1232u32, 568u32), (568, 1232)] {
+                for (key_backlight, modem) in [(false, false), (true, true)] {
+                    let view = ServiceView {
+                        settings: Some(crate::evidence_render::fixture_settings()),
+                        key_backlight: key_backlight.then_some(crate::keyboard_base::KeyBacklight::Off),
+                        modem: modem.then(present_modem),
+                        ..ServiceView::default()
+                    };
+                    let mut rows = vec![SettingsRow::Capability(1), SettingsRow::Capability(SETTINGS_VOLUME_ROW),
+                        SettingsRow::Capability(3), SettingsRow::Capability(4), SettingsRow::Info(0)];
+                    if key_backlight {
+                        rows.push(SettingsRow::Capability(SETTINGS_KEY_BACKLIGHT_ROW));
+                    }
+                    let (scale, _) = crate::settings_content_transform(width, height);
+                    let wide = crate::settings_wide(width, height);
+                    let max = settings_max_scroll(width, height, &view);
+                    for row in rows {
+                        let scroll = settings_reveal_scroll(row, width, height, &view);
+                        assert!((0.0..=max).contains(&scroll));
+                        let (column, top, h) = match row {
+                            SettingsRow::Capability(i) => (settings_row_column(i), settings_row_y(i), settings_row_h(i)),
+                            SettingsRow::Info(i) => (2, settings_modem_row_y(key_backlight, settings_info_row_index(modem, i)), settings_modem_row_h()),
+                        };
+                        let dy = if wide { settings_wide_offset_for(column, key_backlight, modem).1 } else { 0.0 };
+                        let (top, bottom) = ((top + dy) * scale - scroll, (top + dy + h) * scale - scroll);
+                        assert!(top >= settings_body_top(width, height) - 0.5, "{row:?} under the header at {width}x{height} step {step}");
+                        // A row taller than the space under the header cannot be whole; the rest fit.
+                        if h * scale <= f64::from(height) - settings_body_top(width, height) - 8.0 {
+                            assert!(bottom <= f64::from(height), "{row:?} below the panel at {width}x{height} step {step}");
+                        }
+                    }
+                }
+            }
+        }
+        crate::set_layout_text_scale(1.0);
     }
 
     #[test]

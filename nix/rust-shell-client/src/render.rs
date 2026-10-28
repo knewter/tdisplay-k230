@@ -15,7 +15,7 @@ use crate::{
     pipewire_ipc::GraphSnapshot,
     service_data::{Control, ControlState, ControlValue, Priority},
     service_ui::{
-        filter_app_indices, DrawerSearch, ServiceView,
+        DrawerSearch, ServiceView,
         SETTINGS_VOLUME_ROW, SHADE_SLIDER_H, SHADE_SLIDER_TOP,
         shade_toggle_h, SHADE_TOGGLE_TOP, SHADE_VOLUME_H, SHADE_VOLUME_TOP,
     },
@@ -35,6 +35,7 @@ use crate::{
     Route,
 };
 use crate::glyph::{self, Glyph};
+use crate::search::SearchResult;
 use cairo::{Context, Filter, Format, ImageSurface, LinearGradient, Matrix, Operator, SurfacePattern};
 use pango::{Alignment, EllipsizeMode, FontDescription};
 use std::{fs::File, path::Path, rc::Rc};
@@ -2765,13 +2766,16 @@ fn rounded_top(cr: &Context, x: f64, y: f64, w: f64, h: f64, r: f64) {
 /// `render::paint_drawer`'s own input, separate from the persistent
 /// `DrawerGridCache` it also takes (that one remembers the *painted*
 /// result across frames; this one is recomputed fresh every call, which is
-/// cheap -- see `service_ui::filter_app_indices`'s own doc).
+/// cheap -- see `search::search`).
 struct DrawerContent<'a> {
-    /// The catalog, filtered and in display order -- already computed by
-    /// the caller via `service_ui::filter_app_indices` so both the touch
-    /// layer (`main.rs`) and the paint layer agree on what "index 3" means
-    /// without either recomputing the filter independently.
+    /// The catalog in display order, painted as the icon grid while the
+    /// search is empty.
     apps: Vec<&'a AppEntry>,
+    /// The ranked results (`search::search`), painted as a list in place of
+    /// the grid once the search holds text. The touch layer (`main.rs`)
+    /// computes the same vector from the same inputs, so both agree on what
+    /// "row 3" means.
+    results: Option<Vec<SearchResult>>,
     search: &'a DrawerSearch,
 }
 
@@ -2815,6 +2819,8 @@ struct DrawerGridKey {
     /// still invalidate this cache, which a plain index/length comparison
     /// would miss.
     apps: Vec<AppEntry>,
+    /// The list shown instead of the grid, when there is a query.
+    results: Option<Vec<SearchResult>>,
     theme_generation: Option<String>,
     width: u32,
     query: String,
@@ -2844,13 +2850,17 @@ impl DrawerGridCache {
             key.width == width
                 && key.theme_generation == theme_generation
                 && key.query == content.search.query
+                && key.results == content.results
                 && key.apps.len() == content.apps.len()
                 && key.apps.iter().zip(content.apps.iter()).all(|(a, b)| a == *b)
         });
         if !fresh {
             let columns = navigation::columns_for_width(width).max(1);
             let rows = content.apps.len().div_ceil(columns).max(1);
-            let content_height = (rows as f64 * navigation::drawer_metrics().row_height).max(1.0);
+            let content_height = match &content.results {
+                Some(results) => (results.len() as f64 * navigation::result_pitch()).max(1.0),
+                None => (rows as f64 * navigation::drawer_metrics().row_height).max(1.0),
+            };
             let surface = ImageSurface::create(
                 Format::ARgb32,
                 (width.max(1)) as i32,
@@ -2866,15 +2876,23 @@ impl DrawerGridCache {
                 // leaving pure content-space row coordinates (row 0 at
                 // bitmap y=0) with no separate formula to keep in sync.
                 let offset = list_top(height);
-                for (index, app) in content.apps.iter().enumerate() {
-                    let (x, y, tile_w, _) = tile_rect(width, height, index, offset);
-                    paint_drawer_tile(&cr, theme, icons, x, y, tile_w, app);
+                if let Some(results) = &content.results {
+                    for (index, result) in results.iter().enumerate() {
+                        let (x, y, row_w, _) = navigation::result_rect(width, height, index, offset);
+                        paint_result_row(&cr, theme, icons, x, y, row_w, result);
+                    }
+                } else {
+                    for (index, app) in content.apps.iter().enumerate() {
+                        let (x, y, tile_w, _) = tile_rect(width, height, index, offset);
+                        paint_drawer_tile(&cr, theme, icons, x, y, tile_w, app);
+                    }
                 }
             }
             self.surface = Some(surface);
             self.content_height = content_height;
             self.key = Some(DrawerGridKey {
                 apps: content.apps.iter().map(|app| (*app).clone()).collect(),
+                results: content.results.clone(),
                 theme_generation,
                 width,
                 query: content.search.query.clone(),
@@ -3036,6 +3054,59 @@ fn paint_drawer_tile(
         brush_rgb(theme, "menu", "text", style.text),
         2,
     );
+}
+
+/// One search result: a card at least 99 px tall with the app's icon (or the
+/// shell's glyph for a Settings row, or an initial when neither draws), the
+/// label over a muted line saying what kind of result it is. `x`/`y`/`pitch_w`
+/// are `navigation::result_rect`'s, whose gap below the card is part of the
+/// tap target but not painted.
+fn paint_result_row(
+    cr: &Context,
+    theme: Option<&AppearanceSnapshot>,
+    icons: &mut IconCache,
+    x: f64,
+    y: f64,
+    pitch_w: f64,
+    result: &SearchResult,
+) {
+    let style = visual_style(theme, "launcher");
+    let (cx, cw, ch) = (x + 24.0, pitch_w - 48.0, navigation::result_card_height());
+    service_card(cr, theme, "launcher", cx, y, cw, ch, false);
+    let icon_size = (ch - 24.0).min(64.0).round();
+    let (icon_x, icon_y) = (cx + 16.0, y + (ch - icon_size) / 2.0);
+    let mut painted = false;
+    if let Some(icon) = result.icon.as_deref() {
+        painted = icons.paint(cr, icon, icon_size as i32, icon_x, icon_y);
+    }
+    if !painted {
+        if let Some(shape) = result.glyph {
+            // The glyph set draws inside a box a little under the icon's.
+            let size = (icon_size * 0.75).round();
+            glyph::paint(cr, shape, icon_x + (icon_size - size) / 2.0, icon_y + (icon_size - size) / 2.0, size, style.text, 1.0);
+        } else {
+            let radius = icon_size / 2.0;
+            cr.new_sub_path();
+            cr.arc(icon_x + radius, icon_y + radius, radius, 0.0, 2.0 * std::f64::consts::PI);
+            color(cr, style.accent, 0.55);
+            let _ = cr.fill();
+            let initial_size = (24.0 * icon_size / 64.0).round();
+            icons.paint_label(
+                cr,
+                &result.label.chars().next().unwrap_or('?').to_uppercase().to_string(),
+                (icon_x, icon_y + (icon_size - initial_size) / 2.0),
+                icon_size,
+                initial_size,
+                style.text,
+            );
+        }
+    }
+    let text_x = icon_x + icon_size + 16.0;
+    let room = (cx + cw - 16.0 - text_x).max(1.0);
+    let label_h = vision_line(TYPE_LABEL);
+    let top = y + (ch - label_h - vision_line(TYPE_CAPTION)) / 2.0;
+    themed_role_fit(cr, theme, "body", &result.label, text_x, top, room, TYPE_LABEL, style.text, pango::Weight::Medium);
+    themed_role_fit(cr, theme, "caption", &result.detail, text_x, top + label_h, room, TYPE_CAPTION, style.muted, pango::Weight::Normal);
 }
 
 fn paint_help(
@@ -3638,9 +3709,13 @@ fn paint_drawer(
 
     paint_drawer_chrome(cr, theme, width, height, search);
 
-    let matched: Vec<usize> = filter_app_indices(apps, &search.query);
+    // Text in the field replaces the grid with the ranked list; the touch
+    // layer builds the same vector (`search::search`) from the same inputs.
+    let results = search.results(apps);
+    let count = results.as_ref().map_or(apps.len(), Vec::len);
     let content = DrawerContent {
-        apps: matched.iter().filter_map(|&i| apps.get(i)).collect(),
+        apps: if results.is_some() { Vec::new() } else { apps.iter().collect() },
+        results,
         search,
     };
     let row_start = list_top(height);
@@ -3664,8 +3739,17 @@ fn paint_drawer(
     let _ = cr.restore();
 
     if let Some(point) = cr.target().user_data(&HOVER_POINT).and_then(|p| cr.device_to_user(p.0, p.1).ok()) {
-        if let Some(index) = navigation::tile_at(point, width, search.viewport_height(height), matched.len(), scroll) {
-            let (x, y, tw, th) = tile_rect(width, height, index, scroll);
+        let hit = if content.results.is_some() {
+            navigation::result_at(point, width, search.viewport_height(height), count, scroll)
+                .map(|index| {
+                    let (_, y, rw, _) = navigation::result_rect(width, height, index, scroll);
+                    (24.0, y, rw - 48.0, navigation::result_card_height())
+                })
+        } else {
+            navigation::tile_at(point, width, search.viewport_height(height), count, scroll)
+                .map(|index| tile_rect(width, height, index, scroll))
+        };
+        if let Some((x, y, tw, th)) = hit {
             let _ = cr.save();
             cr.rectangle(0.0, row_start, w, (bottom - row_start).max(0.0));
             cr.clip();
@@ -3679,10 +3763,11 @@ fn paint_drawer(
             let _ = cr.restore();
         }
     }
-    // Typing from the base's keys: Enter launches the first match, so it
-    // carries the hover cursor's outline.
-    if search.from_keys && !search.query.is_empty() && !matched.is_empty() {
-        let (x, y, tw, th) = tile_rect(width, height, 0, clamped_scroll);
+    // The first result is the one Enter chooses, so it carries the hover
+    // cursor's outline.
+    if content.results.as_ref().is_some_and(|results| !results.is_empty()) {
+        let (_, y, rw, _) = navigation::result_rect(width, height, 0, clamped_scroll);
+        let (x, tw, th) = (24.0, rw - 48.0, navigation::result_card_height());
         if y + th > row_start && y < bottom {
             let _ = cr.save();
             cr.rectangle(0.0, row_start, w, (bottom - row_start).max(0.0));
@@ -3695,6 +3780,19 @@ fn paint_drawer(
         // `pressed` is already a *display* (filtered) index -- the same
         // one `tile_rect`/`tile_at` use everywhere else -- so its position
         // is just this call, no re-mapping through `matched` needed.
+        if content.results.is_some() {
+            let (_, y, rw, _) = navigation::result_rect(width, height, display_index, clamped_scroll);
+            let th = navigation::result_card_height();
+            if y + th > row_start && y < bottom {
+                let _ = cr.save();
+                cr.rectangle(0.0, row_start, w, (bottom - row_start).max(0.0));
+                cr.clip();
+                rounded(cr, 24.0, y, rw - 48.0, th, CARD_RADIUS_CONTROL);
+                color(cr, style.accent, 0.22);
+                let _ = cr.fill();
+                let _ = cr.restore();
+            }
+        } else {
         let (x, y, tile_w, _) = tile_rect(width, height, display_index, clamped_scroll);
         let metrics = navigation::drawer_metrics();
         let card = f64::from(metrics.icon);
@@ -3706,13 +3804,14 @@ fn paint_drawer(
             color(cr, style.accent, 0.22);
             let _ = cr.fill();
         }
+        }
     }
 
-    if content.apps.is_empty() {
-        let message = if search.query.is_empty() {
+    if count == 0 {
+        let message = if search.query.trim().is_empty() {
             "No installed apps are available"
         } else {
-            "No apps match your search"
+            "Nothing matches your search"
         };
         text(cr, message, 28.0, row_start + 18.0, w - 56.0, TYPE_BODY, style.muted);
     }
@@ -6791,6 +6890,7 @@ impl RendererCache {
     pub fn prebuild_drawer_grid(&mut self, apps: &[AppEntry], width: u32, height: u32) {
         let content = DrawerContent {
             apps: apps.iter().collect(),
+            results: None,
             search: &self.drawer_search,
         };
         let _ = self.drawer_grid.ensure(&content, self.theme.as_ref(), width, height, &mut self.icons);
@@ -8311,43 +8411,43 @@ mod tests {
             })
             .unwrap_or(255);
         let apps = vec![
-            AppEntry {
+            AppEntry { actions: Vec::new(),
                 id: "fixture.desktop".into(),
                 name: "Terminal".into(),
                 icon: Some("terminal-app".into()),
                 path: PathBuf::new(),
             },
-            AppEntry {
+            AppEntry { actions: Vec::new(),
                 id: "monitor.desktop".into(),
                 name: "Monitor".into(),
                 icon: Some("system-monitor-app".into()),
                 path: PathBuf::new(),
             },
-            AppEntry {
+            AppEntry { actions: Vec::new(),
                 id: "video.desktop".into(),
                 name: "Video".into(),
                 icon: None,
                 path: PathBuf::new(),
             },
-            AppEntry {
+            AppEntry { actions: Vec::new(),
                 id: "files.desktop".into(),
                 name: "Files".into(),
                 icon: None,
                 path: PathBuf::new(),
             },
-            AppEntry {
+            AppEntry { actions: Vec::new(),
                 id: "editor.desktop".into(),
                 name: "Editor".into(),
                 icon: None,
                 path: PathBuf::new(),
             },
-            AppEntry {
+            AppEntry { actions: Vec::new(),
                 id: "help.desktop".into(),
                 name: "Help".into(),
                 icon: None,
                 path: PathBuf::new(),
             },
-            AppEntry {
+            AppEntry { actions: Vec::new(),
                 id: "foot-server.desktop".into(),
                 name: "Foot Server".into(),
                 icon: None,
@@ -9979,7 +10079,7 @@ mod tests {
         // transparent, not dimmed.
         let mut renderer = RendererCache::default();
         let alpha_at = |frame: &[u8], y: usize| -> u8 { frame[(y * 568 + 280) * 4 + 3] };
-        let apps = vec![AppEntry {
+        let apps = vec![AppEntry { actions: Vec::new(),
             id: "foot.desktop".into(),
             name: "Terminal".into(),
             icon: Some("foot".into()),
@@ -10210,7 +10310,7 @@ mod tests {
 
     #[test]
     fn drawer_sheet_covers_the_output_from_its_top_edge() {
-        let apps = vec![AppEntry {
+        let apps = vec![AppEntry { actions: Vec::new(),
             id: "foot.desktop".into(),
             name: "Terminal".into(),
             icon: Some("foot".into()),
@@ -10228,7 +10328,7 @@ mod tests {
 
     #[test]
     fn finger_progress_reuses_shaped_scene() {
-        let apps = vec![AppEntry {
+        let apps = vec![AppEntry { actions: Vec::new(),
             id: "foot.desktop".into(),
             name: "Terminal".into(),
             icon: Some("foot".into()),
@@ -10282,7 +10382,7 @@ mod tests {
                 .as_nanos()
         ));
         std::fs::write(&icon, "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"48\" height=\"48\"><rect width=\"48\" height=\"48\" fill=\"#e85631\"/></svg>").unwrap();
-        let apps = vec![AppEntry {
+        let apps = vec![AppEntry { actions: Vec::new(),
             id: "foot.desktop".into(),
             name: "Terminal".into(),
             icon: Some(icon.to_string_lossy().into_owned()),
@@ -10314,7 +10414,7 @@ mod tests {
         let mut cache = RendererCache::default();
         cache.set_icon_theme("hicolor");
         cache.icons.use_fixture_root(root.clone());
-        let apps = vec![AppEntry {
+        let apps = vec![AppEntry { actions: Vec::new(),
             id: "fixture.desktop".into(),
             name: "Fixture".into(),
             icon: Some("fixture".into()),
@@ -10346,7 +10446,7 @@ mod tests {
         // 60 apps (15 rows at the redesign's 110px row pitch) actually
         // overflows this panel's viewport -- 30 no longer does.
         let apps = (0..60)
-            .map(|index| AppEntry {
+            .map(|index| AppEntry { actions: Vec::new(),
                 id: format!("app{index}.desktop"),
                 name: format!("App {index}"),
                 icon: None,
@@ -10404,7 +10504,7 @@ mod tests {
     #[test]
     fn pressed_grid_tile_has_a_visible_highlight_without_affecting_its_neighbor() {
         let apps = (0..3)
-            .map(|index| AppEntry {
+            .map(|index| AppEntry { actions: Vec::new(),
                 id: format!("fixture-{index}.desktop"),
                 name: format!("Fixture {index}"),
                 icon: None,
@@ -10441,13 +10541,13 @@ mod tests {
     #[test]
     fn drawer_grid_cache_rebuilds_only_when_its_own_key_changes() {
         let apps = vec![
-            AppEntry {
+            AppEntry { actions: Vec::new(),
                 id: "a.desktop".into(),
                 name: "Alpha".into(),
                 icon: None,
                 path: PathBuf::new(),
             },
-            AppEntry {
+            AppEntry { actions: Vec::new(),
                 id: "b.desktop".into(),
                 name: "Beta".into(),
                 icon: None,
@@ -10457,6 +10557,7 @@ mod tests {
         let search = DrawerSearch::default();
         let content = DrawerContent {
             apps: apps.iter().collect(),
+            results: None,
             search: &search,
         };
         let mut cache = DrawerGridCache::default();
@@ -10487,15 +10588,70 @@ mod tests {
         };
         let filtered_content = DrawerContent {
             apps: vec![&apps[0]],
+            results: None,
             search: &filtered_search,
         };
         cache.ensure(&filtered_content, Some(&light), 600, 1232, &mut icons);
         assert_eq!(cache.rebuilds(), 4);
     }
 
+    /// A query replaces the grid with result rows: both panel shapes at the
+    /// 200% vision step paint a list that differs from the grid, hit-test on
+    /// the rows the paint used, and keep every row at least 99 px tall.
+    #[test]
+    fn drawer_search_results_paint_as_rows_at_the_largest_text_step() {
+        use crate::search::Hardware;
+        let apps: Vec<AppEntry> = ["Terminal", "Files", "Timer", "Settings Helper"]
+            .iter()
+            .map(|name| AppEntry {
+                actions: if *name == "Terminal" { vec![("prefs".into(), "Preferences".into())] } else { Vec::new() },
+                id: format!("{name}.desktop"),
+                name: (*name).into(),
+                icon: None,
+                path: PathBuf::new(),
+            })
+            .collect();
+        crate::set_layout_text_scale(2.0);
+        for (width, height) in [(1232u32, 568u32), (568, 1232)] {
+            let draw = |renderer: &mut RendererCache| {
+                let mut canvas = vec![0u8; (width * height * 4) as usize];
+                renderer
+                    .draw(&mut canvas, RenderParams { width, height, route: Route::Drawer, progress: 1.0, scroll: 0.0 }, &apps)
+                    .unwrap();
+                canvas
+            };
+            let mut renderer = RendererCache::default();
+            let grid = draw(&mut renderer);
+            renderer.set_drawer_search(DrawerSearch {
+                query: "t".into(),
+                focused: true,
+                from_keys: true,
+                hardware: Hardware { modem: true, key_backlight: true },
+                ..DrawerSearch::default()
+            });
+            let list = draw(&mut renderer);
+            assert_ne!(grid, list, "{width}x{height}: the list must replace the grid");
+            assert!(list.iter().any(|byte| *byte != 0));
+            let search = DrawerSearch { query: "t".into(), hardware: Hardware { modem: true, key_backlight: true }, ..DrawerSearch::default() };
+            let results = search.results(&apps).expect("a query lists results");
+            assert!(results.len() >= 3, "Terminal, Timer, Settings Helper, Themes ... match 't'");
+            let (_, y, _, pitch) = navigation::result_rect(width, height, 0, 0.0);
+            assert!(navigation::result_card_height() >= 99.0 && pitch >= navigation::result_card_height());
+            assert_eq!(
+                navigation::result_at((width as f64 / 2.0, y + pitch / 2.0), width, height, results.len(), 0.0),
+                Some(0),
+                "the first row's centre is the first result"
+            );
+            // Clearing the query puts the grid back, byte for byte.
+            renderer.set_drawer_search(DrawerSearch::default());
+            assert_eq!(draw(&mut renderer), grid, "{width}x{height}: clearing restores the grid");
+        }
+        crate::set_layout_text_scale(1.0);
+    }
+
     #[test]
     fn prebuild_drawer_grid_warms_the_cache_and_is_a_no_op_once_fresh() {
-        let apps = vec![AppEntry { id: "a.desktop".into(), name: "Alpha".into(), icon: None, path: PathBuf::new() }];
+        let apps = vec![AppEntry { actions: Vec::new(), id: "a.desktop".into(), name: "Alpha".into(), icon: None, path: PathBuf::new() }];
         let mut renderer = RendererCache::default();
         assert_eq!(renderer.drawer_grid_rebuilds(), 0);
         renderer.prebuild_drawer_grid(&apps, 568, 1232);
@@ -10505,8 +10661,8 @@ mod tests {
         // A real catalog/theme change still invalidates it, exactly like an
         // ordinary `ensure` call would.
         let more_apps = vec![
-            AppEntry { id: "a.desktop".into(), name: "Alpha".into(), icon: None, path: PathBuf::new() },
-            AppEntry { id: "b.desktop".into(), name: "Beta".into(), icon: None, path: PathBuf::new() },
+            AppEntry { actions: Vec::new(), id: "a.desktop".into(), name: "Alpha".into(), icon: None, path: PathBuf::new() },
+            AppEntry { actions: Vec::new(), id: "b.desktop".into(), name: "Beta".into(), icon: None, path: PathBuf::new() },
         ];
         renderer.prebuild_drawer_grid(&more_apps, 568, 1232);
         assert_eq!(renderer.drawer_grid_rebuilds(), 2);
@@ -10923,7 +11079,7 @@ mod tests {
     #[ignore]
     fn drawer_grid_cache_host_timing() {
         let apps: Vec<AppEntry> = (0..64)
-            .map(|index| AppEntry {
+            .map(|index| AppEntry { actions: Vec::new(),
                 id: format!("fixture-{index}.desktop"),
                 name: format!("Fixture App {index}"),
                 icon: (index % 2 == 0).then(|| "utilities-terminal".into()),
