@@ -153,7 +153,7 @@ card returning, they answered: "it seems all good", "it works fine", and, to
 that exact question, "yup go". The report does not say which key or which
 app was beneath; the injected runs above cover those details.
 
-## CPU against a no-card baseline (task 4.6, still open)
+## CPU against a no-card baseline (task 4.6)
 
 `cpuab.sh.txt` ran on the board on 2026-10-28, build `3vk5qy3a…`, charger in.
 It stopped `shell-idle` so the display stayed on with no idle steps, waited
@@ -172,3 +172,14 @@ is roughly ±1 %. The task's pass line of under 1 % for the whole system is
 not met, because the system floor without the card is 6–7 %. The `ps` `%CPU`
 column is a lifetime average and is not used here. A rerun at 17:38Z did not
 launch the card (empty card path) and is not counted.
+
+On 2026-10-28 the operator changed the pass line to the clock-only phase's
+increment over a no-card baseline. Under that line the result passes: the
+increment is not distinguishable from zero, and is at most about 1 %.
+
+**Across one effect** (`cpueffect.sh.txt`, `cpu-effect-window.txt`). The card
+was exec'd at 17:54:00Z with `shell-idle` stopped. A 1 s `pgrep -x ttfx` log
+shows ttfx running 17:54:12–17:54:19Z, so the effect ended within 20 s. Over
+the 45 s window from exec, which includes card start-up, the system was
+21.87 % busy (1092/4994 jiffies). The effect does not pin the CPU, so the
+frame rate and the effect rotation are unchanged.

@@ -61,7 +61,9 @@ at most 20 s, then the banner holds 4 s and the clock returns. Effects come from
 a fixed rotation of finite ones, not `--random-effect`, so the cost is bounded
 and the sequence testable. Foot draws on a pixman compositor with no GPU, so
 every ttfx frame is a CPU repaint of the card on the only CPU. Budget,
-UNVERIFIED until measured: clock-only phase under 1% of the CPU over 60 s; effect
+UNVERIFIED until measured: clock-only phase adds under 1% of the CPU over 60 s to
+a no-card baseline taken the same way (the shell alone idles at several percent,
+so a whole-system line would not measure the card); effect
 phases may take most of it for their duration but each ends within 20 s. If the
 measurement is worse, lower the frame rate to 10, then remove effects from the
 rotation, before shipping a default of Clock. While the display is off (read from

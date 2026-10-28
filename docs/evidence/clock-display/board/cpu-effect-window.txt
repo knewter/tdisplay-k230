@@ -1,0 +1,13 @@
+# build /nix/store/3vk5qy3a3vxj0yx6swg14iki1qq4i36x-nixos-system-nixos-26.11.20260919.20b1ddd; charger online
+card /nix/store/zyzlp1lcrncnv3d4wsjrj6nvnc1fkmxr-k230-exhibition-card
+card exec 17:54:00Z
+17:54:12Z ttfx 2259
+17:54:13Z ttfx 2259
+17:54:14Z ttfx 2259
+17:54:15Z ttfx 2259
+17:54:16Z ttfx 2259
+17:54:18Z ttfx 2259
+17:54:19Z ttfx 2259
+end 17:54:45Z
+effect-window busy 21.87% (1092/4994 jiffies)
+shell-idle started 17:54:46Z

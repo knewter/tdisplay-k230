@@ -1,0 +1,12 @@
+#!/bin/sh
+# cpueffect.sh -- whole-system busy across the exhibition's first effect (+8 s), with a 1 s ttfx presence log
+SM="swaymsg -s /run/shell/sway-ipc.sock"
+EX=$(ps -eo args | grep -o '/nix/store/[^ "]*-k230-exhibition-card' | head -1)
+s() { awk '/^cpu /{print $2+$3+$4+$7+$8, $2+$3+$4+$5+$6+$7+$8}' /proc/stat; }
+echo "card $EX"; [ -n "$EX" ] || exit 1
+sudo systemctl stop shell-idle; sleep 30
+a=$(s); $SM exec $EX >/dev/null; echo "card exec $(date -u +%T)Z"
+i=0; while [ $i -lt 40 ]; do p=$(pgrep -x ttfx); [ -n "$p" ] && echo "$(date -u +%T)Z ttfx $p"; i=$((i+1)); sleep 1; done
+b=$(s); echo "end $(date -u +%T)Z"
+echo "$a $b" | awk '{printf "effect-window busy %.2f%% (%d/%d jiffies)\n", 100*($3-$1)/($4-$2), $3-$1, $4-$2}'
+kill "$(cat /run/shell/exhibition.pid)"; sudo systemctl start shell-idle; echo "shell-idle started $(date -u +%T)Z"

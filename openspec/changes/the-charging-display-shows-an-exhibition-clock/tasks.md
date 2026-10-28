@@ -85,12 +85,15 @@ Charger operations need the operator at the cable; say so before asking.
   card, prior card in front.
   Unplug half done 2026-10-27 (9–11.5 s, `docs/evidence/clock-display/board/README.md`);
   the power-key half remains.
-- [ ] 4.6 CPU: with the exhibition up and the effect interval left at its default,
+- [x] 4.6 CPU: with the exhibition up and the effect interval left at its default,
   sample `/proc/stat` for 60 s in the clock-only phase and again across one
   effect: `awk '/^cpu /{print $2+$3+$4+$7+$8, $2+$3+$4+$5+$6+$7+$8}' /proc/stat`
   at the start and the end, busy/total delta as a percent, plus `ps -o pid,pcpu,comm`
   for `foot`, `sway`, `ttfx`, `python3`. Write the numbers and the command under
-  `docs/evidence/clock-display/board/`. Pass: clock-only phase under 1%. If the
+  `docs/evidence/clock-display/board/`. Take the same 60 s sample with no card
+  (before and after) as the baseline. Pass: the clock-only phase is under 1%
+  above the baseline (criterion changed from a whole-system 1% at the
+  operator's direction on 2026-10-28). If the
   effect phase pins the CPU, lower `--frame-rate` or cut effects and rerun. Take
   samples with a sleep-paced shell loop, never a busy wait.
 - [x] 4.8 Glass: the operator taps and presses a key on the exhibition and reports
