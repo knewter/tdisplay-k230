@@ -37,15 +37,17 @@
 
 ## 3. Board, injected input (hardware-only)
 
-- [ ] 3.1 Test-activate the build. With an app in front inject LILYGO, `wifi`,
+- [x] 3.1 Test-activate the build. With an app in front inject LILYGO, `wifi`,
   Enter; then LILYGO, `about`, Enter; then LILYGO, `ti`, Enter. Wi-Fi, About and
   Timer open and the app behind received no keys. Proof: `grim` captures and the
   key log under `docs/evidence/drawer-search/board/`. Injected evidence, not
   glass. Operator command: `./tools/msh.py` session per
   `docs/evidence/base-keys/` practice.
-- [ ] 3.2 Type a query with the on-screen keyboard raised and measure the rows
+  Done 2026-10-28 (injected, build `f73q3409…`): wifi→Wi-Fi page, about→About, ti→Timer, the terminal behind kept a clean prompt. `docs/evidence/drawer-search/board/README.md`.
+- [x] 3.2 Type a query with the on-screen keyboard raised and measure the rows
   that fit and the frame time. Proof: grim capture and the runtime trace file
   under `/var/tmp`, copied to the same directory.
+  Done 2026-10-28 (injected): with the OSK raised, one full row plus part of a second fit; `K230_DRAWER_FRAME` 143 ms and 40 ms for the two keystrokes.
 
 ## 4. Glass (physical)
 

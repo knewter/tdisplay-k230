@@ -36,6 +36,18 @@
   position drift and one effect. Look at consecutive raw frames first. Camera evidence, not
   glass, not injected.
 
+## 6. Defects found on the board, 2026-10-28
+
+- [ ] 6.1 Restarting `shell.service` while the panel is dimmed loses the dimmer's state, and the
+  new session dims again from the dimmed value: 37 went to 9, and a wake restored only 37
+  (`/run/shell/idle-dimmer.json` read `{"saved": 37, "dimmed": 9}`). Keep the state across a
+  shell restart, or restore the saved brightness when `shell-idle` stops. Proof: restart the
+  shell while dimmed, wake, and read `cat $D/brightness` back at the pre-dim value.
+- [ ] 6.2 An exhibition card stays alive behind other cards when focus moves without input
+  (`swaymsg focus`, a surface opening): `get_tree` kept `k230-exhibition` after the panel was in
+  use again. Close it whenever it loses focus. Proof: open it, move focus by IPC, and check
+  `get_tree`.
+
 ## 5. Closeout
 
 - [ ] 5.1 Archive when every task above is done, or after an explicit, user-approved split.

@@ -2343,6 +2343,17 @@ DATA a1156285e2904a96917d241cac8ffbcf717976ff0a69d11fc3314294c6634780 docs/evide
 DATA 8f4b6df4be7e88126d385c469f852afe0b3b48b3b355153e3890f55973bad7ee docs/evidence/open-with/board/files-open-with-list-scrolled.png
 DATA 3558f509fb40553a76c15ddee08e645cc763f9cfe491052fb6096e2338f2c5ea docs/evidence/open-with/board/open-pdf.png
 DATA ab5a1211e9695364e4aa6e09535bba8ebecbfc8d19ee6a20782c794a97f07117 docs/evidence/open-with/board/open-png.png
+DATA fb06fb94750cc5fc7132f648028e07c6e5a523cbb5037fb4a4980b05efa585e0 docs/evidence/drawer-search/board/about-opened.png
+DATA d4ff501cf6f6093d1dc311b1238e2fa90bf834583aa8abb5673a3336e9417bcb docs/evidence/drawer-search/board/about-typed.png
+DATA 824e51a13bcf8269dc64ba528b9a2eed1df51f22d6c04ce3c43aa330b321bed1 docs/evidence/drawer-search/board/osk-raised.png
+DATA 20104e075089ee23fd7bd29d80d783bff6e72ae7c4701363bead07c57bf7ea35 docs/evidence/drawer-search/board/osk-te.png
+DATA 4ac701d78889484debb9e1c7031496e77a9111cda391d7eb2fa71dbeb5a9c655 docs/evidence/drawer-search/board/osk-t.png
+DATA bc4e05491816fd0381ab7479f3a1a826828a9a093df4d6638df4aa2906c79e0e docs/evidence/drawer-search/board/term-after.png
+DATA 0974d81adcd6cb57f75f816ed3b1a28852f569989ec067c47c2193e8c5290805 docs/evidence/drawer-search/board/term-before.png
+DATA a2c14dbe49dfc069aaa1697a9e4dbd39fac7f4ba4da29228b8651c8683d091d6 docs/evidence/drawer-search/board/ti-opened.png
+DATA a84b2af4f626e66bb0a061d41d72124bd430ea5a4620beab473f52991ba8c6c2 docs/evidence/drawer-search/board/ti-typed.png
+DATA 2e9b9de52d48eb758f34d58207256e7fbcb3fac86b923686c7f0db1ab59b97e1 docs/evidence/drawer-search/board/wifi-opened-title.png
+DATA 5b10ffef6f627e2e221c5025429a88257ec535ddff44313a29f39f122032eace docs/evidence/drawer-search/board/wifi-typed.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4477,3 +4488,21 @@ Native grim captures of xdg-open and Files opening a PNG, PDF and folder, and th
 | `docs/evidence/open-with/board/files-open-with-list-scrolled.png` | 38292 | DATA | `8f4b6df4be7e88126d385c469f852afe0b3b48b3b355153e3890f55973bad7ee` |
 | `docs/evidence/open-with/board/open-pdf.png` | 13186 | DATA | `3558f509fb40553a76c15ddee08e645cc763f9cfe491052fb6096e2338f2c5ea` |
 | `docs/evidence/open-with/board/open-png.png` | 7946 | DATA | `ab5a1211e9695364e4aa6e09535bba8ebecbfc8d19ee6a20782c794a97f07117` |
+
+## Drawer-search board captures
+
+Native grim captures of drawer search over the terminal (wifi, about, ti) and with the on-screen keyboard raised (the-drawer-search-finds-settings-and-app-actions 3.1-3.2); Wi-Fi page cropped to its title
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/drawer-search/board/about-opened.png` | 36313 | DATA | `fb06fb94750cc5fc7132f648028e07c6e5a523cbb5037fb4a4980b05efa585e0` |
+| `docs/evidence/drawer-search/board/about-typed.png` | 14370 | DATA | `d4ff501cf6f6093d1dc311b1238e2fa90bf834583aa8abb5673a3336e9417bcb` |
+| `docs/evidence/drawer-search/board/osk-raised.png` | 37629 | DATA | `824e51a13bcf8269dc64ba528b9a2eed1df51f22d6c04ce3c43aa330b321bed1` |
+| `docs/evidence/drawer-search/board/osk-te.png` | 24399 | DATA | `20104e075089ee23fd7bd29d80d783bff6e72ae7c4701363bead07c57bf7ea35` |
+| `docs/evidence/drawer-search/board/osk-t.png` | 24553 | DATA | `4ac701d78889484debb9e1c7031496e77a9111cda391d7eb2fa71dbeb5a9c655` |
+| `docs/evidence/drawer-search/board/term-after.png` | 17636 | DATA | `bc4e05491816fd0381ab7479f3a1a826828a9a093df4d6638df4aa2906c79e0e` |
+| `docs/evidence/drawer-search/board/term-before.png` | 3382 | DATA | `0974d81adcd6cb57f75f816ed3b1a28852f569989ec067c47c2193e8c5290805` |
+| `docs/evidence/drawer-search/board/ti-opened.png` | 8165 | DATA | `a2c14dbe49dfc069aaa1697a9e4dbd39fac7f4ba4da29228b8651c8683d091d6` |
+| `docs/evidence/drawer-search/board/ti-typed.png` | 29328 | DATA | `a84b2af4f626e66bb0a061d41d72124bd430ea5a4620beab473f52991ba8c6c2` |
+| `docs/evidence/drawer-search/board/wifi-opened-title.png` | 3411 | DATA | `2e9b9de52d48eb758f34d58207256e7fbcb3fac86b923686c7f0db1ab59b97e1` |
+| `docs/evidence/drawer-search/board/wifi-typed.png` | 13983 | DATA | `5b10ffef6f627e2e221c5025429a88257ec535ddff44313a29f39f122032eace` |

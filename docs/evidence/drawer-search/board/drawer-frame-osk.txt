@@ -1,0 +1,2 @@
+Oct 28 16:40:18.507776 nixos k230-shell-rust[5633]: rust-shell 249237ms K230_DRAWER_FRAME ms=143.22 apps=18 scroll=0
+Oct 28 16:40:21.537928 nixos k230-shell-rust[5633]: rust-shell 252287ms K230_DRAWER_FRAME ms=39.76 apps=18 scroll=0
