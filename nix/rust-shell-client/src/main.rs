@@ -3814,7 +3814,7 @@ impl ShellClient {
             && self.splash.is_none() && self.drawer_search.focused;
         // The base's key focused the field: the keys type, so the on-screen
         // keyboard stays down.
-        let want_osk = want && !self.drawer_search.from_keys;
+        let want_osk = want && self.drawer_search.wants_osk();
         self.drawer_search.keyboard_inset = if want_osk && self.keyboard_signal_path.is_some() {
             self.keyboard_height_px + self.keyboard_grip_height_px
         } else { 0.0 };
@@ -3901,7 +3901,11 @@ impl ShellClient {
         let Some(result) = results.get(display_index) else {
             return;
         };
-        match result.activation() {
+        let activation = result.activation();
+        if matches!(activation, Activation::Settings(_)) {
+            self.lower_drawer_keyboard_for_activation();
+        }
+        match activation {
             Activation::Launch(index) => self.launch_app(qh, index),
             Activation::AppAction(index, action) => {
                 if self.launch_in_flight || self.route != Route::Drawer {
@@ -3918,6 +3922,32 @@ impl ShellClient {
                 }
             }
             Activation::Settings(dest) => self.open_settings_dest(qh, dest),
+        }
+    }
+
+    /// A search result that opens Settings ends the search: the field is no
+    /// longer focused, so the on-screen keyboard must come down and stay down
+    /// over the page. Hiding only when `drawer_osk_shown` says it is up is not
+    /// enough -- the keyboard can be up without the search having raised it,
+    /// and when the drawer gives up its keyboard focus the app under it takes
+    /// the focus back and `k230-osk-focus` raises the keyboard again for that
+    /// app's text input. So this always signals hide, and stamps the same
+    /// "keys are not wanted" time the base's typing stamps, which that helper
+    /// already honours for `focusKeyboardSuppressSeconds`.
+    fn lower_drawer_keyboard_for_activation(&mut self) {
+        self.drawer_search.unfocus();
+        self.sync_drawer_search();
+        if let Some(path) = self.keyboard_signal_path.clone() {
+            if let Err(error) = std::process::Command::new(path).arg("hide").spawn() {
+                self.log(&format!("drawer-keyboard-signal-failed {error}"));
+            }
+            self.drawer_osk_shown = false;
+        }
+        if let Some(stamp) = std::env::var_os("K230_OSK_KEY_STAMP") {
+            if let Err(error) = std::fs::OpenOptions::new().create(true).write(true).truncate(false)
+                .open(&stamp).and_then(|file| file.set_modified(std::time::SystemTime::now())) {
+                self.log(&format!("drawer-osk-stamp-failed {error}"));
+            }
         }
     }
 

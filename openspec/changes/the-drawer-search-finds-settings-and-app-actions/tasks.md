@@ -48,6 +48,16 @@
   that fit and the frame time. Proof: grim capture and the runtime trace file
   under `/var/tmp`, copied to the same directory.
   Done 2026-10-28 (injected): with the OSK raised, one full row plus part of a second fit; `K230_DRAWER_FRAME` 143 ms and 40 ms for the two keystrokes.
+- [ ] 3.3 Choosing a Settings result lowers the on-screen keyboard. Defect
+  seen on the board: with the OSK raised for the search field, opening About
+  from a result left the keyboard over the page. Fix: `choose_drawer_item`
+  unfocuses the search and always signals `hide` before navigating, and stamps
+  `K230_OSK_KEY_STAMP` so `k230-osk-focus` does not raise it again when the app
+  under the drawer takes focus back (cause not reproduced on the host; the
+  re-raise is the suspected path). Proof: host unit test
+  `service_ui::tests::activating_a_result_unfocuses_the_search_and_lowers_the_keyboard`
+  passes; board proof still open: tap the field, type `about`, open the result,
+  and `grim` shows About with the keyboard down.
 
 ## 4. Glass (physical)
 

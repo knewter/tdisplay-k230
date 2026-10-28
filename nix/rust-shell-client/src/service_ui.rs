@@ -231,6 +231,12 @@ impl DrawerSearch {
         self.from_keys = false;
     }
 
+    /// Whether the field wants the on-screen keyboard raised: focused by a
+    /// tap, not by the base's key.
+    pub fn wants_osk(&self) -> bool {
+        self.focused && !self.from_keys
+    }
+
     /// Closes the keyboard without clearing the query -- the filtered grid
     /// stays exactly as typed.
     pub fn unfocus(&mut self) {
@@ -1698,6 +1704,22 @@ mod tests {
         search.query = "ti".into();
         assert_eq!(search.key_action(0xff0d, Some("\r")), SearchKey::Edited);
         assert!(!search.focused, "a tapped field's Enter still only dismisses the keyboard");
+    }
+
+    #[test]
+    fn activating_a_result_unfocuses_the_search_and_lowers_the_keyboard() {
+        let mut search = DrawerSearch::default();
+        search.focus();
+        search.query = "about".into();
+        search.keyboard_inset = 420.0;
+        assert!(search.wants_osk());
+        // What choosing a Settings result does before it navigates.
+        search.unfocus();
+        assert!(!search.wants_osk(), "the field no longer asks for the keyboard");
+        assert_eq!(search.keyboard_inset, 0.0);
+        assert_eq!(search.query, "about", "the query stays for the result to read");
+        search.focus_from_keys();
+        assert!(!search.wants_osk(), "a key focus never raises it");
     }
 
     #[test]
