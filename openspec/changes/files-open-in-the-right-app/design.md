@@ -26,9 +26,7 @@ in `docs/evidence`.*
   (and the other types Zathura's entry declares) to Zathura's entry,
   `inode/directory` to `org.gnome.Nautilus.desktop` (the one drawer "Files"
   entry; Portfolio stays installed but hidden, so it must not win the
-  association). Text stays Omawrite. UNVERIFIED: the Zathura desktop ID and its
-  MimeType set on this image (`pkgs.zathura` is the default mupdf build); task
-  1.1 reads it from the built store path before it is written down.
+  association). Text stays Omawrite. Read from the built store path (task 1.1, host build): Zathura's PDF handler is `org.pwmt.zathura-pdf-mupdf.desktop`; the main entry has no MimeType, and `org.pwmt.zathura-cb.desktop` also claims `inode/directory`, so `xdg.mime.removedAssociations` drops it and Portfolio from folders.
 - **Entries declare only what works.** An upstream entry that claims types the
   image cannot render (Zathura's djvu or postscript without a plugin) is
   overridden in `handheld-desktop-entries.nix`, same pattern as Viewnior. This

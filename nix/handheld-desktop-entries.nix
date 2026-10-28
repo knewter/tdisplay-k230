@@ -1,9 +1,9 @@
-{ lib, runCommand, themedFoot, foot, htop, btop, viewnior, coreutils, portfolioLauncher, nautilusLauncher ? null }:
+{ lib, runCommand, desktop-file-utils, themedFoot, foot, htop, btop, viewnior, coreutils, portfolioLauncher, nautilusLauncher ? null }:
 
 # Desktop-entry overrides have the same IDs as upstream packages. Putting this
 # share tree first in XDG_DATA_DIRS lets GIO apply the normal freedesktop
 # precedence/NoDisplay rules; the Rust catalog never filters app names.
-runCommand "k230-handheld-desktop-entries" { } ''
+runCommand "k230-handheld-desktop-entries" { nativeBuildInputs = [ desktop-file-utils ]; } ''
   mkdir -p "$out/share/applications"
   cat > "$out/share/applications/foot.desktop" <<'EOF'
 [Desktop Entry]
@@ -107,4 +107,9 @@ Terminal=false
 NoDisplay=true
 Categories=System;TerminalEmulator;
 EOF
+  # An index lets GIO associate these entries with their MimeType lines. Without
+  # one, GIO treats this directory as unindexed and the system cache's
+  # Viewnior and Files rows are dropped from `gio mime` (host evidence in
+  # docs/evidence/open-with/host/gio-mime.txt).
+  update-desktop-database "$out/share/applications"
 ''

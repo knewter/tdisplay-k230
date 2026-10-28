@@ -1350,7 +1350,27 @@ in
       "text/plain" = [ "k230-editor.desktop" ];
       "text/markdown" = [ "k230-editor.desktop" ];
       "text/x-markdown" = [ "k230-editor.desktop" ];
-    };
+      # Defaults for what Files opens (files-open-in-the-right-app). The IDs
+      # are the ones in the built system-path: the mupdf plugin entry, not the
+      # MimeType-less org.pwmt.zathura.desktop, is Zathura's PDF handler.
+      "application/pdf" = [ "org.pwmt.zathura-pdf-mupdf.desktop" ];
+      "inode/directory" = [ "org.gnome.Nautilus.desktop" ];
+    }
+    // lib.genAttrs [
+      "image/png"
+      "image/jpeg"
+      "image/gif"
+      "image/bmp"
+      "image/tiff"
+      "image/svg+xml"
+    ] (_: [ "viewnior.desktop" ]);
+    # Two entries claim `inode/directory` besides Files: the hidden Portfolio
+    # and Zathura's comic-book plugin (it only reads archives). Neither may
+    # win or be offered for a folder.
+    xdg.mime.removedAssociations."inode/directory" = [
+      "dev.tchx84.Portfolio.desktop"
+      "org.pwmt.zathura-cb.desktop"
+    ];
     assertions = [
       {
         # The Sway scene seed is a fixed 568x1232 buffer; it would come out

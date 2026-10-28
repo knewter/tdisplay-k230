@@ -1,19 +1,33 @@
 ## 1. Nix, host
 
-- [ ] 1.1 Read the built Zathura, Viewnior, Nautilus and Portfolio entries for
+- [x] 1.1 Read the built Zathura, Viewnior, Nautilus and Portfolio entries for
   their desktop IDs and MimeType sets, then write the defaults (images, PDF,
   `inode/directory`, text) into `xdg.mime.defaultApplications` and correct any
   entry that over-claims in `handheld-desktop-entries.nix`. Proof:
   `nix build .#nixosConfigurations.k230.config.system.build.toplevel --no-link`
   (cross-build; a long build, so run it in a build slot), then read
   `etc/xdg/mimeapps.list` in the result. Host build proof only.
-- [ ] 1.2 Resolve the associations from the built tree: for `image/png`,
+  Done 2026-10-28 (host build): built `k230-mainline-drm-shell-landscape-hdmi`
+  (system `/nix/store/lkkl0z7p60cdwh9cy73zklrrvk6s4rcb-nixos-system-nixos-26.11.20260919.20b1ddd`);
+  Zathura's PDF handler is `org.pwmt.zathura-pdf-mupdf.desktop` (the main
+  `org.pwmt.zathura.desktop` has no MimeType), and `-cb` also claims
+  `inode/directory`. `etc/xdg/mimeapps.list` now defaults images to Viewnior,
+  PDF to that Zathura entry, `inode/directory` to Files, text unchanged, and
+  removes Portfolio and Zathura-cb from `inode/directory`; the handheld entries
+  directory gained a `mimeinfo.cache` (without it Viewnior and Files vanished
+  from GIO's registered list).
+- [x] 1.2 Resolve the associations from the built tree: for `image/png`,
   `application/pdf`, `inode/directory` and `text/plain`, `gio mime <type>`
   with `XDG_DATA_DIRS` and `XDG_CONFIG_DIRS` pointing at the built tree names
   the intended default and lists any other handler. Proof: the transcript saved
   as `docs/evidence/open-with/host/gio-mime.txt`. This runs on the build
   host's GIO, not the board's.
-- [ ] 1.3 Proof: `openspec validate files-open-in-the-right-app --strict`.
+  Done 2026-10-28 (host build): `tests/gio_mime_built_tree.sh sys-mime`
+  transcript saved as `docs/evidence/open-with/host/gio-mime.txt`: PNG ->
+  viewnior (Zathura also listed), PDF -> Zathura, folder -> Files only, text ->
+  Omawrite. Host GIO 2.88.3, not the board's.
+- [x] 1.3 Proof: `openspec validate files-open-in-the-right-app --strict`.
+  Done 2026-10-28 (host build): validate --strict passed.
 
 ## 2. Board, injected and console (hardware-only)
 

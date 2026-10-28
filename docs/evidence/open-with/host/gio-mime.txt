@@ -1,0 +1,35 @@
+# gio mime against the built tree, host GIO (not the board's)
+# system: /nix/store/lkkl0z7p60cdwh9cy73zklrrvk6s4rcb-nixos-system-nixos-26.11.20260919.20b1ddd
+# handheld entries: /nix/store/ncyys7il3msw3b4qsgl7azk5kanp4h00-k230-handheld-desktop-entries
+# gio: 2.88.3
+# env: PATH=<system>/sw/bin:<host PATH> (so bare Exec= names resolve; the binaries are riscv64 and are not run) HOME=<empty> XDG_CONFIG_DIRS=<system>/etc/xdg XDG_DATA_DIRS=<handheld entries>/share:<system>/sw/share
+
+$ gio mime image/png
+Default application for “image/png”: viewnior.desktop
+Registered applications:
+	viewnior.desktop
+	org.pwmt.zathura-pdf-mupdf.desktop
+Recommended applications:
+	viewnior.desktop
+	org.pwmt.zathura-pdf-mupdf.desktop
+
+$ gio mime application/pdf
+Default application for “application/pdf”: org.pwmt.zathura-pdf-mupdf.desktop
+Registered applications:
+	org.pwmt.zathura-pdf-mupdf.desktop
+Recommended applications:
+	org.pwmt.zathura-pdf-mupdf.desktop
+
+$ gio mime inode/directory
+Default application for “inode/directory”: org.gnome.Nautilus.desktop
+Registered applications:
+	org.gnome.Nautilus.desktop
+Recommended applications:
+	org.gnome.Nautilus.desktop
+
+$ gio mime text/plain
+Default application for “text/plain”: k230-editor.desktop
+Registered applications:
+	k230-editor.desktop
+Recommended applications:
+	k230-editor.desktop
