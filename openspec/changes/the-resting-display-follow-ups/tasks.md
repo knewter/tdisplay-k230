@@ -20,8 +20,24 @@
 
 ## 3. Decisions (from idle 4.3)
 
-- [ ] 3.1 Decide whether charging should defer idle off, and whether the wallpaper video should
+- [x] 3.1 Decide whether charging should defer idle off, and whether the wallpaper video should
   stop decoding while the display is off. Record the decision and any measurement here.
+  Decided 2026-10-28, from source and the existing board measurement (no new measurement):
+  - Charging does not defer off. "Idle on charger" already decides it: at Clock the clock
+    screen keeps the display on while docked (`idle_dimmer.py`, `off` returns early while the
+    card is up on the charger); at Sleep the person asked for off.
+  - The wallpaper video stops decoding while the display is off. It did not: the decoder runs
+    unless `should_decode` sees reduced motion or a fresh cover file, and the compositor
+    writes that file only when it renders (`nix/card-shell/adapter.c`), which a powered-off
+    output never does, so the file goes stale and reads as visible. The 2026-10-21 board trial
+    measured a video wallpaper at 0.87 of a core on idle Home
+    (`docs/evidence/omarchy-themes/background-video-board-2026-10-21/README.md`). Built in 3.2.
+- [ ] 3.2 The wallpaper counts as covered while every connected DRM connector reports DPMS Off
+  (`video_visibility::display_off`, polled with the cover file every 500 ms).
+  Host, 2026-10-28: `cargo test --offline --lib video` in `nix/rust-shell-client`, 10 passed,
+  including the new connector test. Board proof still needed: with a video background on
+  Home, `swaymsg 'output * power off'`; within 1 s the shell journal shows the decoder paused
+  and its ffmpeg child stops using CPU (`ps`), and power on resumes it.
 
 ## 4. Clock screen follow-ups (from exhibition 5.1–5.5)
 
@@ -30,6 +46,9 @@
   interval.
 - [ ] 4.3 Close the card on pointer-only activity (HDMI mouse) as well. Board proof with a
   mouse: the card closes and the app beneath gets nothing.
+  Host, 2026-10-28: the card turns on any-motion reports (mode 1003) and motion is input, so a
+  moved mouse closes it the way a press does; `needs_release` ignores motion reports
+  (`tests/test_exhibition.py`, 20 passed). Board proof with a mouse still open.
 - [ ] 4.4 A shade tile or a Home action to start the exhibition on demand.
 - [ ] 4.5 Camera (exhibition 4.7, moved 2026-10-28 when the operator reassigned the webcam;
   optional, gates nothing): the webcam on the panel records a clock minute change, one

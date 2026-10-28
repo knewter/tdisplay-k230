@@ -140,7 +140,8 @@ def display_on(root=DRM_ROOT):
 
 def needs_release(data):
     """True when `data` holds an SGR mouse press with no release after it,
-    i.e. a touch is still down and its lift should be read before leaving."""
+    i.e. a touch is still down and its lift should be read before leaving.
+    Motion reports (button bit 32, from mode 1003) are not presses."""
     pressed = False
     i = 0
     while True:
@@ -153,7 +154,9 @@ def needs_release(data):
         if end >= len(data):
             return pressed
         final = chr(data[end])
-        if final == "M":
+        button = data[start + 3:end].split(b";")[0]
+        motion = button.isdigit() and int(button) & 32
+        if final == "M" and not motion:
             pressed = True
         elif final == "m":
             pressed = False
@@ -196,12 +199,13 @@ class ExhibitSession(apps.Session):
         # Black default background whatever the theme says (AMOLED); undone
         # in __exit__ with OSC 111. Focus reports let the card end when
         # something else takes focus without input reaching it (a card
-        # focused over IPC), instead of lingering behind it.
-        self._write("\x1b]11;#000000\x1b\\\x1b[?1004h")
+        # focused over IPC), instead of lingering behind it. Any-motion
+        # reports (1003) let a mouse that only moves close it too.
+        self._write("\x1b]11;#000000\x1b\\\x1b[?1004h\x1b[?1003h")
         return self
 
     def __exit__(self, *exc):
-        self._write("\x1b[?1004l\x1b]111\x1b\\")
+        self._write("\x1b[?1003l\x1b[?1004l\x1b]111\x1b\\")
         return super().__exit__(*exc)
 
     def wait(self, timeout):

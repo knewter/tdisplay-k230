@@ -24,6 +24,35 @@ pub fn should_decode(reduced_motion: bool, covered: bool) -> bool {
     !reduced_motion && !covered
 }
 
+/// True when every connected DRM connector under `root` reports DPMS Off.
+/// A powered-off output renders nothing, so the cover file goes stale and
+/// would read as visible; this is the other reason to stop decoding. Missing
+/// or unreadable sysfs means the display may be on. Same rule as the clock
+/// screen's `display_on` (nix/term-apps/k230_exhibition.py).
+pub fn display_off(root: &Path) -> bool {
+    let Ok(entries) = std::fs::read_dir(root) else {
+        return false;
+    };
+    let mut seen = false;
+    for entry in entries.flatten() {
+        let dir = entry.path();
+        let (Ok(status), Ok(dpms)) = (
+            std::fs::read_to_string(dir.join("status")),
+            std::fs::read_to_string(dir.join("dpms")),
+        ) else {
+            continue;
+        };
+        if status.trim() != "connected" {
+            continue;
+        }
+        if dpms.trim().eq_ignore_ascii_case("on") {
+            return false;
+        }
+        seen = true;
+    }
+    seen
+}
+
 pub fn certified(path: &Path, width: u32, height: u32, now_ms: u64) -> bool {
     let Ok(file) = OpenOptions::new()
         .read(true)
@@ -67,6 +96,28 @@ mod tests {
         assert!(!should_decode(true, false));
         assert!(!should_decode(false, true));
         assert!(!should_decode(true, true));
+    }
+
+    #[test]
+    fn a_display_counts_as_off_only_when_every_connected_output_is_off() {
+        let root = std::env::temp_dir().join(format!("k230-dpms-test-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        assert!(!display_off(&root), "missing sysfs means maybe on");
+        let connector = |name: &str, status: &str, dpms: &str| {
+            let dir = root.join(name);
+            std::fs::create_dir_all(&dir).unwrap();
+            std::fs::write(dir.join("status"), status).unwrap();
+            std::fs::write(dir.join("dpms"), dpms).unwrap();
+        };
+        connector("card0-DSI-1", "connected\n", "On\n");
+        assert!(!display_off(&root));
+        connector("card0-DSI-1", "connected\n", "Off\n");
+        assert!(display_off(&root));
+        connector("card0-HDMI-A-1", "disconnected\n", "On\n");
+        assert!(display_off(&root), "a disconnected connector does not count");
+        connector("card0-HDMI-A-1", "connected\n", "On\n");
+        assert!(!display_off(&root));
+        std::fs::remove_dir_all(&root).unwrap();
     }
 
     #[test]

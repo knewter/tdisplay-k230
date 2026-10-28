@@ -125,6 +125,9 @@ class PureTests(unittest.TestCase):
         self.assertFalse(EX.needs_release(b"x"))
         self.assertFalse(EX.needs_release(b""))
         self.assertTrue(EX.needs_release(lift + press))
+        # A mouse that only moves (mode 1003) leaves nothing to wait for.
+        self.assertFalse(EX.needs_release(b"\x1b[<35;12;20M"))
+        self.assertTrue(EX.needs_release(press + b"\x1b[<32;11;20M"), "a drag is still down")
 
     def test_focus_reports_are_not_input_and_focus_loss_is_seen(self):
         press = b"\x1b[<0;10;20M"

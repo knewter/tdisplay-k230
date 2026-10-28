@@ -7548,14 +7548,16 @@ fn serve() -> Result<(), String> {
         }
         if state.video_cover_last.elapsed() >= Duration::from_millis(500) {
             state.video_cover_last = Instant::now();
-            state.video_covered = state.video_cover_path.as_deref().is_some_and(|path| {
-                video_visibility::certified(
-                    path,
-                    state.wallpaper.width,
-                    state.wallpaper.height,
-                    video_status::monotonic_ms(),
-                )
-            });
+            let display_off = video_visibility::display_off(Path::new("/sys/class/drm"));
+            state.video_covered = display_off
+                || state.video_cover_path.as_deref().is_some_and(|path| {
+                    video_visibility::certified(
+                        path,
+                        state.wallpaper.width,
+                        state.wallpaper.height,
+                        video_status::monotonic_ms(),
+                    )
+                });
         }
         if state.wallpaper.configured && !state.video_start_attempted {
             if let Some(path) = state.video_source.clone() {
