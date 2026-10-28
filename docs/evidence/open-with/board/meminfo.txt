@@ -1,0 +1,11 @@
+/nix/store/l2ds6vvr7y05d55vny7l8h36qaj6ij51-nixos-system-nixos-26.11.20260919.20b1ddd
+MemAvailable:     575824 kB
+21:19:39Z
+21:20:02Z
+"app_id": "k230-terminal" "focused": true "app_id": "viewnior" 
+MemAvailable:     566168 kB
+21:20:16Z
+MemAvailable:     566228 kB
+21:21:58Z
+"app_id": "k230-exhibition" "app_id": "k230-terminal" "focused": true "app_id": "org.pwmt.zathura" 
+MemAvailable:     527616 kB

@@ -1,0 +1,23 @@
+foot=2945
+XDG_DATA_DIRS=/nix/store/4xhm58kjxv46yzg1hqhyawyvpi31lcv5-k230-handheld-desktop-entries/share
+org.pwmt.zathura-pdf-mupdf.desktop
+== gio mime image/png
+Default application for “image/png”: viewnior.desktop
+Registered applications:
+	org.pwmt.zathura-pdf-mupdf.desktop
+	viewnior.desktop
+Recommended applications:
+	org.pwmt.zathura-pdf-mupdf.desktop
+	viewnior.desktop
+== gio mime application/pdf
+Default application for “application/pdf”: org.pwmt.zathura-pdf-mupdf.desktop
+Registered applications:
+	org.pwmt.zathura-pdf-mupdf.desktop
+Recommended applications:
+	org.pwmt.zathura-pdf-mupdf.desktop
+== gio mime inode/directory
+Default application for “inode/directory”: org.gnome.Nautilus.desktop
+Registered applications:
+	org.gnome.Nautilus.desktop
+Recommended applications:
+	org.gnome.Nautilus.desktop

@@ -1,4 +1,4 @@
-{ lib, runCommand, desktop-file-utils, themedFoot, foot, htop, btop, viewnior, coreutils, portfolioLauncher, nautilusLauncher ? null }:
+{ lib, runCommand, desktop-file-utils, themedFoot, foot, htop, btop, viewnior, zathura, coreutils, portfolioLauncher, nautilusLauncher ? null }:
 
 # Desktop-entry overrides have the same IDs as upstream packages. Putting this
 # share tree first in XDG_DATA_DIRS lets GIO apply the normal freedesktop
@@ -57,6 +57,22 @@ Terminal=false
 Categories=GNOME;GTK;Graphics;Viewer;
 MimeType=image/bmp;image/gif;image/jpeg;image/jpg;image/pjpeg;image/png;image/tiff;image/x-bmp;image/x-gray;image/x-icb;image/x-ico;image/x-png;image/x-portable-anymap;image/x-portable-bitmap;image/x-portable-graymap;image/x-portable-pixmap;image/x-xbitmap;image/x-xpixmap;image/x-pcx;image/svg+xml;image/svg+xml-compressed;image/vnd.wap.wbmp;
 Keywords=Image;Picture;Slideshow;
+EOF
+  # Upstream's PDF entry runs a bare `zathura`, and the shell's PATH has no
+  # system bin directory, so GIO dropped it and PDFs had no default on the
+  # board (docs/evidence/open-with/board/). Same ID, absolute Exec.
+  cat > "$out/share/applications/org.pwmt.zathura-pdf-mupdf.desktop" <<'EOF'
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Zathura
+Comment=A minimalistic document viewer
+Exec=${zathura}/bin/zathura %U
+Icon=org.pwmt.zathura
+Terminal=false
+NoDisplay=true
+Categories=Office;Viewer;
+MimeType=application/pdf;application/oxps;application/epub+zip;application/x-fictionbook;application/x-mobipocket-ebook;image/svg+xml;image/jpeg;image/png;image/bmp;image/x-bmp;image/tiff;image/tiff-fx;
 EOF
   cat > "$out/share/applications/dev.tchx84.Portfolio.desktop" <<'EOF'
 [Desktop Entry]

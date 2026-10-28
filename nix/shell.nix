@@ -629,6 +629,7 @@ let
     inherit themedFoot portfolioLauncher;
     coreutils = pkgs.coreutils;
     viewnior = pkgs.viewnior;
+    zathura = zathuraApp;
     btop = pkgs.btop;
     # Passing the real derivation only when the flag is on -- not just
     # gating its *use* inside handheld-desktop-entries.nix -- is what keeps
@@ -2121,6 +2122,14 @@ in
     # for Home's Clock widget alone.
     fonts.fontconfig.enable = true;
     fonts.packages = [ pkgs.dejavu_fonts clockDisplayFont ];
+
+    # A terminal's login shell rebuilds XDG_DATA_DIRS from the Nix profiles
+    # (/etc/set-environment), dropping the session's overrides, so
+    # `xdg-open` there ran upstream Viewnior with GDK_BACKEND=x11 and failed
+    # with "Cannot open display" (board, 2026-10-28). Keep the overrides first.
+    environment.extraInit = lib.mkIf cfg.coherentShell ''
+      export XDG_DATA_DIRS="${handheldDesktopEntries}/share:$XDG_DATA_DIRS"
+    '';
 
     environment.systemPackages = [
       sway

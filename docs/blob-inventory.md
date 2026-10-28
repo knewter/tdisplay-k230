@@ -2333,6 +2333,15 @@ DATA 1c4caacf7439f364abe723f25da69267291e6c9e51b27a310e2b67bbefa6ef10 docs/evide
 DATA 23927a2d1e9cccf4773df366e47f8e943408adf9f39676b388ade0cd265d2f3e docs/evidence/clock-display/board/centred-k230-banner-174021.jpg
 DATA 8804722be7641e327facab6b5f9e1694cbfa2f2aee5eef5ee0b8aedbeab15636 docs/evidence/clock-display/board/tap-closes-card-over-files.png
 DATA 67e63eb27db01ffcc19d94d7b110e3ce6e9eea2f9ce289bfcfa8852025e24285 docs/evidence/do-not-disturb/board/quiet-before-and-after-reboot.png
+DATA a4fb19ab2774388d6c22c726774c9ac4738086a6a6a9de00463fa22e78667fc6 docs/evidence/open-with/board/files-dtap-folder.png
+DATA 3558f509fb40553a76c15ddee08e645cc763f9cfe491052fb6096e2338f2c5ea docs/evidence/open-with/board/files-dtap-pdf.png
+DATA ab5a1211e9695364e4aa6e09535bba8ebecbfc8d19ee6a20782c794a97f07117 docs/evidence/open-with/board/files-dtap-png.png
+DATA bc645c03983cdbff49931ed519aa674760c42f181b7119988e87b316e829ab60 docs/evidence/open-with/board/files-home.png
+DATA 4e737d34cb70a7fe9e2df2fbb4ef68d63bec85a37c4d207e37aa765e0b1cfe6c docs/evidence/open-with/board/files-longpress-png.png
+DATA a1156285e2904a96917d241cac8ffbcf717976ff0a69d11fc3314294c6634780 docs/evidence/open-with/board/files-open-with-list.png
+DATA 8f4b6df4be7e88126d385c469f852afe0b3b48b3b355153e3890f55973bad7ee docs/evidence/open-with/board/files-open-with-list-scrolled.png
+DATA 3558f509fb40553a76c15ddee08e645cc763f9cfe491052fb6096e2338f2c5ea docs/evidence/open-with/board/open-pdf.png
+DATA ab5a1211e9695364e4aa6e09535bba8ebecbfc8d19ee6a20782c794a97f07117 docs/evidence/open-with/board/open-png.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4451,3 +4460,19 @@ Native grim crops of the shade on the board (build 3vk5qy3a) before and after a 
 | Path | Bytes | Class | SHA256 |
 | --- | ---: | --- | --- |
 | `docs/evidence/do-not-disturb/board/quiet-before-and-after-reboot.png` | 25134 | DATA | `67e63eb27db01ffcc19d94d7b110e3ce6e9eea2f9ce289bfcfa8852025e24285` |
+
+## Open-with board captures
+
+Native grim captures of xdg-open and Files opening a PNG, PDF and folder, and the Open With chooser (files-open-in-the-right-app 2.2-2.3)
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/open-with/board/files-dtap-folder.png` | 47535 | DATA | `a4fb19ab2774388d6c22c726774c9ac4738086a6a6a9de00463fa22e78667fc6` |
+| `docs/evidence/open-with/board/files-dtap-pdf.png` | 13186 | DATA | `3558f509fb40553a76c15ddee08e645cc763f9cfe491052fb6096e2338f2c5ea` |
+| `docs/evidence/open-with/board/files-dtap-png.png` | 7946 | DATA | `ab5a1211e9695364e4aa6e09535bba8ebecbfc8d19ee6a20782c794a97f07117` |
+| `docs/evidence/open-with/board/files-home.png` | 51461 | DATA | `bc645c03983cdbff49931ed519aa674760c42f181b7119988e87b316e829ab60` |
+| `docs/evidence/open-with/board/files-longpress-png.png` | 61467 | DATA | `4e737d34cb70a7fe9e2df2fbb4ef68d63bec85a37c4d207e37aa765e0b1cfe6c` |
+| `docs/evidence/open-with/board/files-open-with-list.png` | 39723 | DATA | `a1156285e2904a96917d241cac8ffbcf717976ff0a69d11fc3314294c6634780` |
+| `docs/evidence/open-with/board/files-open-with-list-scrolled.png` | 38292 | DATA | `8f4b6df4be7e88126d385c469f852afe0b3b48b3b355153e3890f55973bad7ee` |
+| `docs/evidence/open-with/board/open-pdf.png` | 13186 | DATA | `3558f509fb40553a76c15ddee08e645cc763f9cfe491052fb6096e2338f2c5ea` |
+| `docs/evidence/open-with/board/open-png.png` | 7946 | DATA | `ab5a1211e9695364e4aa6e09535bba8ebecbfc8d19ee6a20782c794a97f07117` |
