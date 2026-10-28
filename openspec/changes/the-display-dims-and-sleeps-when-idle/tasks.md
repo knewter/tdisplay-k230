@@ -59,10 +59,5 @@ Every board command needs the sole board reservation and the flock on
 
 ## 4. Follow-ups, not part of this slice
 
-- [ ] 4.1 Settings row for the timeout (Off / 1 min / 5 min), persisted beside the existing
-  settings and read by `shell-idle` at start. Needs its own Rust service request and a
-  `runtime/shell` or `display/backlight` delta.
-- [ ] 4.2 The HDMI-unplug wake in `nix/touch-trackpad/src/shell_ipc.rs` powers the display on
-  without reporting activity; make it run `k230-idle-dimmer wake` so the panel does not stay dim.
-- [ ] 4.3 Decide whether charging should defer idle off, and whether the wallpaper video should
-  stop decoding while the display is off.
+Moved on 2026-10-28, with the operator's approval, to `the-resting-display-follow-ups`
+(tasks 1.1, 2.1 and 3.1 there keep their wording).

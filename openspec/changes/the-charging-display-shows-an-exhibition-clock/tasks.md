@@ -103,16 +103,8 @@ Charger operations need the operator at the cable; say so before asking.
 
 ## 5. Follow-ups, not part of this slice
 
-- [ ] 5.1 Notification-count dot on the card (needs the broker count).
-- [ ] 5.2 A separate Exhibition brightness, and a setting for the two-hour cap
-  and the effect interval.
-- [ ] 5.3 Close the card on pointer-only activity (HDMI mouse) as well.
-- [ ] 5.4 A shade tile or a Home action to start the exhibition on demand.
-- [ ] 5.5 Camera (moved from 4.7 on 2026-10-28: the operator took the webcam
-  for other work and said not to record; not a gate for this slice): the
-  webcam on the panel records a clock minute change, one
-  position drift and one effect. Look at consecutive raw frames first. Camera
-  evidence, not glass, not injected.
+Moved on 2026-10-28, with the operator's approval, to `the-resting-display-follow-ups`
+(tasks 4.1–4.5 there; 4.5 is the camera recording that was 4.7 here).
 
 ## 6. Closeout
 

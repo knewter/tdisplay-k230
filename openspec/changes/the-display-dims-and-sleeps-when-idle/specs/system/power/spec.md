@@ -2,7 +2,7 @@
 
 ### Requirement: The display dims and then turns off when idle
 
-<!-- UNVERIFIED: host tests cover the dim/restore state logic and the touch gate rules; no board run has timed it, read get_outputs, or driven real input. -->
+*Grounding (2026-10-27/28): read on the board over SSH. Brightness 148 dimmed to 37 at 30 s, and power was `false` at 60 s with apps intact. Glass wakes by finger, keyboard base and power key each restored 148, and after the power-key wake the panel re-dimmed at +32 s. A brightness set while dim survived the wake (docs/evidence/idle-dim/README.md).*
 After 30 s without input the system SHALL lower the panel backlight to 25% of
 its current value, never raising it, and after 60 s without input it SHALL turn
 the display off with the same Sway `output * power off` command the power key
@@ -33,7 +33,7 @@ state, and waking with the power key SHALL restore idle dimming.
 
 ### Requirement: Timer and video keep the display lit
 
-<!-- UNVERIFIED: the Sway inhibit rules and their interaction with card focus are untested on the board. -->
+*Grounding (2026-10-27): injected board runs. A focused Timer held 148 for 103 s and a focused Video for about 98 s. At Home with video playing behind, the panel dimmed at 30 s and turned off at 60 s (docs/evidence/idle-dim/README.md).*
 While the Timer or a video player is the focused app card, the system SHALL NOT
 dim or blank the display for idleness. Other apps and the Home wallpaper video
 SHALL NOT hold the display lit.
@@ -50,7 +50,7 @@ SHALL NOT hold the display lit.
 
 ### Requirement: Touch on a dark display wakes it and is consumed
 
-<!-- UNVERIFIED: the gate rules are host-tested; the compositor path is not built or run, and delivery of touch to Sway on an off output is not shown. -->
+*Grounding (2026-10-27/28): headless Sway showed the waking touch sequence delivering 0 events to a probe, with a positive control (docs/evidence/idle-dim/headless/). On the board, an injected tap on a dark panel over Home's Video icon woke it without launching Video, and a glass finger woke it. The glass tap's no-delivery was not separately observed.*
 A touch that lands while the display is off SHALL turn the display on and SHALL
 be consumed with every contact that joins it until all of them lift, so the app
 beneath receives no down, motion or up from it. A touch that began while the
