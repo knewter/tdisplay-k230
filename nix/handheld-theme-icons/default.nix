@@ -19,6 +19,10 @@ runCommand "handheld-theme-icons-${buildPackages.yaru-theme.version}" {
   # themes that fallback never reaches, so the two rotate buttons drew blank.
   # hicolor is the last stop of every theme's chain: give it the same Yaru
   # legacy artwork as scalable icons.
+  # Yaru's hicolor is a tree of symlinks into other store paths; copy it
+  # through them so it can be written.
+  rm -rf $out/share/icons/hicolor
+  cp -rL --no-preserve=mode ${buildPackages.yaru-theme}/share/icons/hicolor $out/share/icons/hicolor
   chmod -R u+w $out/share/icons/hicolor
   mkdir -p $out/share/icons/hicolor/scalable/actions
   for name in object-rotate-left object-rotate-right object-flip-horizontal object-flip-vertical; do
