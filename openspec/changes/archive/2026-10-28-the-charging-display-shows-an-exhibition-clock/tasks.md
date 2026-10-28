@@ -108,6 +108,8 @@ Moved on 2026-10-28, with the operator's approval, to `the-resting-display-follo
 
 ## 6. Closeout
 
-- [ ] 6.1 Archive after 4.8, once `the-display-dims-and-sleeps-when-idle` has
+- [x] 6.1 Archive after 4.8, once `the-display-dims-and-sleeps-when-idle` has
   archived; re-check the ADDED requirements against the merged `system/power`.
   Proof: `openspec validate the-charging-display-shows-an-exhibition-clock --strict`.
+  Done 2026-10-28: `the-display-dims-and-sleeps-when-idle` archived first; the two ADDED
+  `system/power` requirements have names distinct from its three merged ones; validate passes.
