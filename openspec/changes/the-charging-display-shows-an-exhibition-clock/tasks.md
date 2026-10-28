@@ -62,7 +62,7 @@ test or build never closes a board task. Depends on
 
 Charger operations need the operator at the cable; say so before asking.
 
-- [ ] 4.1 Injected board: with the charger connected, read the charger supply:
+- [x] 4.1 Injected board: with the charger connected, read the charger supply:
   `grep -H . /sys/class/power_supply/*/{type,online}`. Record which supply
   reports `online`, on charger and off, under `docs/evidence/clock-display/board/`.
   This grounds or corrects the "non-Battery supply with `online` 1" rule.
@@ -71,7 +71,7 @@ Charger operations need the operator at the cable; say so before asking.
   for 70 s; `$SM -t get_outputs -r | jq '.[].power'` prints `true`, `cat
   $D/brightness` is a quarter of the prior value, `$SM -t get_tree` lists
   `k230-exhibition`, and a `grim` capture shows the clock. Injected-board proof.
-- [ ] 4.3 Injected board: the same on battery (charger out) shows no
+- [x] 4.3 Injected board: the same on battery (charger out) shows no
   `k230-exhibition` and power `false` at 62 s; with `sleep` written to the
   preference file and the charger in, the same. Injected-board proof.
 - [ ] 4.4 Injected board: tap the exhibition at a point over an app button (a
@@ -83,6 +83,8 @@ Charger operations need the operator at the cable; say so before asking.
 - [ ] 4.5 Injected board: unplug (operator) while exhibiting; the card closes and
   power is `false` within 15 s. Power-key blank while exhibiting, then wake: no
   card, prior card in front.
+  Unplug half done 2026-10-27 (9–11.5 s, `docs/evidence/clock-display/board/README.md`);
+  the power-key half remains.
 - [ ] 4.6 CPU: with the exhibition up and the effect interval left at its default,
   sample `/proc/stat` for 60 s in the clock-only phase and again across one
   effect: `awk '/^cpu /{print $2+$3+$4+$7+$8, $2+$3+$4+$5+$6+$7+$8}' /proc/stat`

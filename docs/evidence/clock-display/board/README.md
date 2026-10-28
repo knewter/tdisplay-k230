@@ -25,7 +25,7 @@ at 17:12:57Z with the charger connected:
     /sys/class/power_supply/bq25890-charger-0/online:1
 
 The battery gauge has no `online` file; the charger is the only non-Battery
-supply. The undocked reading needs the operator to pull the cable; not done.
+supply. The undocked reading is under "Charger cable runs" below.
 
 ## Docked idle opens the clock (task 4.2)
 
@@ -96,3 +96,48 @@ physical keyboard base was not pressed, so 4.4 stays open for that.
 
 One tap at 17:35:06Z, two seconds after the card's `exec` at 17:35:04Z, did
 not close it; that card was probably not mapped yet. Not investigated further.
+
+## Charger cable runs (tasks 4.1, 4.3, 4.5 unplug half)
+
+Times in this section are the board's local time (CDT, UTC-5), as the
+journal and the logger print them. The operator pulled and replugged the
+cable on request; nobody touched the panel during the timed parts. Build
+`3vk5qy3a…` (commit `8352919b`) throughout, test-activated. Logger:
+`plugwatch.sh.txt`, a sleep-paced 1 s loop on the board reading each supply's
+`type`/`online` and the backlight, plus `get_outputs` power and a
+`k230-exhibition` count from `get_tree` every third sample. Evidence class:
+injected board, with the operator at the cable (not glass, not camera).
+
+**First unplug, unlogged** (`unplug-while-exhibiting-journal.txt`). The card
+opened at 16:01:46 (brightness 148 to 37); at 16:03:49 sway was told
+`output * power off` and the panel went to brightness 0, with no other idle
+step due. A wake followed at 16:03:53 and, after the cable went back, a new
+card at 16:04:55. The unplug moment was not recorded, so no latency is
+claimed from this run.
+
+**Battery, preference Clock** (`battery-idle-no-exhibition.txt`). Charger out
+(`bq25890-charger-0/online:0`, type USB; `bq27220-0` is the Battery and has
+no `online` file). A tap at 17:20:13 closed the card (brightness 148) and left
+the Clock app in front; then no input. 17:20:43 (30 s) brightness 37 and no
+`k230-exhibition`; 17:21:13 (60 s) `output * power off`, the logger reading
+power `false`, exhibition 0, at 17:21:16 (63 s after the last input).
+
+**Unplug while exhibiting, logged** (`replug-then-unplug-while-exhibiting.txt`).
+Cable in at 18:01:06 (display woke), card at 18:01:37. Charger `online` was
+1 at 18:01:50.57 and 0 at 18:01:53.08. `output * power off` at 18:02:02;
+logger power `false`, exhibition 0, at 18:02:04. Unplug to blank: 9–11.5 s,
+under the 15 s bound. The power-key half of 4.5 was not run.
+
+The cable then stayed out: the battery policy warned at 7 % (18:24:44),
+5 % (18:31:14) and critical (18:34:45), and powered off cleanly at 18:35:52.
+Replugging booted the boot default (`qh3i7b3f…`) at 19:28:26; `3vk5qy3a…`
+was test-activated again and the shell restarted at 19:30:35.
+
+**Charger in, preference Sleep** (`sleep-preference-on-charger.txt`).
+`sleep` written to `/var/lib/k230-shell-prefs/idle-on-charger` at 19:30:55,
+no input after the shell restart. 19:31:09 brightness 37, no exhibition;
+19:31:39 `output * power off`, logger power `false`, exhibition 0. The file
+was then removed (default Clock again).
+
+The webcam was low and side-on to the panel during these runs; its frames
+show reflections, not the clock, so there is no camera record (4.7).

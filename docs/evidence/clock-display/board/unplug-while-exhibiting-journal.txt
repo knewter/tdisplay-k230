@@ -1,0 +1,18 @@
+# journalctl -b --since 16:01 --until 16:05:30 (sway exec/output lines + panel DCS brightness); build /nix/store/3vk5qy3a3vxj0yx6swg14iki1qq4i36x-nixos-system-nixos-26.11.20260919.20b1ddd
+Oct 27 16:01:02 nixos sway[1471]: 02:51:23.293 [INFO] [sway/commands.c:262] Handling command 'output * power on'
+Oct 27 16:01:03 nixos kernel: canaan-panel-dsi 90850000.dsi.0: canaan_panel: DCS write 0x51 (brightness=37)
+Oct 27 16:01:03 nixos kernel: canaan-panel-dsi 90850000.dsi.0: canaan_panel: DCS write 0x51 (brightness=148)
+Oct 27 16:01:03 nixos sway[1471]: 02:51:24.453 [INFO] [sway/commands.c:262] Handling command 'output * power off'
+Oct 27 16:01:03 nixos kernel: canaan-panel-dsi 90850000.dsi.0: canaan_panel: DCS write 0x51 (brightness=0)
+Oct 27 16:01:04 nixos sway[1471]: 02:51:25.601 [INFO] [sway/commands.c:262] Handling command 'output * power on'
+Oct 27 16:01:05 nixos kernel: canaan-panel-dsi 90850000.dsi.0: canaan_panel: DCS write 0x51 (brightness=148)
+Oct 27 16:01:46 nixos kernel: canaan-panel-dsi 90850000.dsi.0: canaan_panel: DCS write 0x51 (brightness=37)
+Oct 27 16:01:46 nixos sway[1471]: 02:52:07.190 [INFO] [sway/commands.c:262] Handling command 'exec /nix/store/zyzlp1lcrncnv3d4wsjrj6nvnc1fkmxr-k230-exhibition-card'
+Oct 27 16:03:49 nixos sway[1471]: 02:54:10.853 [INFO] [sway/commands.c:262] Handling command 'output * power off'
+Oct 27 16:03:49 nixos kernel: canaan-panel-dsi 90850000.dsi.0: canaan_panel: DCS write 0x51 (brightness=0)
+Oct 27 16:03:53 nixos sway[1471]: 02:54:14.410 [INFO] [sway/commands.c:262] Handling command 'output * power on'
+Oct 27 16:03:54 nixos kernel: canaan-panel-dsi 90850000.dsi.0: canaan_panel: DCS write 0x51 (brightness=37)
+Oct 27 16:03:55 nixos sway[1471]: 02:54:16.069 [INFO] [sway/commands.c:262] Handling command 'output * power on'
+Oct 27 16:03:55 nixos kernel: canaan-panel-dsi 90850000.dsi.0: canaan_panel: DCS write 0x51 (brightness=148)
+Oct 27 16:04:55 nixos kernel: canaan-panel-dsi 90850000.dsi.0: canaan_panel: DCS write 0x51 (brightness=37)
+Oct 27 16:04:55 nixos sway[1471]: 02:55:16.170 [INFO] [sway/commands.c:262] Handling command 'exec /nix/store/zyzlp1lcrncnv3d4wsjrj6nvnc1fkmxr-k230-exhibition-card'

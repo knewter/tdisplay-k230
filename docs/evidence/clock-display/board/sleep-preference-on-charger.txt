@@ -1,0 +1,43 @@
+# build /nix/store/3vk5qy3a3vxj0yx6swg14iki1qq4i36x-nixos-system-nixos-26.11.20260919.20b1ddd (switch-to-configuration test, shell restarted 19:30:35)
+# printf sleep > /var/lib/k230-shell-prefs/idle-on-charger at 19:30:55, charger in, no input
+/sys/class/power_supply/bq25890-charger-0/type:USB
+/sys/class/power_supply/bq27220-0/type:Battery
+/sys/class/power_supply/bq25890-charger-0/online:1
+# journalctl -b --since 19:30:30 (exec/output/DCS brightness lines)
+Oct 27 19:30:40 nixos sway[1478]: 00:00:05.579 [INFO] [sway/commands.c:262] Handling command 'output * power on'
+Oct 27 19:31:09 nixos kernel: canaan-panel-dsi 90850000.dsi.0: canaan_panel: DCS write 0x51 (brightness=37)
+Oct 27 19:31:39 nixos sway[1478]: 00:01:04.119 [INFO] [sway/commands.c:262] Handling command 'output * power off'
+Oct 27 19:31:39 nixos kernel: canaan-panel-dsi 90850000.dsi.0: canaan_panel: DCS write 0x51 (brightness=0)
+# /var/tmp/plugwatch.sh log
+19:30:55.828 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=148 power:true exhib=0
+19:30:56.976 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=148
+19:30:59.319 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=148 power:true exhib=0
+19:31:00.470 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=148
+19:31:02.811 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=148 power:true exhib=0
+19:31:03.955 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=148
+19:31:06.349 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=148 power:true exhib=0
+19:31:07.499 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=148
+19:31:09.951 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=37 power:true exhib=0
+19:31:11.121 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=37
+19:31:13.463 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=37 power:true exhib=0
+19:31:14.607 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=37
+19:31:16.953 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=37 power:true exhib=0
+19:31:18.094 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=37
+19:31:20.434 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=37 power:true exhib=0
+19:31:21.581 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=37
+19:31:23.921 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=37 power:true exhib=0
+19:31:25.065 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=37
+19:31:27.435 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=37 power:true exhib=0
+19:31:28.577 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=37
+19:31:30.918 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=37 power:true exhib=0
+19:31:32.060 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=37
+19:31:34.402 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=37 power:true exhib=0
+19:31:35.546 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=37
+19:31:37.883 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=37 power:true exhib=0
+19:31:39.148 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=37
+19:31:41.570 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=37 power:false exhib=0
+19:31:42.712 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=37
+19:31:45.046 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=37 power:false exhib=0
+19:31:46.200 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=37
+19:31:48.542 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=37 power:false exhib=0
+19:31:49.685 bq25890-charger-0:USB:1 bq27220-0:Battery:  b=37

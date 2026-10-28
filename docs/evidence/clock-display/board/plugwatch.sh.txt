@@ -1,0 +1,16 @@
+#!/bin/sh
+SM=/nix/store/6w8wwbnlbapjfk9h7jvfakmwbjyn1i1a-k230-card-shell-hdmi-trial/bin/swaymsg
+S=/run/shell/sway-ipc.sock
+D=$(ls -d /sys/class/backlight/* | head -1)
+end=$(( $(date +%s) + 3600 )); i=0; last=""
+while [ $(date +%s) -lt $end ]; do
+  sup=$(for p in /sys/class/power_supply/*; do printf "%s:%s:%s " "${p##*/}" "$(cat $p/type)" "$(cat $p/online 2>/dev/null)"; done)
+  st="$sup b=$(cat $D/brightness)"
+  if [ $((i % 3)) -eq 0 ]; then
+    pw=$($SM -s $S -t get_outputs -r | grep -o "\"power\": [a-z]*" | tr -d "\" ")
+    ex=$($SM -s $S -t get_tree | grep -c "\"app_id\": \"k230-exhibition\"")
+    st="$st $pw exhib=$ex"
+  fi
+  [ "$st" != "$last" ] && echo "$(date +%T.%N | cut -c1-12) $st" && last="$st"
+  i=$((i+1)); sleep 1
+done
