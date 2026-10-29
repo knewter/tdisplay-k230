@@ -10,7 +10,8 @@
 
 - [x] 2.1 Evaluate and cross-build the landscape system with the new service and jeepney, and record that `jeepney` builds under the cross toolchain. Proof (QEMU/host, not hardware): `nix build .#nixosConfigurations.k230-mainline-drm-shell-landscape-hdmi.config.system.build.toplevel --out-link <scratch>/result`, then `systemctl cat shell-notification-dbus.service` equivalent via `nix eval` of the unit text. Not run in this worktree.
   Done 2026-10-27: the landscape system built on the host with `shell-notification-dbus.service` and `jeepney` (store path `dhmp8mdi…`, master `8b4f7d73`); see `docs/evidence/apps-alert/README.md`.
-- [ ] 2.2 Run the adaptor and `notify-send` under the QEMU shell, if `libnotify` is added to the test closure, and record the history entry. Proof (QEMU, not glass): the QEMU smoke harness, with the exact command recorded under `docs/evidence/apps-alert/`.
+- [x] 2.2 Run the adaptor and `notify-send` under the QEMU shell, if `libnotify` is added to the test closure, and record the history entry. Proof (QEMU, not glass): the QEMU smoke harness, with the exact command recorded under `docs/evidence/apps-alert/`.
+  *Waived by the operator, 2026-10-29T22:32Z: "waive 2.2". Not run: `libnotify` is not in the QEMU test closure, which the task makes a condition. The same adaptor path was exercised on the board instead (3.1 with `busctl`, 3.2 with a `GApplication`). See `docs/evidence/glass-checklist-2026-10-29/operator-report.md`.*
 
 ## 3. Board (hardware-only)
 

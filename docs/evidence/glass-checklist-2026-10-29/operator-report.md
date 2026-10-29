@@ -110,3 +110,16 @@ What this covers:
   said they were ready for the probe, so it was not sent and no app
   notification banner was seen on glass. `apps-and-timers-can-alert-the-user`
   3.6 ("both banners") stays open for that.
+
+## Waiver of `apps-and-timers-can-alert-the-user` 2.2, 2026-10-29T22:32Z
+
+Offered: waive the QEMU `notify-send` run (`libnotify` is not in the QEMU
+test closure), or add it and run it. The operator, verbatim: "waive 2.2".
+That task was not run. The adaptor path is covered on the board only, by
+tasks 3.1 and 3.2.
+
+The operator also said: "i also saw a notification banner from the timer
+earlier". This matches the Timer entry at 22:22:34Z. An app notification
+banner (task 3.6's second banner) was sent for the operator at 22:32:48Z
+(`busctl`, "Glass probe", urgency critical, Quiet off). The shell logged
+`notification-banner-map-request` for it.
