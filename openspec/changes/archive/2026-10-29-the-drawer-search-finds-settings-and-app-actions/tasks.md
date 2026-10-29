@@ -74,6 +74,7 @@
 
 ## 4. Glass (physical)
 
-- [ ] 4.1 A person taps a Settings result and a lower result on the glass and
+- [x] 4.1 A person taps a Settings result and a lower result on the glass and
   presses Enter on the real base. Proof: a timestamped operator report tied to
   the installed build; keep open until it exists.
+  *Operator at the glass, 2026-10-29 ~01:17 CDT, build `37g1magg…` (drawer unchanged in the test-activated `7w2fpx1f…`): "drawer search works". This is in general terms, without separate detail on each step (docs/evidence/glass-checklist-2026-10-29/operator-report.md).*

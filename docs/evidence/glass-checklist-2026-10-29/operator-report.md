@@ -25,6 +25,25 @@ Not passed by this reply:
   breakthrough results are still owed.
 - Item 10 and the Files part of item 2: "text on files is mostly
   unreadable". This is a defect report, not a pass.
-- Item 9 (drawer search) and the Net part of item 2: no reply yet.
+- Item 9 (drawer search): passed in a later reply, below.
+- The Net part of item 2: no reply yet.
 - Gestures stopped working during the session. The cause and fix are in
   `docs/evidence/card-shell/leaked-touch-point/README.md`.
+
+## Later reply, 2026-10-29 ~01:17 CDT
+
+The build was still `37g1magg…` as the boot default, with `7w2fpx1f…`
+test-activated at 00:50. That build changes only card-shell touch routing,
+not the drawer search. The reply, verbatim:
+
+> i saw the notification, it's all good, i didn't see the timer alert banner i
+> wasn't looking. yeah increase files app text size [...] drawer search works
+
+- Item 9: "drawer search works". This is in general terms. It does not
+  report separately on the Settings result, the lower result and Enter.
+  It closes `the-drawer-search-finds-settings-and-app-actions` 4.1.
+- Item 6: the 10 s Timer breakthrough was not observed ("i wasn't
+  looking"). The notification part is ambiguous: "i saw the notification"
+  does not say whether a banner appeared while Quiet was on. That is the
+  failure case. `do-not-disturb-quiets-banners-and-keeps-history` 3.5 stays
+  open.
