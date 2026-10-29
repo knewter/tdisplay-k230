@@ -27,7 +27,8 @@ Each of these needs the reserved board, the installed build and, for 3.1 and 3.2
   Done 2026-10-27 (injected keys): closed-card banner at 15:22:40Z with one history entry and the helper gone; reopened at 0:31 and it resumed, with one entry at expiry. Limit: Timer alerts share a replacing tag, so the count alone cannot exclude a replaced second post. `docs/evidence/apps-alert/`.
 - [x] 3.5 Measure idle cost: with the adaptor running and no timer, `/proc/<pid>/stat` utime+stime over 60 s for `k230-notification-dbus` shows no growth beyond a post. Record under `docs/evidence/apps-alert/`. Measurement only.
   Done 2026-10-27 15:17:09-15:18:09Z: utime+stime delta 0 ticks over 60 s. `docs/evidence/apps-alert/`.
-- [ ] 3.6 The operator sees both banners on glass. Physical proof: a timestamped operator report tied to the installed build.
+- [x] 3.6 The operator sees both banners on glass. Physical proof: a timestamped operator report tied to the installed build.
+  *Glass, operator reports, 2026-10-29, build `ql630glm…`: the Timer banner ("i also saw a notification banner from the timer earlier", history 22:22:34Z) and an app banner sent with `busctl` at 22:32:48Z ("saw it"). `docs/evidence/glass-checklist-2026-10-29/operator-report.md`.*
 
 ## 4. Open
 

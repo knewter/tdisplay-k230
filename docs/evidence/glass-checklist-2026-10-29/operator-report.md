@@ -123,3 +123,8 @@ earlier". This matches the Timer entry at 22:22:34Z. An app notification
 banner (task 3.6's second banner) was sent for the operator at 22:32:48Z
 (`busctl`, "Glass probe", urgency critical, Quiet off). The shell logged
 `notification-banner-map-request` for it.
+
+The operator, verbatim, a moment after the 22:32:48Z send: "saw it". Both
+banners have now been seen on glass on build `ql630glm…`: the Timer's
+(22:22:34Z) and an app's through the desktop notification service
+(22:32:48Z). This closes `apps-and-timers-can-alert-the-user` 3.6.
