@@ -45,11 +45,13 @@
   set in `gtk.css`), and step changes did not relink `~/.config` (now
   linked through `active`). Files' slow folder load predates this change.*
 
-- [ ] 3.2 The operator reads Files at 100% on glass. Physical proof: a
+- [x] 3.2 The operator reads Files at 100% on glass. Physical proof: a
   timestamped operator report tied to the installed build.
+  *Operator at the glass, 2026-10-29 ~09:53 CDT, build `2867v7pm…`, 100%:
+  "works great." (`docs/evidence/gtk-text-size/README.md` § Operator on glass).*
 
 ## 4. Land
 
-- [ ] 4.1 Merge to `master`, push, check CI, and archive with its spec
+- [x] 4.1 Merge to `master`, push, check CI, and archive with its spec
   synced once tasks 1-3 are done. Proof:
   `openspec validate gtk-app-text-follows-the-text-size --strict`.

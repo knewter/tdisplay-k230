@@ -102,3 +102,10 @@ pre-change GTK4 settings (no font line) behaved the same (`board/files-old-confi
 CPU sampled every 10 s), so this predates the change. Earlier captures in
 `docs/evidence/gtk-touch-floor/` showed the folder about 20 s after launch.
 It needs its own investigation.
+
+## Operator on glass (task 3.2)
+
+The operator used build `2867v7pm…` (test-activated) at the 100% step,
+2026-10-29 ~09:53 CDT. Reply, verbatim: "works great.", then "loading is very
+slow like you said". This confirms the slow folder load recorded above as
+the operator saw it; that load predates this change.
