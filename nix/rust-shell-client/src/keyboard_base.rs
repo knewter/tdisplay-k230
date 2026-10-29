@@ -1,6 +1,8 @@
-//! The keyboard base's two shell-visible devices: the fuel gauge (shown in
-//! the shade, read through `home_widgets::battery`) and the key backlight LED
-//! (a Settings preference). Both are hidden when the device is absent.
+//! The keyboard base's shell-visible devices: the fuel gauge (shown in the
+//! shade, read through `home_widgets::battery`), the key backlight LED (a
+//! Settings preference), and its keys (`tca8418`), whose presence keeps the
+//! on-screen keyboard from rising on its own. The first two are hidden when
+//! the device is absent.
 //!
 //! The key backlight preference is how brightly to light the keys while
 //! typing: Off, Low, Medium or High. It is not a brightness write:
@@ -21,6 +23,9 @@ pub const LED_ROOT: &str = "/sys/class/leds";
 pub const BACKLIGHT_LED: &str = "k230::kbd_backlight";
 pub const PREFERENCE_DIR: &str = "/var/lib/k230-keyboard-base";
 pub const PREFERENCE_FILE: &str = "key-backlight";
+pub const INPUT_ROOT: &str = "/sys/class/input";
+/// The base's key matrix controller, as its input device names itself.
+pub const KEYS_INPUT_NAME: &str = "tca8418";
 
 /// Settings' Key backlight level, chosen on a four-detent slider.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -91,6 +96,17 @@ pub fn backlight_present(led_root: &Path) -> bool {
     led_root.join(BACKLIGHT_LED).join("brightness").exists()
 }
 
+/// True when an input device under `input_root` (ordinarily [`INPUT_ROOT`])
+/// is the base's keys. While it is, a focused field does not raise the
+/// on-screen keyboard; the keyboard's own gesture still does.
+pub fn keys_present(input_root: &Path) -> bool {
+    let Ok(entries) = std::fs::read_dir(input_root) else { return false };
+    entries.flatten().any(|entry| {
+        std::fs::read_to_string(entry.path().join("name"))
+            .is_ok_and(|name| name.trim() == KEYS_INPUT_NAME)
+    })
+}
+
 /// The stored level; a missing or unreadable file is High, matching the
 /// service's default.
 pub fn read_preference(path: &Path) -> KeyBacklight {
@@ -142,6 +158,23 @@ mod tests {
         let led = root.join(BACKLIGHT_LED);
         std::fs::create_dir_all(&led).unwrap();
         std::fs::write(led.join("brightness"), "0\n").unwrap();
+    }
+
+    #[test]
+    fn only_the_tca8418_input_counts_as_the_base_keys() {
+        let dir = tempdir("keys");
+        assert!(!keys_present(&dir));
+        assert!(!keys_present(&dir.join("missing")));
+        for (node, name) in [("input0", "K230 PMU Power Key\n"), ("input1", "Goodix Berlin Capacitive TouchScreen\n")] {
+            std::fs::create_dir_all(dir.join(node)).unwrap();
+            std::fs::write(dir.join(node).join("name"), name).unwrap();
+        }
+        std::fs::create_dir_all(dir.join("event2")).unwrap();
+        assert!(!keys_present(&dir));
+        std::fs::create_dir_all(dir.join("input2")).unwrap();
+        std::fs::write(dir.join("input2/name"), "tca8418\n").unwrap();
+        assert!(keys_present(&dir));
+        std::fs::remove_dir_all(&dir).unwrap();
     }
 
     #[test]

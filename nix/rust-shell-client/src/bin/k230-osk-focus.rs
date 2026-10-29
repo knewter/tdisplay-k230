@@ -15,12 +15,16 @@
 //!                               (default $XDG_RUNTIME_DIR/k230-keyboard-base-last-key)
 //!   K230_OSK_SUPPRESS_SECONDS   suppression window (default 10)
 //!
+//! No show is sent while the keyboard base's keys (`tca8418`) are present
+//! under /sys/class/input; the base types into the field instead.
+//!
 //! A focus-loss hide waits `HIDE_SETTLE` (400 ms), then stands aside when
 //! another surface wrote `show` to `$XDG_RUNTIME_DIR/k230-keyboard-visible`
 //! within the last second.
 
+use k230_shell_rust::keyboard_base;
 use k230_shell_rust::osk_focus::{self, Action, Event, Focus};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::{Command, ExitCode};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use wayland_client::{
@@ -91,6 +95,13 @@ impl App {
             .focus
             .handle(event, || since_last_key(stamp), self.suppress);
         if action == Some(Action::Show) && focused_is_ignored(&self.ignore, &self.sway) {
+            return;
+        }
+        // With the base attached its keys type into the field; the
+        // on-screen keyboard stays down unless its gesture raises it.
+        if action == Some(Action::Show)
+            && keyboard_base::keys_present(Path::new(keyboard_base::INPUT_ROOT))
+        {
             return;
         }
         if action == Some(Action::Hide) {

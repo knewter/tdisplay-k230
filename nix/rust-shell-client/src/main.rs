@@ -3856,9 +3856,10 @@ impl ShellClient {
     fn sync_drawer_keyboard(&mut self) {
         let want = self.route == Route::Drawer && self.layer.is_some()
             && self.splash.is_none() && self.drawer_search.focused;
-        // The base's key focused the field: the keys type, so the on-screen
-        // keyboard stays down.
-        let want_osk = want && self.drawer_search.wants_osk();
+        // The base's key focused the field, or the base is attached: the
+        // keys type, so the on-screen keyboard stays down.
+        let want_osk = want && self.drawer_search.wants_osk()
+            && !keyboard_base::keys_present(Path::new(keyboard_base::INPUT_ROOT));
         self.drawer_search.keyboard_inset = if want_osk && self.keyboard_signal_path.is_some() {
             self.keyboard_height_px + self.keyboard_grip_height_px
         } else { 0.0 };

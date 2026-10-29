@@ -69,3 +69,25 @@ keyboard between 17:06:17Z and 17:06:23Z, plus Enter: no events, and the
 line echoed intact. Switching to the overview at 17:06:25Z gave `hide`, and
 tapping Home at 17:06:28Z a second `hide`. The keys came from the injected
 uinput device, not the base or the on-screen keyboard, so 3.5 and 3.6 remain.
+
+## Base attached: no keyboard on focus (task 3.5), 2026-10-28 23:02–23:04
+
+Build `vf91pbq6…`, test-activated, with the shell restarted and `shell-idle`
+stopped. Evidence class: **injected** (`ui.py` uinput touch, plus a uinput
+keyboard that is not the base) with native `grim` captures. The base's
+`tca8418` was listed in `/proc/bus/input/devices`. No base key was pressed
+after the shell restart: `k230-keyboard-base-last-key` did not exist, so the
+10 s rule could not be what kept the keyboard down. The visibility marker
+`/run/shell/k230-keyboard-visible` was read after each step.
+
+| Step | Result | Capture |
+| --- | --- | --- |
+| Drawer, tap the search field | Cursor in the field, no keyboard; injected F, I, L typed "fil" and listed Files | [`drawer-tap.png`](board/base-attached/drawer-tap.png), [`drawer-typed.png`](board/base-attached/drawer-typed.png) |
+| Terminal opened from the drawer, tapped | foot focused, no keyboard; marker still `hide` from 23:02:34 | [`terminal.png`](board/base-attached/terminal.png) |
+| Two-finger swipe up from the bottom edge | Keyboard rose; marker `show` at 23:03:38 | [`gesture.png`](board/base-attached/gesture.png) |
+| Files, tap the search button (GTK4 entry) | Entry focused, "fil" typed, no keyboard; marker still `hide` from the handle swipe at 23:04:02 | [`gtk-typed.png`](board/base-attached/gtk-typed.png) |
+
+**Limits.** The keys came from an injected keyboard, not from the base's
+matrix. There is no same-build control without the base, because the base
+cannot be detached in software. Before this rule, 3.3 and 3.4 showed the
+same fields raising the keyboard.

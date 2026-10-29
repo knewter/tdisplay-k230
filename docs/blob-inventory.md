@@ -2373,6 +2373,11 @@ DATA 96c4071fd2bac7bffefda7761c1836a98e3362620ab06886925391a59b7aeef0 docs/evide
 DATA 670e0bc5d06dd3442f2adb071c9c6248832b6b8da0c485b73cf71dcda40bfa72 docs/evidence/resting-display-follow-ups/board/clock-tile-battery.png
 DATA 0f150ae1e483e3c5f16fb0eeebac502a7d9dae3b83c826f252c8942cbb049495 docs/evidence/resting-display-follow-ups/board/clock-tile-battery-tapped.png
 DATA 630806f60e55b9133c3e52db7bd4a1a3f762d89f229eaac3f90875de30c6971c docs/evidence/open-with/board/files-full-card.png
+DATA ee7513ae8fcfc031781673cfef7cab622fc831f615df553c9507c0bea46f6b12 docs/evidence/a-focused-text-field/board/base-attached/drawer-tap.png
+DATA b1eb68ec503f1e5a9abe40b356781fb49fc2b269104241eb793191e9a5fa46ac docs/evidence/a-focused-text-field/board/base-attached/drawer-typed.png
+DATA bc4e05491816fd0381ab7479f3a1a826828a9a093df4d6638df4aa2906c79e0e docs/evidence/a-focused-text-field/board/base-attached/gesture.png
+DATA 266249167404404b297e63352a2cd8a92e7c07bd32ba8f07059343566b80bbae docs/evidence/a-focused-text-field/board/base-attached/gtk-typed.png
+DATA 8aac4e8af34c0feb4f1ffd08c83c94c1fdbaad11cb7922c816dd02d71d750bb7 docs/evidence/a-focused-text-field/board/base-attached/terminal.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4579,3 +4584,15 @@ Native grim of Files opened from the drawer on build 37nvncgk, 2026-10-28.
 | Path | Bytes | Class | SHA256 |
 | --- | ---: | --- | --- |
 | `docs/evidence/open-with/board/files-full-card.png` | 15192 | DATA | `630806f60e55b9133c3e52db7bd4a1a3f762d89f229eaac3f90875de30c6971c` |
+
+## Base-attached keyboard captures (focused text field 3.5)
+
+Native grim captures on build vf91pbq6, 2026-10-28: drawer search, foot and a GTK4 entry focused with the base attached, plus the gesture raising the keyboard.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/a-focused-text-field/board/base-attached/drawer-tap.png` | 70373 | DATA | `ee7513ae8fcfc031781673cfef7cab622fc831f615df553c9507c0bea46f6b12` |
+| `docs/evidence/a-focused-text-field/board/base-attached/drawer-typed.png` | 10400 | DATA | `b1eb68ec503f1e5a9abe40b356781fb49fc2b269104241eb793191e9a5fa46ac` |
+| `docs/evidence/a-focused-text-field/board/base-attached/gesture.png` | 17636 | DATA | `bc4e05491816fd0381ab7479f3a1a826828a9a093df4d6638df4aa2906c79e0e` |
+| `docs/evidence/a-focused-text-field/board/base-attached/gtk-typed.png` | 15555 | DATA | `266249167404404b297e63352a2cd8a92e7c07bd32ba8f07059343566b80bbae` |
+| `docs/evidence/a-focused-text-field/board/base-attached/terminal.png` | 6307 | DATA | `8aac4e8af34c0feb4f1ffd08c83c94c1fdbaad11cb7922c816dd02d71d750bb7` |
