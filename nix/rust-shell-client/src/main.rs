@@ -3417,9 +3417,11 @@ impl ShellClient {
                 + Duration::from_millis(if self.banner_preview.is_some() { 500 } else { 1000 });
         }
         if self.banner_preview.is_none() { self.banner_tapped = None; }
+        // `hide()` unmaps the overlay but leaves `route` at its last value,
+        // so the shade counts as open only while its layer is mapped.
         let visible = notification_banner::visible(
             self.banner_preview.as_ref(),
-            self.route == Route::Shade,
+            self.route == Route::Shade && self.layer.is_some(),
             self.banner_tapped,
         );
         if !visible {

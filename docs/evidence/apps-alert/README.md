@@ -117,6 +117,24 @@ Two things held back banners during this run:
    critical `busctl` notification at 20:53:44Z mapped a banner at once. The fix
    and its board check are in the next section.
 
+## Banners after the shade closes: fix, 2026-10-29
+
+`nix/rust-shell-client/src/main.rs` `sync_banner` now counts the shade as
+open only while the overlay's layer is mapped
+(`self.route == Route::Shade && self.layer.is_some()`). Host:
+`cargo test --offline --lib` in `nix/rust-shell-client`, 678 passed. Board:
+build `/nix/store/ql630glmr9j0smkf5b0l14y0cxlmsjhg-nixos-system-nixos-26.11.20260919.20b1ddd`,
+test-activated (not the boot default). Evidence class: injected touch and
+`busctl` over SSH.
+
+The steps match the failing run on `1lpsniwg…` at 20:52:52Z: a swipe down
+from the top edge opened the shade, and a swipe up closed it, which also
+showed the compositor's overview. Then, at 21:09:50Z, a critical `busctl`
+notification. This time the shell logged `notification-banner-map-request`
+and unmapped the banner about 4.6 s later. `board/banner-after-shade-closed.png`
+is the banner over the overview. Quiet was off for the test, then turned back
+on with the tile.
+
 ## Not covered
 
 The operator's glass check (3.6).
