@@ -41,32 +41,50 @@ launches without new plumbing.
 
 ## Decisions
 
-### GTK4 takes its size from the GSettings keyfile
+### GTK4 takes its size from `gtk-4.0/settings.ini`
 
-GTK4 on Wayland reads its font settings from the portal or, failing that,
-from `org.gnome.desktop.interface` in GSettings. The adapter's keyfile
-already feeds that schema to every GTK4 app this shell launches. The keyfile
-will set:
+The adapter writes `gtk-font-name=DejaVu Sans <13 × step>` into the GTK4
+`settings.ini` it already generates, the same face and size as GTK3.
 
-- `font-name='DejaVu Sans 13'`, the same face and size as GTK3;
-- `text-scaling-factor`, set to the step.
+The first plan was the GSettings keyfile (`font-name` and
+`text-scaling-factor` in `org.gnome.desktop.interface`), which already feeds
+GTK4 apps their colour scheme. Task 1.1 measured it under GTK 4.22.4 and
+libadwaita 1.9.3 on Wayland with no portal. GTK4 ignored both keys and
+honoured `settings.ini` (`docs/evidence/gtk-text-size/README.md`). Without
+either, it falls back to "Sans 10", which is what Files shows on the board
+today.
 
-The alternative was `gtk-font-name` in `gtk-4.0/settings.ini`. GTK4 may
-ignore that file for fonts while a GSettings source exists. Task 1.1
-measures both on the host and keeps whichever GTK 4.22 and libadwaita
-actually honour. If only `settings.ini` works, the step is folded into its
-point size instead.
+### GTK3 takes its size from the generated `gtk.css`
 
-### GTK3 multiplies the point size
+GTK3 gets `window, tooltip { font-family: "DejaVu Sans"; font-size: <13 ×
+step>pt; }` in the `gtk-3.0/gtk.css` the adapter already generates. Every
+widget inherits it, and relative rules keep their ratio.
 
-GTK3 takes the scaled size in `gtk-font-name`: 13 pt × the step, rounded to
-a whole point (13, 17, 21, 26).
+The plan was `gtk-font-name` in `gtk-3.0/settings.ini`. On the board, Net
+kept the same text at 26 pt. A host probe then showed that GTK 3.24 on
+Wayland takes the font from GSettings whenever the schema is installed,
+which nixpkgs' wrapper always arranges. The `settings.ini` line is kept
+because it is harmless and applies where no schema is found.
 
 The rejected alternatives were:
 
-- **`GDK_DPI_SCALE`:** an environment variable fixed at each launch, which
-  would have to be threaded through every launcher.
-- **`gtk-xft-dpi`:** under GTK3 on Wayland it is not reliably honoured.
+- **Writing the font into dconf:** this would add a runtime write to the
+  user database, beside generated files.
+- **A session-wide `GSETTINGS_BACKEND=keyfile`:** an app writing a setting
+  would replace the linked keyfile with a private copy.
+- **`GDK_DPI_SCALE`:** a launch-time environment variable that every
+  launcher would have to carry.
+
+### `~/.config` links go through the adapter's `active` pointer
+
+The theme transaction's deferred sync only moves
+`app-appearance/active`. The GTK config links used to point at a concrete
+generation, so they followed only after a CLI `sync`, which runs at shell
+start and at each terminal launch.
+
+The links now go through `active`. One pointer move retargets GTK3, GTK4
+and Foot together, and the transaction never writes into `~/.config` (so
+tests of it cannot touch a developer's home either).
 
 ### Rejected: scaling whole apps
 

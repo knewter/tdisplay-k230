@@ -100,7 +100,22 @@ def readable_on(base: str, first: str, second: str) -> str:
     return first if contrast(first) >= contrast(second) else second
 
 
-def render_gtk3_settings(mode: str, icon_theme: str | None) -> str:
+#: GTK3 and GTK4 base font: DejaVu Sans 13 pt is 17.3 px, the shell's body
+#: text at the 100% step. GTK4's own default is Sans 10 (13.3 px), which the
+#: operator found unreadable in Files (docs/evidence/gtk-text-size/).
+FONT_FAMILY = "DejaVu Sans"
+FONT_POINTS = 13
+TEXT_STEPS = (1.0, 1.3, 1.6, 2.0)
+
+
+def font_name(text_step: float) -> str:
+    """`gtk-font-name` for a Settings text step, rounded to a whole point."""
+    if text_step not in TEXT_STEPS:
+        raise GtkAppearanceError(f"unknown text step: {text_step!r}")
+    return f"{FONT_FAMILY} {round(FONT_POINTS * text_step)}"
+
+
+def render_gtk3_settings(mode: str, icon_theme: str | None, text_step: float = 1.0) -> str:
     """GTK3 `settings.ini` for touch: bigger font, close-only decorations."""
     if mode not in MODES:
         raise GtkAppearanceError(f"unknown appearance mode: {mode!r}")
@@ -111,7 +126,7 @@ def render_gtk3_settings(mode: str, icon_theme: str | None) -> str:
         "[Settings]",
         f"gtk-application-prefer-dark-theme={'true' if mode == 'dark' else 'false'}",
         f"gtk-icon-theme-name={icon_theme or DEFAULT_ICON_THEME}",
-        "gtk-font-name=DejaVu Sans 13",
+        f"gtk-font-name={font_name(text_step)}",
         "gtk-decoration-layout=:close",
         # A finger tap on a slider trough should select, not page-step.
         "gtk-primary-button-warps-slider=false",
@@ -120,21 +135,29 @@ def render_gtk3_settings(mode: str, icon_theme: str | None) -> str:
         ""])
 
 
-def render_gtk4_settings() -> str:
-    """GTK4 `settings.ini`: close-only decorations. libadwaita on this image
-    does not take `button-layout` from the GSettings keyfile backend, but does
-    read `gtk-decoration-layout` here."""
-    return "\n".join([GTK3_INI_MARKER, "[Settings]", "gtk-decoration-layout=:close", ""])
+def render_gtk4_settings(text_step: float = 1.0) -> str:
+    """GTK4 `settings.ini`: the touch font and close-only decorations. With
+    no portal, GTK4 takes neither its font nor `button-layout` from the
+    GSettings keyfile backend, but reads both from here."""
+    return "\n".join([GTK3_INI_MARKER, "[Settings]", f"gtk-font-name={font_name(text_step)}",
+                      "gtk-decoration-layout=:close", ""])
 
 
-def render_gtk3_css(colors: dict[str, str], mode: str) -> str:
+def render_gtk3_css(colors: dict[str, str], mode: str, text_step: float = 1.0) -> str:
     """GTK3 `gtk.css` over Adwaita from the generation's validated colors.
 
     `colors` needs `background`, `foreground` and `accent`. Plain widget
     rules only: GtkDrawingArea canvases (the puzzles' boards) are left alone.
+
+    The text size is set here, on the toplevel and tooltip nodes so every
+    widget inherits it and relative sizes keep their ratio. GTK3 on Wayland
+    takes `gtk-font-name` from GSettings whenever the schema is installed,
+    as it is in every wrapped GTK3 app, so `settings.ini` alone has no
+    effect (docs/evidence/gtk-text-size/).
     """
     if mode not in MODES:
         raise GtkAppearanceError(f"unknown appearance mode: {mode!r}")
+    points = font_name(text_step).rsplit(" ", 1)[1]
     bg, fg, accent = (colors.get(key) for key in ("background", "foreground", "accent"))
     _rgb(bg), _rgb(fg), _rgb(accent)
     bar = mix(bg, fg, 0.06)
@@ -165,6 +188,7 @@ def render_gtk3_css(colors: dict[str, str], mode: str) -> str:
 @define-color k230_hover {hover};
 @define-color k230_accent {accent};
 @define-color k230_on_accent {on_accent};
+window, tooltip {{ font-family: "{FONT_FAMILY}"; font-size: {points}pt; }}
 
 window, dialog, .background {{ background-color: {bg}; color: {fg}; }}
 .view, textview text, iconview, treeview.view {{ background-color: {bg}; color: {fg}; }}

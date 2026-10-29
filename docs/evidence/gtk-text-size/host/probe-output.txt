@@ -1,0 +1,6 @@
+# 2026-10-29T08:37:29-05:00 docs/evidence/gtk-text-size/host/probe-env.sh
+neither {"gtk": "4.22.4", "adw": "1.9.3", "gtk-font-name": "Sans 10", "gtk-xft-dpi": -1, "body": {"font": "Sans 13.333px", "height_px": 19}, "caption": {"font": "Sans 10.934px", "height_px": 16}}
+keyfile-font {"gtk": "4.22.4", "adw": "1.9.3", "gtk-font-name": "Sans 10", "gtk-xft-dpi": -1, "body": {"font": "Sans 13.333px", "height_px": 19}, "caption": {"font": "Sans 10.934px", "height_px": 16}}
+keyfile-font-scale2 {"gtk": "4.22.4", "adw": "1.9.3", "gtk-font-name": "Sans 10", "gtk-xft-dpi": -1, "body": {"font": "Sans 13.333px", "height_px": 19}, "caption": {"font": "Sans 10.934px", "height_px": 16}}
+settings-ini-font13 {"gtk": "4.22.4", "adw": "1.9.3", "gtk-font-name": "DejaVu Sans 13", "gtk-xft-dpi": -1, "body": {"font": "DejaVu Sans 17.333px", "height_px": 21}, "caption": {"font": "DejaVu Sans 14.213px", "height_px": 20}}
+ini26-with-keyfile13 {"gtk": "4.22.4", "adw": "1.9.3", "gtk-font-name": "DejaVu Sans 26", "gtk-xft-dpi": -1, "body": {"font": "DejaVu Sans 34.667px", "height_px": 41}, "caption": {"font": "DejaVu Sans 28.427px", "height_px": 40}}

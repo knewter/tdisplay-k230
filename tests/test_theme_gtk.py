@@ -81,6 +81,22 @@ class Gtk3(unittest.TestCase):
         self.assertIn("gtk-application-prefer-dark-theme=false\n",
                       gtk.render_gtk3_settings("light", None))
 
+    def test_font_follows_the_text_step(self):
+        sizes = {1.0: 13, 1.3: 17, 1.6: 21, 2.0: 26}
+        for step, points in sizes.items():
+            font = f"gtk-font-name=DejaVu Sans {points}\n"
+            self.assertIn(font, gtk.render_gtk3_settings("dark", None, step))
+            self.assertIn(font, gtk.render_gtk4_settings(step))
+            self.assertIn(f'window, tooltip {{ font-family: "DejaVu Sans"; font-size: {points}pt; }}\n',
+                          gtk.render_gtk3_css(PALETTE, "dark", step))
+        with self.assertRaises(gtk.GtkAppearanceError):
+            gtk.font_name(1.5)
+
+    def test_gtk4_settings_keep_close_only_decorations(self):
+        ini = gtk.render_gtk4_settings()
+        self.assertEqual(ini.splitlines()[0], gtk.GTK3_INI_MARKER)
+        self.assertIn("gtk-decoration-layout=:close\n", ini)
+
     def test_settings_reject_bad_input(self):
         with self.assertRaises(gtk.GtkAppearanceError):
             gtk.render_gtk3_settings("sepia", None)

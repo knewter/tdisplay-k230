@@ -15,13 +15,18 @@ gets larger shell text, while every GTK window stays at its fixed size.
 ## What Changes
 
 - **A base size for every GTK app:** GTK3 and GTK4 apps get the same base
-  text size, matching the shell's body text at 100%. GTK3 already asks for
-  DejaVu Sans 13. GTK4 (Nautilus and other libadwaita apps) gets the same
-  size through its own settings file.
+  text size, matching the shell's body text at 100%. GTK4 (Nautilus and
+  other libadwaita apps) gets it through its settings file. GTK3 gets it
+  through its generated stylesheet: its `settings.ini` already asked for
+  DejaVu Sans 13, but on Wayland GTK3 takes its font from GSettings instead,
+  so that line never took effect.
 - **GTK text follows the Settings step:** GTK text scales with the Settings
   text-size step (100%, 130%, 160%, 200%). Changing the step re-prepares the
   active theme generation, as it already does for the shell. Apps started
   afterwards use the new size.
+- **Changes reach new launches without a restart:** a theme or text-size
+  change now reaches GTK apps launched afterwards. Before, the config links
+  followed only after a shell restart or a terminal launch.
 - Captures at 100% and 200% show whether Files and Net stay usable on the
   1232x568 panel.
 

@@ -20,6 +20,7 @@
 @define-color k230_hover #4d5a7c;
 @define-color k230_accent #89b4fa;
 @define-color k230_on_accent #1e1e2e;
+window, tooltip { font-family: "DejaVu Sans"; font-size: 13pt; }
 
 window, dialog, .background { background-color: #1e1e2e; color: #cdd6f4; }
 .view, textview text, iconview, treeview.view { background-color: #1e1e2e; color: #cdd6f4; }

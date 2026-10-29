@@ -2392,6 +2392,13 @@ DATA 3a8597980c2d7babda0d46b8d6d98708c95f5e3a70cb0a7bb5746d67cbd87f20 docs/evide
 DATA 47f43cfafed7267fcf37c32ce1eb4f4406498025c1da7079a8f31391085f01a3 docs/evidence/a-focused-text-field/board/base-attached/base-echo-terminal.png
 DATA 3cde93ea0f347c4044ad22f79947032ee112f6b65d568078384321d766d7635f docs/evidence/home-notification-count/board/count-8px-before.png
 DATA 2c960160ea76dc15f684488de7696f8d46f5a1308922592c84bb926c23cc1f66 docs/evidence/home-notification-count/board/count-24px-after.png
+DATA ee884d51c39d84cf27b2ab62654511aae9f0208538b32ce23eab5bebfc8e4286 docs/evidence/gtk-text-size/board/files-100.png
+DATA a49355f58ae58ce7aadd60e689bd30861b12211fde63cf4b1e2ecdde8a21a5cd docs/evidence/gtk-text-size/board/files-200.png
+DATA d74b7ff84919caf261dec14864a7ab743e6fdeacdc17e1bd379318a3a9cfe9d4 docs/evidence/gtk-text-size/board/files-old-config-loading.png
+DATA 3f9d0d96a05413066dfe64384698342a86331a7519860c2859244fa1c07e25f1 docs/evidence/gtk-text-size/board/net-100-menu.png
+DATA fa37d89428cb4942be14d61ab3cbc2e131f42d74cb1d7f939f1fe9ef1c1e2d7b docs/evidence/gtk-text-size/board/net-100.png
+DATA 288157ea33cc4796876d3776cb0e4a761635bea426f5dd2aba733c0572ade5c1 docs/evidence/gtk-text-size/board/net-200-menu.png
+DATA 48b323e7268aa04ed653de7cae0759d95970f4194995dfbaeaf0fab18f0fa654 docs/evidence/gtk-text-size/board/net-200.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4645,3 +4652,17 @@ Native grim of Home's notification count pill at the old 8 px and new 24 px corn
 | --- | ---: | --- | --- |
 | `docs/evidence/home-notification-count/board/count-8px-before.png` | 214066 | DATA | `3cde93ea0f347c4044ad22f79947032ee112f6b65d568078384321d766d7635f` |
 | `docs/evidence/home-notification-count/board/count-24px-after.png` | 208875 | DATA | `2c960160ea76dc15f684488de7696f8d46f5a1308922592c84bb926c23cc1f66` |
+
+## GTK text follows the text size (board)
+
+Native grim captures of Files and Net at 100% and 200%, and Files with the pre-change GTK4 settings, for gtk-app-text-follows-the-text-size task 3.1.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/gtk-text-size/board/files-100.png` | 24649 | DATA | `ee884d51c39d84cf27b2ab62654511aae9f0208538b32ce23eab5bebfc8e4286` |
+| `docs/evidence/gtk-text-size/board/files-200.png` | 24186 | DATA | `a49355f58ae58ce7aadd60e689bd30861b12211fde63cf4b1e2ecdde8a21a5cd` |
+| `docs/evidence/gtk-text-size/board/files-old-config-loading.png` | 15195 | DATA | `d74b7ff84919caf261dec14864a7ab743e6fdeacdc17e1bd379318a3a9cfe9d4` |
+| `docs/evidence/gtk-text-size/board/net-100-menu.png` | 13880 | DATA | `3f9d0d96a05413066dfe64384698342a86331a7519860c2859244fa1c07e25f1` |
+| `docs/evidence/gtk-text-size/board/net-100.png` | 11184 | DATA | `fa37d89428cb4942be14d61ab3cbc2e131f42d74cb1d7f939f1fe9ef1c1e2d7b` |
+| `docs/evidence/gtk-text-size/board/net-200-menu.png` | 21703 | DATA | `288157ea33cc4796876d3776cb0e4a761635bea426f5dd2aba733c0572ade5c1` |
+| `docs/evidence/gtk-text-size/board/net-200.png` | 15482 | DATA | `48b323e7268aa04ed653de7cae0759d95970f4194995dfbaeaf0fab18f0fa654` |

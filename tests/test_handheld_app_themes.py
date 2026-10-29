@@ -17,6 +17,7 @@ sys.path.insert(0, str(ROOT / "tools"))
 import app_appearance as app
 import theme_activate
 import theme_transaction as tx
+import theme_vision
 
 
 COLORS = ('background="#101820"\nforeground="#e0e5e8"\naccent="#778899"\n'
@@ -65,6 +66,35 @@ class AppAppearance(unittest.TestCase):
             self.assertTrue(css.startswith("/* Written by k230-app-appearance"))
             self.assertIn("#101820", css)
             self.assertIn("#778899", css)
+
+    def test_gtk_text_follows_the_saved_text_step(self):
+        with tempfile.TemporaryDirectory() as first, tempfile.TemporaryDirectory() as second:
+            _, state, generation = prepared(Path(first))
+            default = app.prepare(generation, state)
+            base = Path(second)
+            (base / "state").mkdir()
+            theme_vision.save(base / "state", {"text_scale": "largest", "contrast": "standard"})
+            _, large_state, large_generation = prepared(base)
+            self.assertEqual(app.text_step(generation), 1.0)
+            self.assertEqual(app.text_step(large_generation), 2.0)
+            large = app.prepare(large_generation, large_state)
+            self.assertNotEqual(default.name, large.name)
+            for name in ("gtk-3.0/settings.ini", "gtk-4.0/settings.ini"):
+                self.assertIn("gtk-font-name=DejaVu Sans 13\n", (default / name).read_text())
+                self.assertIn("gtk-font-name=DejaVu Sans 26\n", (large / name).read_text())
+            self.assertIn("font-size: 13pt;", (default / "gtk-3.0/gtk.css").read_text())
+            self.assertIn("font-size: 26pt;", (large / "gtk-3.0/gtk.css").read_text())
+
+    def test_unknown_text_step_in_generation_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            _, state, generation = prepared(Path(temporary))
+            appearance = json.loads((generation / "appearance.json").read_text())
+            appearance["sections"]["accessibility"]["text-scale"]["value"] = 9
+            path = generation / "appearance.json"
+            path.chmod(0o600)
+            path.write_text(json.dumps(appearance))
+            with self.assertRaises(app.AppAppearanceError):
+                app.prepare(generation, state)
 
     def test_gtk_appearance_reads_mode_and_icon_theme(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -143,6 +173,20 @@ class AppAppearance(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertTrue((config / "gtk-3.0/gtk.css").resolve().is_file())
             self.assertEqual(result.stdout.strip(), str((state / "app-appearance/active").resolve()))
+            # The links go through the adapter's pointer, so a later sync that
+            # only moves the pointer (the theme transaction's) retargets them.
+            for subdir in ("gtk-3.0", "gtk-4.0"):
+                self.assertEqual(os.readlink(config / subdir / "settings.ini"),
+                                 str(state / "app-appearance/active" / subdir / "settings.ini"))
+            theme_vision.save(state, {"text_scale": "largest", "contrast": "standard"})
+            large, _ = theme_activate.prepare(
+                "test", source=base / "source", state_root=state, user_themes=base / "missing",
+                builtins=None, tools=theme_activate.HOST_TOOLS)
+            (state / "active").unlink()
+            (state / "active").symlink_to(large)
+            app.sync(state)
+            self.assertIn("gtk-font-name=DejaVu Sans 26\n",
+                          (config / "gtk-4.0/settings.ini").read_text())
 
     def test_cached_gtk_settings_tamper_is_rejected(self):
         with tempfile.TemporaryDirectory() as temporary:

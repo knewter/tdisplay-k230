@@ -19,7 +19,7 @@ import time
 
 from theme_gtk import (GTK3_CSS_MARKER, GTK3_INI_MARKER, GtkAppearanceError, render as gtk_keyfile,
                        render_gtk4_css, render_gtk4_settings,
-                       render_gtk3_css, render_gtk3_settings)
+                       render_gtk3_css, render_gtk3_settings, TEXT_STEPS)
 from theme_transaction import TransactionError, _pointer
 
 
@@ -34,6 +34,8 @@ class AppAppearanceSuperseded(AppAppearanceError):
 COLOR = re.compile(r"#[0-9a-fA-F]{6}\Z")
 IDENTITY = re.compile(r"[0-9a-f]{24}\Z")
 MAX_REPORT = 64 * 1024
+# The bound theme_activate puts on the appearance payload it writes.
+MAX_APPEARANCE = 256 * 1024
 ANSI_FALLBACK = ("background", "red", "green", "yellow", "blue", "magenta", "cyan", "foreground",
                  "muted", "bright_red", "bright_green", "bright_yellow", "bright_blue",
                  "bright_magenta", "bright_cyan", "bright_foreground")
@@ -100,13 +102,31 @@ def gtk_appearance(generation: Path) -> tuple[str, str | None]:
     return mode, icon_theme
 
 
-def gtk3_files(colors: dict[str, str], mode: str, icon_theme: str | None) -> dict[str, str]:
+def text_step(generation: Path) -> float:
+    """The Settings text step recorded in the generation's `appearance.json`
+    (`theme_vision.tokens`), so GTK text and the shell's agree. A generation
+    without one, such as the pinned fallback, is at 100%."""
+    source = generation / "appearance.json"
+    if not source.exists():
+        return 1.0
+    if source.is_symlink() or not source.is_file() or source.stat().st_size > MAX_APPEARANCE:
+        raise AppAppearanceError("unsafe or oversized generation appearance")
+    tokens = json.loads(source.read_bytes())
+    step = (tokens.get("sections", {}).get("accessibility", {}).get("text-scale", {})
+            .get("value", 1.0) if isinstance(tokens, dict) else None)
+    if step not in TEXT_STEPS:
+        raise AppAppearanceError(f"invalid text step in generation: {step!r}")
+    return float(step)
+
+
+def gtk3_files(colors: dict[str, str], mode: str, icon_theme: str | None,
+               step: float = 1.0) -> dict[str, str]:
     """GTK3 apps' `settings.ini` and `gtk.css`, and GTK4's `settings.ini` and `gtk.css`,
     keyed by path inside a generation."""
     try:
-        return {"gtk-3.0/settings.ini": render_gtk3_settings(mode, icon_theme),
-                "gtk-3.0/gtk.css": render_gtk3_css(colors, mode),
-                "gtk-4.0/settings.ini": render_gtk4_settings(),
+        return {"gtk-3.0/settings.ini": render_gtk3_settings(mode, icon_theme, step),
+                "gtk-3.0/gtk.css": render_gtk3_css(colors, mode, step),
+                "gtk-4.0/settings.ini": render_gtk4_settings(step),
                 "gtk-4.0/gtk.css": render_gtk4_css()}
     except GtkAppearanceError as error:
         raise AppAppearanceError(str(error)) from error
@@ -150,7 +170,7 @@ def prepare(generation: Path, state_root: Path) -> Path:
         gtk_settings = gtk_keyfile(mode, icon_theme)
     except GtkAppearanceError as error:
         raise AppAppearanceError(str(error)) from error
-    gtk3 = gtk3_files(colors, mode, icon_theme)
+    gtk3 = gtk3_files(colors, mode, icon_theme, text_step(generation))
     identity = hashlib.sha256((generation.name + "\n" + json.dumps(colors, sort_keys=True)
                                + "\n" + gtk_settings + json.dumps(gtk3, sort_keys=True)
                                + Path(__file__).read_text()).encode()).hexdigest()[:24]
@@ -279,23 +299,31 @@ def link_gtk3(target: Path, config_home: Path) -> list[str]:
     ~/.config/gtk-4.0/{settings.ini,gtk.css} at a prepared generation.
 
     Idempotent. A file is replaced only when it is a symlink we made (into an
-    app-appearance generation) or a regular file starting with our marker;
-    anything else is left alone and named in the returned withheld list.
+    app-appearance generation or its `active` pointer) or a regular file
+    starting with our marker; anything else is left alone and named in the
+    returned withheld list.
+
+    When `active` names `target`, links go through `active`, so the theme
+    transaction's pointer move alone retargets every future GTK launch; its
+    deferred sync never touches the config directory.
     """
     withheld = []
+    active = target.parent.parent / "active"
+    base = active if active.is_symlink() and active.resolve() == target.resolve() else target
     for subdir, name, marker in GTK_LINKS:
         directory = config_home / subdir
         if directory.is_symlink() or (directory.exists() and not directory.is_dir()):
             withheld.append(f"{subdir} config directory is foreign")
             continue
         directory.mkdir(mode=0o755, parents=True, exist_ok=True)
-        source = target / subdir / name
+        source = base / subdir / name
         link = directory / name
         if link.is_symlink():
             raw = Path(os.readlink(link))
             if raw == source:
                 continue
-            ours = "app-appearance" in raw.parts and "generations" in raw.parts
+            ours = "app-appearance" in raw.parts and ("generations" in raw.parts
+                                                      or "active" in raw.parts)
         elif link.is_file():
             with link.open("rb") as stream:
                 ours = stream.readline(256).decode("utf-8", "replace").rstrip("\n") == marker
