@@ -504,7 +504,8 @@ def main(argv=None):
     if args.render_once:
         cols, rows = (int(p) for p in args.render_once.lower().split("x"))
         now = time.time()
-        print(clock_layout(cols, rows, time.localtime(now), int(now // 60)).plain())
+        print(clock_layout(cols, rows, time.localtime(now), int(now // 60),
+                           twelve=apps.read_twelve_hour(args.prefs_dir)).plain())
         return 0
     if not sys.stdin.isatty():
         print("k230-exhibition: needs a terminal", file=sys.stderr)

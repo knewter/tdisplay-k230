@@ -25,9 +25,14 @@
 
 ## 2. Host renders
 
-- [ ] 2.1 Render the shade, Home, Date & time and the idle clock in 12-hour
+- [x] 2.1 Render the shade, Home, Date & time and the idle clock in 12-hour
   form at 100% and 200%, in both orientations. Proof (host render, not glass):
   renders under `docs/evidence/clock-format/host/`.
+  *Host render, 2026-10-29: 20 PNGs from
+  `examples/render_clock_format_evidence.rs`, plus two idle-clock text frames
+  from `k230_exhibition.py --render-once` with a 12-hour prefs directory. The
+  portrait shade draws no clock at either step; that layout predates this
+  change, so the shade's 12-hour form shows in landscape. See the README.*
 
 ## 3. Board (hardware-only)
 

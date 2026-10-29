@@ -2409,6 +2409,26 @@ DATA b7a2c501962463cdc82acc1580671567efa00f49906ef9b0a23c7aa70aade589 docs/evide
 DATA ee884d51c39d84cf27b2ab62654511aae9f0208538b32ce23eab5bebfc8e4286 docs/evidence/files-app/slow-load/patched-loaded.png
 DATA ee884d51c39d84cf27b2ab62654511aae9f0208538b32ce23eab5bebfc8e4286 docs/evidence/files-app/slow-load/system-build-drawer-loaded.png
 DATA ee884d51c39d84cf27b2ab62654511aae9f0208538b32ce23eab5bebfc8e4286 docs/evidence/files-app/slow-load/ordinary-boot-loaded.png
+DATA 70f938e352231e8c5f2060b6a6f2e8a18037c8da13b8f54e76a0f4707e2cf85c docs/evidence/clock-format/host/date-time-100-1232x568.png
+DATA 0d2d5567e01969fd5a6f5249a2361aad0bac46ef5c655f74aac3ffb66cf4dd17 docs/evidence/clock-format/host/date-time-100-568x1232.png
+DATA cef29c9a0f6ba2e69df80c975e1bf3f6dcc126b71ad73aef91128f38c6e0e4af docs/evidence/clock-format/host/date-time-200-1232x568.png
+DATA 2e38ee1899a4aa2ad29027ad33fd5f2e3fc2f90b4d5221d35861f7f9d318cafd docs/evidence/clock-format/host/date-time-200-568x1232.png
+DATA d8b150502bd1efba570372524ef344963882935c5a95f779a12eb1f65c2556d0 docs/evidence/clock-format/host/home-bubble-100-1232x568.png
+DATA 5aeb0d493d3781fafccc7f391b47ed508fa6a985d4d8e0ce625bcac0b59b89a4 docs/evidence/clock-format/host/home-bubble-100-568x1232.png
+DATA 98141ece1b8acfcc98d4d4c55bbbf2b4d3ed22ed52f3fafb81fcd915c68548f8 docs/evidence/clock-format/host/home-bubble-200-1232x568.png
+DATA db95218fcfe2c415e6f273bb1aeb7fc4eed5ef7b02de03d3bf81f6cbfd9602b9 docs/evidence/clock-format/host/home-bubble-200-568x1232.png
+DATA b962cf4fef86edf4c26b900981363cd430c40f28673205fa11e82a15055e0678 docs/evidence/clock-format/host/home-dot-matrix-100-1232x568.png
+DATA d73a2f09abbde3e8fe7cae79a3fba230b068d5221860ac1573a1ea818bb5dfe5 docs/evidence/clock-format/host/home-dot-matrix-100-568x1232.png
+DATA 8a52c2c69ec2bec2462c3c7253202ff25de0e913aedf58ef63df5539b76ce1e7 docs/evidence/clock-format/host/home-dot-matrix-200-1232x568.png
+DATA 1336a38b34d97b85d581b31acafd495b89f224c62cadb028fedeefcd4614ede3 docs/evidence/clock-format/host/home-dot-matrix-200-568x1232.png
+DATA cdc08d6da89e4b80f791f8eeea255fcaa1e66c6de8b9775855432390f539fe1f docs/evidence/clock-format/host/home-thin-100-1232x568.png
+DATA 9b8e7c04b7c729d5acfd77302d0ef0e2ddad5e0c7210fcf78527b3a41cdcb368 docs/evidence/clock-format/host/home-thin-100-568x1232.png
+DATA ed7d541dbcc536ea23b2a7c4db8061e9f187881b9110c2d9bf495c8d952d98e4 docs/evidence/clock-format/host/home-thin-200-1232x568.png
+DATA 4a82174b3a3572b483f216ed775c32e7c5b3c30ba18cb8df4a4a46d029df1dfe docs/evidence/clock-format/host/home-thin-200-568x1232.png
+DATA da118b47ca6d35e125175c95376d5f2530c81d0b096e365ae5b71a95cc61530f docs/evidence/clock-format/host/shade-100-1232x568.png
+DATA 68ba0fa8e9393e034d20ce795302d35e4df5996511285dba278dd1e5360442ef docs/evidence/clock-format/host/shade-100-568x1232.png
+DATA bdf0196eebf3870eb031c189a7da663f0ebdf157979d0b33879abe8aea823906 docs/evidence/clock-format/host/shade-200-1232x568.png
+DATA c467bb52efc01cc48b818580016dd4f73699a5b47dc43629b151c52276e4262b docs/evidence/clock-format/host/shade-200-568x1232.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4700,3 +4720,30 @@ Grim captures from build 2867v7pm: Files stuck on Loading… with stock GTK, and
 | `docs/evidence/files-app/slow-load/system-build-drawer-loaded.png` | 24649 | DATA | `ee884d51c39d84cf27b2ab62654511aae9f0208538b32ce23eab5bebfc8e4286` |
 | `docs/evidence/files-app/slow-load/ordinary-boot-loaded.png` | 24649 | DATA | `ee884d51c39d84cf27b2ab62654511aae9f0208538b32ce23eab5bebfc8e4286` |
 | `docs/evidence/files-app/slow-load/patched-loaded.png` | 24649 | DATA | `ee884d51c39d84cf27b2ab62654511aae9f0208538b32ce23eab5bebfc8e4286` |
+
+## Clock format host renders
+
+Host renders of the 12-hour clock (settings-chooses-a-12-or-24-hour-clock task 2.1); see docs/evidence/clock-format/host/README.md.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/clock-format/host/date-time-100-1232x568.png` | 45268 | DATA | `70f938e352231e8c5f2060b6a6f2e8a18037c8da13b8f54e76a0f4707e2cf85c` |
+| `docs/evidence/clock-format/host/date-time-100-568x1232.png` | 51295 | DATA | `0d2d5567e01969fd5a6f5249a2361aad0bac46ef5c655f74aac3ffb66cf4dd17` |
+| `docs/evidence/clock-format/host/date-time-200-1232x568.png` | 62002 | DATA | `cef29c9a0f6ba2e69df80c975e1bf3f6dcc126b71ad73aef91128f38c6e0e4af` |
+| `docs/evidence/clock-format/host/date-time-200-568x1232.png` | 75075 | DATA | `2e38ee1899a4aa2ad29027ad33fd5f2e3fc2f90b4d5221d35861f7f9d318cafd` |
+| `docs/evidence/clock-format/host/home-bubble-100-1232x568.png` | 30480 | DATA | `d8b150502bd1efba570372524ef344963882935c5a95f779a12eb1f65c2556d0` |
+| `docs/evidence/clock-format/host/home-bubble-100-568x1232.png` | 34500 | DATA | `5aeb0d493d3781fafccc7f391b47ed508fa6a985d4d8e0ce625bcac0b59b89a4` |
+| `docs/evidence/clock-format/host/home-bubble-200-1232x568.png` | 34542 | DATA | `98141ece1b8acfcc98d4d4c55bbbf2b4d3ed22ed52f3fafb81fcd915c68548f8` |
+| `docs/evidence/clock-format/host/home-bubble-200-568x1232.png` | 38625 | DATA | `db95218fcfe2c415e6f273bb1aeb7fc4eed5ef7b02de03d3bf81f6cbfd9602b9` |
+| `docs/evidence/clock-format/host/home-dot-matrix-100-1232x568.png` | 64601 | DATA | `b962cf4fef86edf4c26b900981363cd430c40f28673205fa11e82a15055e0678` |
+| `docs/evidence/clock-format/host/home-dot-matrix-100-568x1232.png` | 71402 | DATA | `d73a2f09abbde3e8fe7cae79a3fba230b068d5221860ac1573a1ea818bb5dfe5` |
+| `docs/evidence/clock-format/host/home-dot-matrix-200-1232x568.png` | 71196 | DATA | `8a52c2c69ec2bec2462c3c7253202ff25de0e913aedf58ef63df5539b76ce1e7` |
+| `docs/evidence/clock-format/host/home-dot-matrix-200-568x1232.png` | 78678 | DATA | `1336a38b34d97b85d581b31acafd495b89f224c62cadb028fedeefcd4614ede3` |
+| `docs/evidence/clock-format/host/home-thin-100-1232x568.png` | 30271 | DATA | `cdc08d6da89e4b80f791f8eeea255fcaa1e66c6de8b9775855432390f539fe1f` |
+| `docs/evidence/clock-format/host/home-thin-100-568x1232.png` | 34053 | DATA | `9b8e7c04b7c729d5acfd77302d0ef0e2ddad5e0c7210fcf78527b3a41cdcb368` |
+| `docs/evidence/clock-format/host/home-thin-200-1232x568.png` | 34520 | DATA | `ed7d541dbcc536ea23b2a7c4db8061e9f187881b9110c2d9bf495c8d952d98e4` |
+| `docs/evidence/clock-format/host/home-thin-200-568x1232.png` | 38550 | DATA | `4a82174b3a3572b483f216ed775c32e7c5b3c30ba18cb8df4a4a46d029df1dfe` |
+| `docs/evidence/clock-format/host/shade-100-1232x568.png` | 44331 | DATA | `da118b47ca6d35e125175c95376d5f2530c81d0b096e365ae5b71a95cc61530f` |
+| `docs/evidence/clock-format/host/shade-100-568x1232.png` | 42333 | DATA | `68ba0fa8e9393e034d20ce795302d35e4df5996511285dba278dd1e5360442ef` |
+| `docs/evidence/clock-format/host/shade-200-1232x568.png` | 48530 | DATA | `bdf0196eebf3870eb031c189a7da663f0ebdf157979d0b33879abe8aea823906` |
+| `docs/evidence/clock-format/host/shade-200-568x1232.png` | 57309 | DATA | `c467bb52efc01cc48b818580016dd4f73699a5b47dc43629b151c52276e4262b` |
