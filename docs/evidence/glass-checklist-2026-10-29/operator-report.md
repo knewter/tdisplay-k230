@@ -47,3 +47,19 @@ not the drawer search. The reply, verbatim:
   does not say whether a banner appeared while Quiet was on. That is the
   failure case. `do-not-disturb-quiets-banners-and-keeps-history` 3.5 stays
   open.
+
+## Operator waiver of item 6, 2026-10-29
+
+The build `2867v7pm…` (larger GTK app text) was test-activated, and then
+promoted to the boot default with the charger online. The kernel, initrd and
+dtbs are the same as `37g1magg…`. The operator declined to test the Quiet
+banner again. Verbatim:
+
+> i'm sure the banner situation was fine i don' twant to test that shit assume
+> it's fine it looked fine
+
+This is a waiver, not an observation. Nobody observed, on glass, that a text
+produces no banner while Quiet is on, or that a 10 s Timer breaks through.
+The operator said only that the result "looked fine". The injected-board
+results in `docs/evidence/do-not-disturb/board/` are still the only recorded
+evidence for those behaviours.

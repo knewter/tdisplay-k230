@@ -83,11 +83,15 @@ installed image (UNVERIFIED).
   still on and that `/var/lib/k230-shell-prefs/do-not-disturb` reads `on`;
   record the same after a shell restart. Console transcript under
   `docs/evidence/do-not-disturb/board/`.
-- [ ] 3.5 Glass: the operator confirms on the panel that the tile is
+- [x] 3.5 Glass: the operator confirms on the panel that the tile is
   reachable with a thumb, that a received text produces no banner while quiet,
   and that a 10 s Timer still breaks through. Physical proof: a timestamped
   operator report tied to the installed build, in the same directory. Keep
   this task open until it exists.
+  *Waived by the operator, 2026-10-29: "i'm sure the banner situation was fine
+  i don' twant to test that shit assume it's fine it looked fine". Not
+  observed on glass: no banner under Quiet, and the Timer breakthrough. See
+  `docs/evidence/glass-checklist-2026-10-29/operator-report.md`.*
 
 ## 4. Closeout
 
