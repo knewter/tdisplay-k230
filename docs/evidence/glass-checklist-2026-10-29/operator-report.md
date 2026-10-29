@@ -128,3 +128,15 @@ The operator, verbatim, a moment after the 22:32:48Z send: "saw it". Both
 banners have now been seen on glass on build `ql630glm…`: the Timer's
 (22:22:34Z) and an app's through the desktop notification service
 (22:32:48Z). This closes `apps-and-timers-can-alert-the-user` 3.6.
+
+## Clock format (settings-chooses-a-12-or-24-hour-clock 3.2)
+
+Build `p393r76c…`, which became the boot default at 23:36Z after the operator
+approved it ("promote it"). Before the check, the board's clock format was
+12-hour, set by the injected checks in task 3.1.
+
+The operator, verbatim, at about 23:54Z: "flipped it, shade and home both
+switched, archive it". Over SSH at 23:54:32Z,
+`/var/lib/k230-shell-prefs/clock-format` read `24-hour`, written at
+23:54:03Z, and `/run/current-system` was `p393r76c…`. The operator's switch
+from 12-hour back to 24-hour on glass is that write. This closes task 3.2.

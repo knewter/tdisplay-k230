@@ -44,10 +44,15 @@
   switch on, and every listed clock was captured in 12-hour form. The choice
   held across a shell restart, and across a reboot after the operator
   approved promoting the build to the boot default.*
-- [ ] 3.2 Glass: the operator switches the format and reads the clocks.
+- [x] 3.2 Glass: the operator switches the format and reads the clocks.
   Physical proof: a timestamped operator report tied to the installed build.
+  *Glass, 2026-10-29 ~23:54Z, on the promoted `p393r76c…`: "flipped it, shade
+  and home both switched". The preference file was rewritten at 23:54:03Z
+  (`docs/evidence/glass-checklist-2026-10-29/operator-report.md`).*
 
 ## 4. Closeout
 
-- [ ] 4.1 Archive once 3.2 is done. Proof:
+- [x] 4.1 Archive once 3.2 is done. Proof:
   `openspec validate settings-chooses-a-12-or-24-hour-clock --strict`.
+  *2026-10-29: valid before archive; the specs were synced and
+  `openspec validate --specs --strict` passed after.*
