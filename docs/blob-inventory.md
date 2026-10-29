@@ -2429,6 +2429,15 @@ DATA da118b47ca6d35e125175c95376d5f2530c81d0b096e365ae5b71a95cc61530f docs/evide
 DATA 68ba0fa8e9393e034d20ce795302d35e4df5996511285dba278dd1e5360442ef docs/evidence/clock-format/host/shade-100-568x1232.png
 DATA bdf0196eebf3870eb031c189a7da663f0ebdf157979d0b33879abe8aea823906 docs/evidence/clock-format/host/shade-200-1232x568.png
 DATA c467bb52efc01cc48b818580016dd4f73699a5b47dc43629b151c52276e4262b docs/evidence/clock-format/host/shade-200-568x1232.png
+DATA c7a9990a9ad519a472f109967724dda79ffd588111f9e9f724fbb9c8125f5bee docs/evidence/clock-format/board/clock-app-12h.png
+DATA a786cf3934dd41af56fd5e54ff171724eddbc003a85e8bf8bc6e4d3cf3733a9a docs/evidence/clock-format/board/date-time-12h.png
+DATA ee2d76db051a67ac80ebfb23ee7d48c617b5b91a0a72f03cd2659c7662d078a0 docs/evidence/clock-format/board/date-time-24h.png
+DATA 2e9c19d1f3850cbb253550d9cf0eb5bfb8d4e027bc7abddab37606db6161bbec docs/evidence/clock-format/board/home-12h.png
+DATA 3419f1f76acc0ebfc65d1db7d2f95bae864a8cac769b048dea2f9f9a3436d50c docs/evidence/clock-format/board/idle-clock-12h.png
+DATA da9815f72c176b21fefd610fd39e2a8306327f644a67b29a04c487b71643679d docs/evidence/clock-format/board/shade-12h.png
+DATA 2486277ce5d309fc856b62a8b85999f3931fca8d9c1f5db945fda2dc82f98002 docs/evidence/clock-format/board/shade-24h.png
+DATA 9acd2bed1022d59ed6bbb18a3c963aaf7594da941c66dd0ad7058eaa804550ee docs/evidence/clock-format/board/shade-after-restart.png
+DATA f23366a3fe42967983075726827e500dd3d267d27c79a078f0c890f49ebbd481 docs/evidence/clock-format/board/weather-12h.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4747,3 +4756,19 @@ Host renders of the 12-hour clock (settings-chooses-a-12-or-24-hour-clock task 2
 | `docs/evidence/clock-format/host/shade-100-568x1232.png` | 42333 | DATA | `68ba0fa8e9393e034d20ce795302d35e4df5996511285dba278dd1e5360442ef` |
 | `docs/evidence/clock-format/host/shade-200-1232x568.png` | 48530 | DATA | `bdf0196eebf3870eb031c189a7da663f0ebdf157979d0b33879abe8aea823906` |
 | `docs/evidence/clock-format/host/shade-200-568x1232.png` | 57309 | DATA | `c467bb52efc01cc48b818580016dd4f73699a5b47dc43629b151c52276e4262b` |
+
+## Clock format board captures
+
+Board captures of the 12-hour clock (settings-chooses-a-12-or-24-hour-clock task 3.1); see docs/evidence/clock-format/board/README.md.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/clock-format/board/clock-app-12h.png` | 7460 | DATA | `c7a9990a9ad519a472f109967724dda79ffd588111f9e9f724fbb9c8125f5bee` |
+| `docs/evidence/clock-format/board/date-time-12h.png` | 35335 | DATA | `a786cf3934dd41af56fd5e54ff171724eddbc003a85e8bf8bc6e4d3cf3733a9a` |
+| `docs/evidence/clock-format/board/date-time-24h.png` | 35378 | DATA | `ee2d76db051a67ac80ebfb23ee7d48c617b5b91a0a72f03cd2659c7662d078a0` |
+| `docs/evidence/clock-format/board/home-12h.png` | 207575 | DATA | `2e9c19d1f3850cbb253550d9cf0eb5bfb8d4e027bc7abddab37606db6161bbec` |
+| `docs/evidence/clock-format/board/idle-clock-12h.png` | 6612 | DATA | `3419f1f76acc0ebfc65d1db7d2f95bae864a8cac769b048dea2f9f9a3436d50c` |
+| `docs/evidence/clock-format/board/shade-12h.png` | 41564 | DATA | `da9815f72c176b21fefd610fd39e2a8306327f644a67b29a04c487b71643679d` |
+| `docs/evidence/clock-format/board/shade-24h.png` | 40920 | DATA | `2486277ce5d309fc856b62a8b85999f3931fca8d9c1f5db945fda2dc82f98002` |
+| `docs/evidence/clock-format/board/shade-after-restart.png` | 41514 | DATA | `9acd2bed1022d59ed6bbb18a3c963aaf7594da941c66dd0ad7058eaa804550ee` |
+| `docs/evidence/clock-format/board/weather-12h.png` | 16917 | DATA | `f23366a3fe42967983075726827e500dd3d267d27c79a078f0c890f49ebbd481` |

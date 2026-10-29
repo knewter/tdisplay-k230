@@ -40,6 +40,10 @@
   grim-capture each clock in task 1.1. Then restart the shell and reboot, and
   confirm the choice holds. Proof (board, injected):
   `docs/evidence/clock-format/board/`.
+  *Partial, board injected, 2026-10-29, on the test-activated `p393r76c`.
+  Done: the switch was turned on by an injected tap; every listed clock was
+  captured in 12-hour form; the choice held across a shell restart. Open:
+  the reboot. That needs the build promoted to the boot default.*
 - [ ] 3.2 Glass: the operator switches the format and reads the clocks.
   Physical proof: a timestamped operator report tied to the installed build.
 
