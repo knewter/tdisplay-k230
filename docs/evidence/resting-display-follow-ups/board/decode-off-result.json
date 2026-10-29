@@ -1,0 +1,93 @@
+{
+  "started_utc": "2026-10-29T00:31:17Z",
+  "on_before": {
+    "dpms": {
+      "card0-DSI-1": "On"
+    },
+    "a": {
+      "state": "playing",
+      "decoder_pid": 3793,
+      "frames_decoded": 52,
+      "frames_submitted": 51,
+      "frame_callbacks": 76,
+      "t": 2140.7570000000001
+    },
+    "b": {
+      "state": "playing",
+      "decoder_pid": 3793,
+      "frames_decoded": 64,
+      "frames_submitted": 63,
+      "frame_callbacks": 88,
+      "t": 2143.759
+    },
+    "decoder_cpu_ticks_3s": 221
+  },
+  "power_off_reply": "[\n  {\n    \"success\": true\n  }\n]",
+  "off_state_change_ms": 1165,
+  "off": {
+    "dpms": {
+      "card0-DSI-1": "Off"
+    },
+    "first": {
+      "state": "playing",
+      "decoder_pid": 3793,
+      "frames_decoded": 71,
+      "frames_submitted": 70,
+      "frame_callbacks": 95,
+      "t": 2144.3299999999999
+    },
+    "first_not_playing": {
+      "state": "paused-covered",
+      "decoder_pid": null,
+      "frames_decoded": 149,
+      "frames_submitted": 71,
+      "frame_callbacks": 95,
+      "t": 2144.9360000000001
+    },
+    "at_5s": {
+      "state": "paused-covered",
+      "decoder_pid": null,
+      "frames_decoded": 149,
+      "frames_submitted": 71,
+      "frame_callbacks": 95,
+      "t": 2148.8649999999998
+    },
+    "at_10s": {
+      "state": "paused-covered",
+      "decoder_pid": null,
+      "frames_decoded": 149,
+      "frames_submitted": 71,
+      "frame_callbacks": 95,
+      "t": 2153.7040000000002
+    },
+    "frames_decoded_5s_to_10s": 0,
+    "old_decoder_alive": false,
+    "old_decoder_cpu_ticks_now": null,
+    "old_decoder_cpu_ticks_3s": null
+  },
+  "power_on_reply": "[\n  {\n    \"success\": true\n  }\n]",
+  "on_after": {
+    "dpms": {
+      "card0-DSI-1": "On"
+    },
+    "playing_ms": 2545,
+    "a": {
+      "state": "playing",
+      "decoder_pid": 3819,
+      "frames_decoded": 81,
+      "frames_submitted": 78,
+      "frame_callbacks": 103,
+      "t": 2159.355
+    },
+    "b": {
+      "state": "playing",
+      "decoder_pid": 3819,
+      "frames_decoded": 100,
+      "frames_submitted": 97,
+      "frame_callbacks": 122,
+      "t": 2162.3560000000002
+    }
+  },
+  "restored_still": true,
+  "finished_utc": "2026-10-29T00:31:59Z"
+}

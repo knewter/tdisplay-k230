@@ -44,12 +44,13 @@
     output never does, so the file goes stale and reads as visible. The 2026-10-21 board trial
     measured a video wallpaper at 0.87 of a core on idle Home
     (`docs/evidence/omarchy-themes/background-video-board-2026-10-21/README.md`). Built in 3.2.
-- [ ] 3.2 The wallpaper counts as covered while every connected DRM connector reports DPMS Off
+- [x] 3.2 The wallpaper counts as covered while every connected DRM connector reports DPMS Off
   (`video_visibility::display_off`, polled with the cover file every 500 ms).
   Host, 2026-10-28: `cargo test --offline --lib video` in `nix/rust-shell-client`, 10 passed,
   including the new connector test. Board proof still needed: with a video background on
   Home, `swaymsg 'output * power off'`; within 1 s the shell journal shows the decoder paused
   and its ffmpeg child stops using CPU (`ps`), and power on resumes it.
+  *Done 2026-10-28, unattended board run (`docs/evidence/resting-display-follow-ups/README.md` § Video decoding while the display is off): the state went `playing` → `paused-covered` and the ffmpeg decoder exited, 1.165 s after `swaymsg` started (0.61 s after its reply). Decoding resumed 2.5 s after power on. The status file and `/proc` stand in for the journal, which logs no pause.*
 
 ## 4. Clock screen follow-ups (from exhibition 5.1–5.5)
 
@@ -99,10 +100,11 @@
   Done 2026-10-28, injected board on battery (build `37nvncgk…`): the tile read "Charger only"
   greyed, a tap started nothing (brightness 148, no card) and showed "Clock needs the charger"
   (docs/evidence/resting-display-follow-ups/README.md § Operator at the cable).
-- [ ] 4.5 Camera (exhibition 4.7, moved 2026-10-28 when the operator reassigned the webcam;
+- Dropped, not performed: 4.5 Camera (exhibition 4.7, moved 2026-10-28 when the operator reassigned the webcam;
   optional, gates nothing): the webcam on the panel records a clock minute change, one
   position drift and one effect. Look at consecutive raw frames first. Camera evidence, not
   glass, not injected.
+  *The user dropped this on 2026-10-28 ("no recording"). No camera evidence exists. The task was never performed and is not ticked.*
 
 ## 6. Defects found on the board, 2026-10-28
 
@@ -120,5 +122,5 @@
 
 ## 5. Closeout
 
-- [ ] 5.1 Archive when every task above is done, or after an explicit, user-approved split.
+- [x] 5.1 Archive when every task above is done, or after an explicit, user-approved split.
   Proof: `openspec validate the-resting-display-follow-ups --strict`.

@@ -1,6 +1,6 @@
 # Resting display follow-ups on the board, 2026-10-28
 
-Change: `openspec/changes/the-resting-display-follow-ups/`. Build
+Change: `openspec/changes/archive/2026-10-28-the-resting-display-follow-ups/`. Build
 `q8k8w3mb…` (test-activated; boot default was `lrx0026r…`), landscape panel,
 on the charger throughout. The webcam was reassigned to other work, so there
 is no camera evidence; nobody touched the glass during these runs.
@@ -115,3 +115,43 @@ pre-dim brightness 148. Each card opened 33–37 s after the last input.
     ([`clock-tile-battery-tapped.png`](board/clock-tile-battery-tapped.png)).
     The first wording, "The clock screen needs the charger", was cut off at
     that width and was shortened.
+
+## Video decoding while the display is off (task 3.2), unattended board
+
+Build `37nvncgk…` (test-activated), charger online, 2026-10-28 19:31 local.
+The Themes chooser does not apply video backgrounds ("Video unavailable"), so
+[`board/decode-off.py`](board/decode-off.py) activated one through the theme
+command, as the 2026-10-21 video trials did. The video is the `02-motion.mp4`
+trial clip, copied into the user overlay as `motion-test.mp4`. The script ran
+as root over SSH. It dropped to the `shell` user for the theme and `swaymsg`
+calls and read the shell's own `/run/shell/k230-wallpaper-status.json` every
+100 ms. Output: [`board/decode-off-result.json`](board/decode-off-result.json).
+The `t` values there are `CLOCK_MONOTONIC` seconds.
+
+- **Before (DSI-1 DPMS `On`):** `playing`, decoder PID 3793,
+  `frames_decoded` 52 → 64 over 3 s, and the decoder used 221 CPU ticks in
+  those 3 s.
+- **`output * power off`:** sysfs DPMS read `Off`. The state became
+  `paused-covered` and `decoder_pid` became `null` 1.165 s after the script
+  started `swaymsg`. That is 0.61 s after the first sample that followed
+  `swaymsg`'s reply; on this single-CPU board, starting `swaymsg` alone takes
+  about 0.5 s. PID 3793 no longer existed in `/proc`. Between 5 s and 10 s,
+  `frames_decoded` stayed at 149, `frames_submitted` at 71 and
+  `frame_callbacks` at 95.
+- **`output * power on`:** `playing` returned 2.5 s later with a new decoder,
+  PID 3819, and `frames_decoded` went 81 → 100 over 3 s.
+
+**Limits.** The task names the journal and `ps`. The shell writes no journal
+line when it pauses. The pause therefore rests on the shell's status file and
+on the decoder process exiting, which is stronger than "stops using CPU". The
+journal shows only sway handling `output * power off` at 19:31:35.406 and
+`output * power on` at 19:31:48.449. Measured with 100 ms polling, the pause
+came 1.165 s after the command started, which is more than the 1 s in the task
+text. Counted from `swaymsg`'s reply, it came within 1 s.
+
+Afterwards the script restored the Tree tops background and the overlay video
+was deleted. A `grim` of Home showed Tree tops again (not committed).
+
+## Camera recording (task 4.5) dropped
+
+On 2026-10-28 the user said "no recording". No camera evidence was taken.
