@@ -24,6 +24,7 @@ import subprocess
 import sys
 import time
 from collections import namedtuple
+from pathlib import Path
 
 ACCENT = "\x1b[94m"
 ACCENT_BOLD = "\x1b[1;94m"
@@ -240,9 +241,46 @@ def parse_input(data):
 # ---------------------------------------------------------------------------
 # Clock
 
-def clock_frame(cols, rows, tm, subsec=0.0):
+# The shell's clock-format preference (`shell_prefs.rs`, CLOCK_FORMAT_FILE):
+# only the word `12-hour` selects a 12-hour clock; anything else, or no file,
+# keeps 24-hour.
+PREFS_DIR = "/var/lib/k230-shell-prefs"
+CLOCK_FORMAT_FILE = "clock-format"
+
+
+def read_twelve_hour(prefs_dir=PREFS_DIR):
+    try:
+        return (Path(prefs_dir) / CLOCK_FORMAT_FILE).read_text().strip() == "12-hour"
+    except OSError:
+        return False
+
+
+def clock_digits(tm, twelve=False):
+    """`21:05`, or `9:05` on a 12-hour clock (midnight and noon are 12)."""
+    if not twelve:
+        return time.strftime("%H:%M", tm)
+    return f"{tm.tm_hour % 12 or 12}:{tm.tm_min:02d}"
+
+
+def meridiem(tm):
+    return "AM" if tm.tm_hour < 12 else "PM"
+
+
+def clock_text(tm, twelve=False):
+    """A time inside a line of text: `21:05`, or `9:05 PM`."""
+    return f"{clock_digits(tm, True)} {meridiem(tm)}" if twelve else clock_digits(tm)
+
+
+def clock_date_line(tm, twelve=False):
+    """The date under big digits, which have no letters for AM/PM, so a
+    12-hour clock leads the date with it: `PM · Thursday 29 October`."""
+    date = time.strftime("%A %-d %B", tm)
+    return f"{meridiem(tm)} · {date}" if twelve else date
+
+
+def clock_frame(cols, rows, tm, subsec=0.0, twelve=False):
     f = Frame(cols, rows)
-    text = time.strftime("%H:%M", tm)
+    text = clock_digits(tm, twelve)
     sx, sy = pick_scale(text, cols, rows, reserve_rows=7)
     big_h = GLYPH_ROWS * sy
     big_w = text_units(text) * sx
@@ -256,7 +294,7 @@ def clock_frame(cols, rows, tm, subsec=0.0):
     bar_col = 1 + centre(bar_w, cols)
     f.put(bar_row, bar_col, "━" * filled, ACCENT)
     f.put(bar_row, bar_col + filled, "─" * (bar_w - filled), DIM)
-    f.put_centred(bar_row + 2, time.strftime("%A %-d %B", tm), BOLD)
+    f.put_centred(bar_row + 2, clock_date_line(tm, twelve), BOLD)
     return f
 
 
@@ -681,9 +719,9 @@ def weather_frame(cols, rows, snapshot, offline, now, fetching=False):
     status = ""
     stamp = snapshot.get("fetched_unix_secs", 0)
     if offline:
-        status = "Offline — showing data from " + time.strftime("%H:%M", time.localtime(stamp))
+        status = "Offline — showing data from " + clock_text(time.localtime(stamp), read_twelve_hour())
     elif stamp:
-        status = "Updated " + time.strftime("%H:%M", time.localtime(stamp))
+        status = "Updated " + clock_text(time.localtime(stamp), read_twelve_hour())
     f.put_centred(buttons[0].y0 - 1, status, DIM)
     for b in buttons:
         draw_button(f, b, ACCENT)
@@ -783,7 +821,7 @@ def run_clock(sess):
     while True:
         cols, rows = sess.size()
         now = time.time()
-        sess.draw(clock_frame(cols, rows, time.localtime(now)))
+        sess.draw(clock_frame(cols, rows, time.localtime(now), twelve=read_twelve_hour()))
         if any(ev[0] == "quit" for ev in sess.wait(next_second_delay(now))):
             return
 
@@ -857,7 +895,7 @@ def render_once(app, args, size):
     cols, rows = (int(p) for p in size.lower().split("x"))
     now = time.time()
     if app == "clock":
-        frame = clock_frame(cols, rows, time.localtime(now))
+        frame = clock_frame(cols, rows, time.localtime(now), twelve=read_twelve_hour())
     elif app == "timer":
         frame = timer_frame(cols, rows, timer_new(timer_seconds(args)), time.monotonic())
     else:

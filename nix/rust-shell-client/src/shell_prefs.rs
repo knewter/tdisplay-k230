@@ -8,6 +8,9 @@
 //! `full`), "Clock effects" (`5m`, `15m`, `off`) and "Clock limit" (`2h`,
 //! `8h`, `none`) by the idle step and the clock screen
 //! (`nix/term-apps/k230_exhibition.py`), each with its own copy of the rule.
+//! "Clock format" (`clock-format`: `24-hour` or `12-hour`) is read by the
+//! shell's clocks and by the terminal apps' clocks (`k230_term_apps.py`,
+//! `k230_exhibition.py`), again each with its own copy of the rule.
 //!
 //! The directory is new rather than `/var/lib/k230-keyboard-base`, which is
 //! named for the base. A missing, unreadable or unrecognised file means off,
@@ -170,6 +173,26 @@ pub fn write_do_not_disturb(path: &Path, on: bool) -> std::io::Result<()> {
     std::fs::write(path, if on { "on\n" } else { "off\n" })
 }
 
+pub const CLOCK_FORMAT_FILE: &str = "clock-format";
+
+pub fn clock_format_path() -> PathBuf {
+    Path::new(PREFERENCE_DIR).join(CLOCK_FORMAT_FILE)
+}
+
+/// Only the exact word `12-hour` (whitespace aside) selects a 12-hour clock;
+/// anything else, or no file, keeps the 24-hour default.
+pub fn parse_twelve_hour(text: &str) -> bool {
+    text.trim() == "12-hour"
+}
+
+pub fn read_twelve_hour(path: &Path) -> bool {
+    std::fs::read_to_string(path).is_ok_and(|text| parse_twelve_hour(&text))
+}
+
+pub fn write_twelve_hour(path: &Path, twelve: bool) -> std::io::Result<()> {
+    std::fs::write(path, if twelve { "12-hour\n" } else { "24-hour\n" })
+}
+
 /// The banner a quiet shell may show. With the mode off every preview
 /// passes; while quiet only one the broker marked as breaking through does.
 /// History, the count and the shade's list never go through this.
@@ -208,6 +231,23 @@ mod tests {
             ongoing: false,
             breakthrough,
         }
+    }
+
+    #[test]
+    fn the_clock_format_defaults_to_24_hour_and_round_trips() {
+        let dir = tempdir("clock");
+        let path = dir.join(CLOCK_FORMAT_FILE);
+        assert!(!read_twelve_hour(&path));
+        write_twelve_hour(&path, true).unwrap();
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), "12-hour\n");
+        assert!(read_twelve_hour(&path));
+        write_twelve_hour(&path, false).unwrap();
+        assert!(!read_twelve_hour(&path));
+        for junk in ["", "12", "12 hour", "12-HOUR", "am/pm"] {
+            std::fs::write(&path, junk).unwrap();
+            assert!(!read_twelve_hour(&path), "{junk:?}");
+        }
+        std::fs::remove_dir_all(&dir).unwrap();
     }
 
     #[test]

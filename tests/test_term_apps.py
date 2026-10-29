@@ -194,6 +194,27 @@ class ClockTests(unittest.TestCase):
     def test_next_second_delay(self):
         self.assertAlmostEqual(apps.next_second_delay(10.25), 0.76, places=2)
 
+    def test_twelve_hour_digits_and_marker(self):
+        def at(hm):
+            return time.strptime("2026-10-26 " + hm, "%Y-%m-%d %H:%M")
+        self.assertEqual(apps.clock_digits(at("21:05")), "21:05")
+        self.assertEqual(apps.clock_digits(at("21:05"), True), "9:05")
+        self.assertEqual(apps.clock_digits(at("00:00"), True), "12:00")
+        self.assertEqual(apps.clock_digits(at("12:30"), True), "12:30")
+        self.assertEqual(apps.clock_text(at("00:10"), True), "12:10 AM")
+        self.assertEqual(apps.clock_text(at("12:00"), True), "12:00 PM")
+        self.assertEqual(apps.clock_text(at("21:05")), "21:05")
+        plain = apps.clock_frame(102, 23, at("21:05"), twelve=True).plain()
+        self.assertIn("PM · Monday 26 October", plain)
+
+    def test_the_preference_file(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.assertFalse(apps.read_twelve_hour(d))
+            path = Path(d) / apps.CLOCK_FORMAT_FILE
+            for word, want in (("12-hour\n", True), ("24-hour\n", False), ("12", False), ("", False)):
+                path.write_text(word)
+                self.assertEqual(apps.read_twelve_hour(d), want, word)
+
 
 class WeatherTests(unittest.TestCase):
     def test_parse_j1(self):

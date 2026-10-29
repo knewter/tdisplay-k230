@@ -6,8 +6,9 @@
 //! uptime and `statvfs` for About; the C library's local time, the
 //! `/etc/localtime` link and systemd-timesyncd's `synchronized` stamp for
 //! Date & time. Nothing network- or identity-bearing is read: no addresses,
-//! MACs, SSIDs, serial numbers or tokens. Changing a setting is out of scope
-//! (`openspec/changes/settings-has-about-and-date-time-pages`).
+//! MACs, SSIDs, serial numbers or tokens. The one setting either page changes
+//! is Date & time's clock format, a shell preference
+//! (`shell_prefs::CLOCK_FORMAT_FILE`); zone and network time stay read-only.
 use std::path::{Path, PathBuf};
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
@@ -38,7 +39,13 @@ pub struct InfoPublic {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Intent {
     Back,
+    /// Flip the clock between 24-hour and 12-hour (Date & time only).
+    ToggleClockFormat,
 }
+
+/// The Date & time row that is also a switch; it is always the page's last
+/// row, so its tap region can grow downward to the touch floor.
+pub const CLOCK_FORMAT_LABEL: &str = "Clock format";
 
 /// Where the readers look, so host tests can point them at a fixture tree.
 #[derive(Clone, Debug)]
@@ -224,8 +231,18 @@ pub fn format_date(c: &Clock) -> String {
     )
 }
 
-pub fn format_time(c: &Clock) -> String {
-    format!("{:02}:{:02}:{:02}", c.hour, c.minute, c.second)
+/// `21:05:03`, or `9:05:03 PM` on a 12-hour clock.
+pub fn format_time(c: &Clock, twelve: bool) -> String {
+    use crate::home_widgets::clock::{hour_text, meridiem};
+    let hms = format!("{}:{:02}:{:02}", hour_text(c.hour, twelve), c.minute, c.second);
+    if twelve { format!("{hms} {}", meridiem(c.hour)) } else { hms }
+}
+
+/// The clock format as the preference file under `src` says.
+pub fn twelve_hour(src: &Sources) -> bool {
+    crate::shell_prefs::read_twelve_hour(
+        &src.path(crate::shell_prefs::PREFERENCE_DIR).join(crate::shell_prefs::CLOCK_FORMAT_FILE),
+    )
 }
 
 /// `UTC-05:00`, `UTC+00:00`.
@@ -244,6 +261,7 @@ pub fn zone_name(target: &Path) -> Option<String> {
 
 pub fn date_time_rows(src: &Sources) -> Vec<(&'static str, String)> {
     let clock = now_clock();
+    let twelve = twelve_hour(src);
     let zone = std::fs::read_link(src.path("/etc/localtime")).ok().and_then(|t| zone_name(&t));
     let zone_line = match (zone, clock) {
         (Some(z), Some(c)) => format!("{z} ({})", format_offset(c.utc_offset_min)),
@@ -260,11 +278,10 @@ pub fn date_time_rows(src: &Sources) -> Vec<(&'static str, String)> {
     };
     vec![
         ("Date", clock.as_ref().map_or_else(|| UNAVAILABLE.into(), format_date)),
-        ("Time", clock.as_ref().map_or_else(|| UNAVAILABLE.into(), format_time)),
+        ("Time", clock.as_ref().map_or_else(|| UNAVAILABLE.into(), |c| format_time(c, twelve))),
         ("Time zone", zone_line),
         ("Network time", synced.into()),
-        // The shell's clocks are 24-hour with no preference to change.
-        ("Clock format", "24-hour".into()),
+        (CLOCK_FORMAT_LABEL, if twelve { "12-hour" } else { "24-hour" }.into()),
     ]
 }
 
@@ -353,11 +370,28 @@ fn build(w: f64, wide: bool, rows: usize, columns: usize) -> Layout {
     }
 }
 
-fn target(lay: &Layout, x: f64, y: f64) -> Option<Intent> {
-    (x < lay.back_hit.0 && y < lay.back_hit.1).then_some(Intent::Back)
+/// The clock-format switch on Date & time: the pill drawn at the right of
+/// the last card, and the tap region, which is that card grown downward to
+/// the touch floor (nothing lies below the last card in its column).
+pub fn clock_format_switch(public: &InfoPublic, lay: &Layout) -> Option<(Rect, Rect)> {
+    if public.page != Page::DateTime || public.rows.last().map(|r| r.0) != Some(CLOCK_FORMAT_LABEL) {
+        return None;
+    }
+    let &(x, y, w, h) = lay.cards.last()?;
+    let (pw, ph) = (76.0, 44.0);
+    let pill = (x + w - 18.0 - pw, y + (h - ph) / 2.0, pw, ph);
+    Some((pill, (x, y, w, h.max(TOUCH_FLOOR))))
 }
 
-/// A tap that went down and came up on Back.
+fn target(lay: &Layout, switch: Option<Rect>, x: f64, y: f64) -> Option<Intent> {
+    if x < lay.back_hit.0 && y < lay.back_hit.1 {
+        return Some(Intent::Back);
+    }
+    let (sx, sy, sw, sh) = switch?;
+    (x >= sx && x < sx + sw && y >= sy && y < sy + sh).then_some(Intent::ToggleClockFormat)
+}
+
+/// A tap that went down and came up on Back, or on the clock-format switch.
 pub fn hit(
     public: &InfoPublic,
     start: (f64, f64),
@@ -374,8 +408,9 @@ pub fn hit(
     if (end.0 - start.0).abs() > 18.0 || (end.1 - start.1).abs() > 18.0 {
         return None;
     }
-    let down = target(&lay, start.0, start.1);
-    let up = target(&lay, end.0, end.1);
+    let switch = clock_format_switch(public, &lay).map(|(_, hit)| hit);
+    let down = target(&lay, switch, start.0, start.1);
+    let up = target(&lay, switch, end.0, end.1);
     (down == up).then_some(up).flatten()
 }
 
@@ -443,8 +478,15 @@ mod tests {
         assert!(get("Time zone").starts_with("America/Chicago (UTC"), "{}", get("Time zone"));
         assert_eq!(get("Network time"), "Not synchronized");
         assert_eq!(get("Clock format"), "24-hour");
+        assert!(!get("Time").ends_with('M'), "{}", get("Time"));
         fs::write(root.join("run/systemd/timesync/synchronized"), "").unwrap();
         assert_eq!(date_time_rows(&src)[3].1, "Synchronized");
+        fs::create_dir_all(root.join("var/lib/k230-shell-prefs")).unwrap();
+        fs::write(root.join("var/lib/k230-shell-prefs/clock-format"), "12-hour\n").unwrap();
+        let rows = date_time_rows(&src);
+        assert_eq!(rows.last().unwrap(), &(CLOCK_FORMAT_LABEL, "12-hour".to_string()));
+        let time = &rows[1].1;
+        assert!(time.ends_with(" AM") || time.ends_with(" PM"), "{time}");
         let _ = fs::remove_dir_all(root);
     }
 
@@ -458,7 +500,11 @@ mod tests {
         assert_eq!(zone_name(Path::new("/etc/localtime-x")), None);
         let c = Clock { year: 2026, month: 10, day: 26, weekday: 1, hour: 9, minute: 5, second: 3, utc_offset_min: -300 };
         assert_eq!(format_date(&c), "Monday, October 26 2026");
-        assert_eq!(format_time(&c), "09:05:03");
+        assert_eq!(format_time(&c, false), "09:05:03");
+        assert_eq!(format_time(&c, true), "9:05:03 AM");
+        let evening = Clock { hour: 21, ..c };
+        assert_eq!(format_time(&evening, true), "9:05:03 PM");
+        assert_eq!(format_time(&Clock { hour: 0, ..c }, true), "12:05:03 AM");
         assert_eq!(format_bytes(1_460_000_000), "1.5 GB");
         assert_eq!(format_bytes(812_000_000), "812 MB");
     }
@@ -491,6 +537,34 @@ mod tests {
             assert_eq!(hit(&public(Page::Closed, 0), inside, inside, w, h), None);
             assert_eq!(hit(&p, inside, (40.0 / sx, 130.0 / sy), w, h), None);
         }
+    }
+
+    #[test]
+    fn the_clock_format_switch_is_a_floor_sized_target_on_date_and_time_only() {
+        for step in [1.0, 2.0] {
+            crate::set_layout_text_scale(step);
+            for (w, h) in [(568u32, 1232u32), (1232, 568)] {
+                let mut p = public(Page::DateTime, 5);
+                p.rows[4].0 = CLOCK_FORMAT_LABEL;
+                let lay = layout_for(w, h, 5);
+                let (pill, hit_rect) = clock_format_switch(&p, &lay).expect("switch");
+                assert!(hit_rect.3 >= TOUCH_FLOOR, "{w}x{h} step {step}");
+                let card = *lay.cards.last().unwrap();
+                assert!(pill.0 >= card.0 && pill.0 + pill.2 <= card.0 + card.2);
+                let (sx, sy) = layout_scale(w, h);
+                let centre = ((pill.0 + pill.2 / 2.0) / sx, (pill.1 + pill.3 / 2.0) / sy);
+                assert_eq!(hit(&p, centre, centre, w, h), Some(Intent::ToggleClockFormat), "{w}x{h}");
+                let low = ((card.0 + 20.0) / sx, (card.1 + TOUCH_FLOOR - 2.0) / sy);
+                assert_eq!(hit(&p, low, low, w, h), Some(Intent::ToggleClockFormat), "floor {w}x{h}");
+                let other = lay.cards[0];
+                let other = ((other.0 + 20.0) / sx, (other.1 + 20.0) / sy);
+                assert_eq!(hit(&p, other, other, w, h), None, "other rows are not targets");
+                let mut about = p.clone();
+                about.page = Page::About;
+                assert!(clock_format_switch(&about, &lay).is_none());
+            }
+        }
+        crate::set_layout_text_scale(1.0);
     }
 
     #[test]

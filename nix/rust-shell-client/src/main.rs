@@ -1689,6 +1689,23 @@ impl ShellClient {
         self.dirty = true;
     }
 
+    /// Date & time's switch: write the preference, then redraw every clock
+    /// the shell paints. The terminal apps' clocks read the file themselves.
+    fn toggle_clock_format(&mut self) {
+        let twelve = !k230_shell_rust::home_widgets::clock::twelve_hour();
+        if let Err(error) = k230_shell_rust::shell_prefs::write_twelve_hour(
+            &k230_shell_rust::shell_prefs::clock_format_path(),
+            twelve,
+        ) {
+            self.log(&format!("clock-format-preference-failed {error}"));
+            return;
+        }
+        k230_shell_rust::home_widgets::clock::set_twelve_hour(twelve);
+        self.info_view.refresh(&InfoSources::system());
+        self.info_dirty();
+        self.home_mark_dirty();
+    }
+
     fn close_info_page(&mut self) {
         if self.info_view.page != InfoPage::Closed {
             self.info_view.close();
@@ -6191,10 +6208,10 @@ impl ShellClient {
                                     self.modem_action(intent);
                                 }
                             } else if let Some(page) = self.info_view.public() {
-                                if let Some(device_info::Intent::Back) =
-                                    device_info::hit(&page, start, point, self.width, self.height)
-                                {
-                                    self.close_info_page();
+                                match device_info::hit(&page, start, point, self.width, self.height) {
+                                    Some(device_info::Intent::Back) => self.close_info_page(),
+                                    Some(device_info::Intent::ToggleClockFormat) => self.toggle_clock_format(),
+                                    None => {}
                                 }
                             } else if self.wifi_view.page != WifiPage::Closed {
                                 if !self.wifi_dragged {
@@ -7250,6 +7267,10 @@ fn serve() -> Result<(), String> {
         home_grid::apps_per_page(568, 1232),
     );
     let home = HomeScreen::new(home_layout, 568.0);
+    // Every clock this thread paints follows the Settings clock format.
+    k230_shell_rust::home_widgets::clock::set_twelve_hour(k230_shell_rust::shell_prefs::read_twelve_hour(
+        &k230_shell_rust::shell_prefs::clock_format_path(),
+    ));
     let mut state = ShellClient {
         presentation: runtime_trace::active().then(|| PresentationTimeState::bind(&globals, &qh)),
         trace_feedback: Vec::new(), trace_frame: 0, picker_was_moving: false, trace_input: 0, trace_held: false,

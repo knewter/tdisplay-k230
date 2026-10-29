@@ -1,13 +1,27 @@
 ## 1. Host: preference and consumers
 
-- [ ] 1.1 List every clock the shell and its own apps draw (shade, Home,
+- [x] 1.1 List every clock the shell and its own apps draw (shade, Home,
   Date & time, idle clock screen, Timer, Weather), and add the preference to
   `shell_prefs.rs` (missing or unreadable means 24-hour) with a reader for the
   Python apps. Proof (host): `cargo test --offline --lib` in
   `nix/rust-shell-client` and `python3 tests/test_term_apps.py`, with cases
   for 24-hour, 12-hour, midnight, noon and a corrupt file.
-- [ ] 1.2 Make the Date & time "Clock format" row a switch, and make each
+  *Host, 2026-10-29. The clocks: the shade's time (`render.rs`, via
+  `home_widgets::clock::format_time`); Home's Bubble, Thin and Dot matrix
+  widgets (`paint_widget_card_content`), where Analog is unaffected; Date &
+  time's Time row (`device_info::format_time`); the idle clock screen
+  (`k230_exhibition.clock_layout`); the Clock app (`k230_term_apps.clock_frame`);
+  Weather's "Updated"/"Offline" line. The Timer shows durations, not wall time.
+  `cargo test --offline` passed (682 lib tests plus every integration test,
+  pixel identity included), and so did `python3 tests/test_term_apps.py`
+  (39) and `python3 tests/test_exhibition.py` (31).*
+- [x] 1.2 Make the Date & time "Clock format" row a switch, and make each
   listed clock follow the preference. Proof (host): the same two commands.
+  *Host, 2026-10-29: the same runs. The row is a switch pill on the last
+  card, and its tap region grows downward to 99 px. Where the time is drawn
+  as large digits (the Home widgets, the idle clock, the Clock app), 12-hour
+  puts AM/PM at the head of the date line; elsewhere the time reads
+  `9:05 PM`.*
 
 ## 2. Host renders
 

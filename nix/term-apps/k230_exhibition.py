@@ -141,14 +141,14 @@ def count_text(count):
     return f"{DOT} {count}" if count < 100 else f"{DOT} 99+"
 
 
-def clock_layout(cols, rows, tm, minute_index, count=0):
+def clock_layout(cols, rows, tm, minute_index, count=0, twelve=False):
     """The frame for one minute: big HH:MM, a rule-free gap, the date, all
     shifted by that minute's drift but kept entirely inside the frame. With
     `count` waiting notifications a dot and the number sit two rows under the
     date, centred on it."""
     frame = apps.Frame(cols, rows)
-    text = time.strftime("%H:%M", tm)
-    date = time.strftime("%A %-d %B", tm)
+    text = apps.clock_digits(tm, twelve)
+    date = apps.clock_date_line(tm, twelve)
     sx, sy = apps.pick_scale(text, cols, rows, reserve_rows=9, width_fraction=0.6)
     big_h = apps.GLYPH_ROWS * sy
     big_w = apps.text_units(text) * sx
@@ -353,7 +353,9 @@ class Exhibition:
         cols, rows = self.sess.size()
         minute = int(now // 60)
         count = self.count(self.cfg.get("notification_socket"))
-        self.sess.draw(clock_layout(cols, rows, self.localtime(now), minute, count))
+        # Read each minute, so a Settings change shows at the next redraw.
+        twelve = apps.read_twelve_hour(self.cfg.get("prefs_dir", PREFS_DIR))
+        self.sess.draw(clock_layout(cols, rows, self.localtime(now), minute, count, twelve))
         self.sess._write("\x1b[?25l")
         self.drawn_minute = minute
 
@@ -511,7 +513,8 @@ def main(argv=None):
            "on_close": args.on_close, "notification_socket": args.notification_socket,
            "interval": (read_effect_interval(args.prefs_dir)
                          if args.interval is None else args.interval),
-           "max_up": read_max_up(args.prefs_dir) if args.max_up is None else args.max_up}
+           "max_up": read_max_up(args.prefs_dir) if args.max_up is None else args.max_up,
+           "prefs_dir": args.prefs_dir}
     pid_file_write(args.pid_file)
     try:
         with ExhibitSession() as sess:

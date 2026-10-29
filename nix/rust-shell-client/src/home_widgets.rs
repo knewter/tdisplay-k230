@@ -1126,10 +1126,53 @@ pub mod clock {
     const MONTHS: [&str; 12] =
         ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-    /// `HH:MM`, 24-hour -- large, theme-colored display text (task: "time
-    /// and date, large, in theme colours").
+    thread_local! {
+        static TWELVE_HOUR: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+    }
+
+    /// The Settings clock format (`shell_prefs::read_twelve_hour`), set on
+    /// the thread that paints at start and whenever the person changes it, so
+    /// every clock drawn after that follows it.
+    pub fn set_twelve_hour(twelve: bool) {
+        TWELVE_HOUR.with(|cell| cell.set(twelve));
+    }
+
+    pub fn twelve_hour() -> bool {
+        TWELVE_HOUR.with(|cell| cell.get())
+    }
+
+    /// The hour as a clock shows it: `09` on a 24-hour clock, `9` on a
+    /// 12-hour one, where midnight and noon are `12`.
+    pub fn hour_text(hour: i32, twelve: bool) -> String {
+        if twelve {
+            let h = hour.rem_euclid(12);
+            format!("{}", if h == 0 { 12 } else { h })
+        } else {
+            format!("{hour:02}")
+        }
+    }
+
+    /// `AM` before noon, `PM` from noon on.
+    pub fn meridiem(hour: i32) -> &'static str {
+        if hour.rem_euclid(24) < 12 { "AM" } else { "PM" }
+    }
+
+    /// `09:05` on a 24-hour clock, `9:05 PM` on a 12-hour one.
+    pub fn format_time_as(t: LocalTime, twelve: bool) -> String {
+        let hhmm = format!("{}:{:02}", hour_text(t.hour, twelve), t.minute);
+        if twelve { format!("{hhmm} {}", meridiem(t.hour)) } else { hhmm }
+    }
+
+    /// The time in the current clock format -- large, theme-colored display
+    /// text (task: "time and date, large, in theme colours").
     pub fn format_time(t: LocalTime) -> String {
-        format!("{:02}:{:02}", t.hour, t.minute)
+        format_time_as(t, twelve_hour())
+    }
+
+    /// The date line under a clock whose digits cannot carry the marker
+    /// (the Home clock widgets): `PM · Wed, Jan 5` on a 12-hour clock.
+    pub fn date_line_as(t: LocalTime, twelve: bool) -> String {
+        if twelve { format!("{} · {}", meridiem(t.hour), format_date(t)) } else { format_date(t) }
     }
 
     /// `Wed, Jan 5` -- a short, locale-agnostic date line under the time.
@@ -1160,6 +1203,28 @@ pub mod clock {
             assert_eq!(format_time(t(9, 5, 0)), "09:05");
             assert_eq!(format_time(t(23, 59, 0)), "23:59");
             assert_eq!(format_time(t(0, 0, 0)), "00:00");
+        }
+
+        #[test]
+        fn a_twelve_hour_clock_drops_the_zero_and_names_the_half_day() {
+            assert_eq!(format_time_as(t(0, 0, 0), true), "12:00 AM");
+            assert_eq!(format_time_as(t(9, 5, 0), true), "9:05 AM");
+            assert_eq!(format_time_as(t(12, 0, 0), true), "12:00 PM");
+            assert_eq!(format_time_as(t(21, 5, 0), true), "9:05 PM");
+            assert_eq!(format_time_as(t(23, 59, 0), true), "11:59 PM");
+            assert_eq!(format_time_as(t(21, 5, 0), false), "21:05");
+            assert_eq!(hour_text(21, true), "9");
+            assert_eq!(hour_text(9, false), "09");
+            assert_eq!(date_line_as(t(21, 5, 0), true), "PM · Wed, Jan 5");
+            assert_eq!(date_line_as(t(21, 5, 0), false), "Wed, Jan 5");
+        }
+
+        #[test]
+        fn the_painting_thread_follows_the_setting() {
+            assert_eq!(format_time(t(21, 5, 0)), "21:05");
+            set_twelve_hour(true);
+            assert_eq!(format_time(t(21, 5, 0)), "9:05 PM");
+            set_twelve_hour(false);
         }
 
         #[test]

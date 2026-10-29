@@ -140,6 +140,12 @@ class PureTests(unittest.TestCase):
         text = EX.clock_layout(100, 30, tm, 0).plain()
         self.assertIn(time.strftime("%A %-d %B", tm), text)
 
+    def test_a_twelve_hour_clock_leads_the_date_with_its_half_day(self):
+        tm = time.strptime("2026-10-29 21:05", "%Y-%m-%d %H:%M")
+        text = EX.clock_layout(100, 30, tm, 0, twelve=True).plain()
+        self.assertIn("PM · Thursday 29 October", text)
+        self.assertNotIn("PM ·", EX.clock_layout(100, 30, tm, 0).plain())
+
     def test_a_waiting_count_adds_a_dot_and_number_under_the_date(self):
         tm = time.gmtime(1_800_000_000)
         bare = EX.clock_layout(100, 30, tm, 0).plain()

@@ -2086,7 +2086,7 @@ fn entry_error_message(view: &WifiPublic) -> Option<&str> {
 /// title, and one label-and-value card per row. Portrait paints the 568x1232
 /// artwork scaled to the surface; landscape paints three columns in real
 /// pixels. Every rect comes from `device_info::layout_for`, which the Back tap
-/// reads too. Read-only: nothing here but Back is a target.
+/// reads too. Back and Date & time's clock-format switch are the only targets.
 fn paint_info(
     cr: &Context,
     view: &crate::device_info::InfoPublic,
@@ -2104,10 +2104,28 @@ fn paint_info(
     text(cr, "\u{2039} Settings", bx, by, bw, bs, style.accent);
     let (tx, ty, tw, ts) = lay.title;
     heading(cr, view.page.title(), tx, ty, tw, ts, style.text);
-    for ((label, value), (x, y, w, h)) in view.rows.iter().zip(&lay.cards) {
+    let switch = crate::device_info::clock_format_switch(view, &lay).map(|(pill, _)| pill);
+    let last = lay.cards.len().saturating_sub(1);
+    for (i, ((label, value), (x, y, w, h))) in view.rows.iter().zip(&lay.cards).enumerate() {
         service_card(cr, theme, "controls", *x, *y, *w, *h, false);
-        themed_role_fit(cr, theme, "caption", label, x + 18.0, y + lay.label_dy, w - 36.0, TYPE_CAPTION, style.muted, pango::Weight::Normal);
-        themed_role_fit(cr, theme, "body", value, x + 18.0, y + lay.value_dy, w - 36.0, TYPE_BODY, style.text, pango::Weight::Normal);
+        let text_w = match switch {
+            Some((px, ..)) if i == last => px - x - 30.0,
+            _ => w - 36.0,
+        };
+        themed_role_fit(cr, theme, "caption", label, x + 18.0, y + lay.label_dy, text_w, TYPE_CAPTION, style.muted, pango::Weight::Normal);
+        themed_role_fit(cr, theme, "body", value, x + 18.0, y + lay.value_dy, text_w, TYPE_BODY, style.text, pango::Weight::Normal);
+    }
+    if let Some((px, py, pw, ph)) = switch {
+        // The same pill as the Cellular and Location switches; on means 12-hour.
+        let on = view.rows.last().is_some_and(|r| r.1 == "12-hour");
+        rounded(cr, px, py, pw, ph, ph / 2.0);
+        if on { color(cr, style.accent, 1.0) } else { color(cr, style.muted, 0.35) }
+        let _ = cr.fill();
+        let knob = ph - 8.0;
+        let knob_x = if on { px + pw - 4.0 - knob / 2.0 } else { px + 4.0 + knob / 2.0 };
+        cr.arc(knob_x, py + ph / 2.0, knob / 2.0, 0.0, std::f64::consts::TAU);
+        color(cr, if on { palette_rgb_or(theme, "background", 0x1e1e2e) } else { style.text }, 1.0);
+        let _ = cr.fill();
     }
     let _ = cr.restore();
 }
@@ -5634,7 +5652,17 @@ fn paint_widget_card_content(cr: &Context, style: &VisualStyle, kind: WidgetKind
     match kind {
         WidgetKind::Clock | WidgetKind::ClockMinimal | WidgetKind::ClockDotMatrix => {
             let (hour_text, minute_text, date_text) = match crate::home_widgets::clock::now_local() {
-                Some(now) => (format!("{:02}", now.hour), format!("{:02}", now.minute), crate::home_widgets::clock::format_date(now)),
+                Some(now) => {
+                    // A 12-hour clock drops the hour's zero and puts AM/PM at
+                    // the head of the date line; the digit styles have no
+                    // letters to carry it.
+                    let twelve = crate::home_widgets::clock::twelve_hour();
+                    (
+                        crate::home_widgets::clock::hour_text(now.hour, twelve),
+                        format!("{:02}", now.minute),
+                        crate::home_widgets::clock::date_line_as(now, twelve),
+                    )
+                }
                 None => ("--".to_string(), "--".to_string(), String::new()),
             };
             // The date is sized first; the time takes what is left above it.
