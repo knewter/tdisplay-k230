@@ -1,0 +1,5 @@
+Oct 28 19:01:36 nixos kernel: canaan-mipi-dsi 90850000.dsi: HDMI HPD: connected
+Oct 28 19:02:07 nixos kernel: canaan-mipi-dsi 90850000.dsi: HDMI HPD: disconnected
+Oct 28 19:02:07 nixos sway[1161]: 00:04:52.152 [INFO] [wlr] [backend/drm/drm.c:1869] 'HDMI-A-1' disconnected
+Oct 28 19:02:08 nixos sway[1161]: 00:04:52.683 [INFO] [sway/commands.c:262] Handling command 'output * power on'
+Oct 28 19:02:08 nixos sway[1161]: 00:04:52.725 [INFO] [sway/commands.c:262] Handling command 'seat * cursor move 0 0'

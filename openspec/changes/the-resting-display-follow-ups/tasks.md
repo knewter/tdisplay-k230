@@ -22,8 +22,13 @@
   Done 2026-10-28 (host): it sends `seat * cursor move 0 0` after `output * power on` (see
   design.md for why the dimmer is not called directly); `cargo test`: 51 + 2 passed, and the
   direct-mapping test asserts the new command order.
-- [ ] 2.2 Board: dim the panel, then unplug HDMI (operator); brightness returns to the saved
+- [x] 2.2 Board: dim the panel, then unplug HDMI (operator); brightness returns to the saved
   value and the next dim comes a full timeout later.
+  Done 2026-10-28, operator at the cable (build `whdjpxg9…`): the operator plugged HDMI in,
+  let the panel dim, unplugged, and reported that brightness came back. The journal shows HPD
+  disconnected at 19:02:07 followed by `output * power on` and `seat * cursor move 0 0`
+  (`docs/evidence/resting-display-follow-ups/board/hdmi-unplug-journal.txt`). The full
+  timeout before the next dim was not timed.
 
 ## 3. Decisions (from idle 4.3)
 
@@ -67,13 +72,15 @@
   Done 2026-10-28, board (build `q8k8w3mb…`), `docs/evidence/resting-display-follow-ups/README.md` § Clock brightness: Full 148, Half 74,
   Dim 37 of 148; effects Off gave no `ttfx` in 360 s against `ttfx` at +11 s with 5 min;
   defaults restored. The limit check only shows no close in 6 min.
-- [ ] 4.3 Close the card on pointer-only activity (HDMI mouse) as well. Board proof with a
+- [x] 4.3 Close the card on pointer-only activity (HDMI mouse) as well. Board proof with a
   mouse: the card closes and the app beneath gets nothing.
   Host, 2026-10-28: the card turns on any-motion reports (mode 1003) and motion is input, so a
   moved mouse closes it the way a press does; `needs_release` ignores motion reports
   (`tests/test_exhibition.py`, 20 passed). Board proof with a mouse still open.
   Injected board, 2026-10-28: one move of a uinput relative pointer closed the card, restored
   148 and returned focus to the terminal (`docs/evidence/resting-display-follow-ups/README.md` § Clock tile). A real mouse is still needed.
+  Accepted 2026-10-28 by the operator without a real mouse ("consider it accepted or verify
+  with faux mouse"); the proof is the injected uinput relative pointer above.
 - [ ] 4.4 A shade tile or a Home action to start the exhibition on demand.
   Host 2026-10-28: a "Clock" tile (last in the wide shade's grid) closes the shade and runs
   `k230-idle-dimmer exhibit-now`, which on the charger dims and opens the card with
@@ -86,6 +93,9 @@
   Injected board, 2026-10-28: the tile opened the card at 37 of 148 with focus; one touch
   closed it and restored 148 (`docs/evidence/resting-display-follow-ups/README.md` § Clock tile). The battery half (unplug, tap, nothing
   starts) still needs the operator.
+  Operator 2026-10-28, charger unplugged: tapping Clock did nothing, which is the battery
+  behaviour, but the battery message was not visible, so the tap looked dead. The tile now reads
+  "Charger only", greyed, while no charger is online, and "Start" on the charger.
 - [ ] 4.5 Camera (exhibition 4.7, moved 2026-10-28 when the operator reassigned the webcam;
   optional, gates nothing): the webcam on the panel records a clock minute change, one
   position drift and one effect. Look at consecutive raw frames first. Camera evidence, not

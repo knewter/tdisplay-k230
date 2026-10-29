@@ -2504,9 +2504,13 @@ impl ShellClient {
         } else {
             key_backlight
         };
-        if battery != self.service_view.battery || key_backlight != self.service_view.key_backlight {
+        let charger_online = k230_shell_rust::home_widgets::battery::charger_online(Path::new("/sys/class/power_supply"));
+        if battery != self.service_view.battery || key_backlight != self.service_view.key_backlight
+            || charger_online != self.service_view.charger_online
+        {
             self.service_view.battery = battery;
             self.service_view.key_backlight = key_backlight;
+            self.service_view.charger_online = charger_online;
             self.renderer.set_services(self.service_view.clone());
             if matches!(self.route, Route::Shade | Route::Settings) {
                 self.dirty = true;

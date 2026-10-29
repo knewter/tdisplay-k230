@@ -2,7 +2,7 @@
 
 ### Requirement: An HDMI unplug restores idle brightness with the display
 
-<!-- UNVERIFIED: `nix/touch-trackpad/src/shell_ipc.rs` sends `output * power on` on HDMI unplug without reporting activity to the idle dimmer (read in source, 2026-10-28); the dim-left-behind effect has not been observed on the board. -->
+*Grounding (2026-10-28): the operator dimmed the panel and unplugged HDMI, and brightness came back. The journal shows the unplug followed by `output * power on` and `seat * cursor move 0 0` (docs/evidence/resting-display-follow-ups/README.md). The next dim's timing was not measured.*
 When HDMI is unplugged and the shell turns the panel on, the system SHALL
 treat it as activity. Brightness SHALL return to the value saved before the
 idle dimmer lowered it, and the idle timer SHALL start again from zero.
@@ -13,7 +13,7 @@ idle dimmer lowered it, and the idle timer SHALL start again from zero.
 
 ### Requirement: Pointer activity closes the clock screen
 
-<!-- UNVERIFIED: no real mouse yet. Injected 2026-10-28: one move of a uinput relative pointer closed the card, restored 148 and refocused the terminal (docs/evidence/resting-display-follow-ups/README.md). -->
+*Grounding (2026-10-28): injected board, accepted by the operator in place of a real mouse. One move of a uinput relative pointer closed the card, restored 148 and refocused the terminal (docs/evidence/resting-display-follow-ups/README.md).*
 Pointer motion or a button from a mouse SHALL close the clock screen in the
 same way a touch or key does, and SHALL NOT reach the app beneath it.
 

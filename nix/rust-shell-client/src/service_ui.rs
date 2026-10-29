@@ -68,6 +68,9 @@ pub struct ServiceView {
     /// The keyboard base's fuel gauge for the shade; `Absent` hides the
     /// battery text entirely (`keyboard_base`, `home_widgets::battery`).
     pub battery: BatteryState,
+    /// A non-battery supply reports online: the Clock tile can start the
+    /// clock screen (it reads "Charger only" otherwise).
+    pub charger_online: bool,
     /// `Some(preference)` only while the base's key backlight LED exists;
     /// `None` hides Settings' Key backlight row and its tap.
     pub key_backlight: Option<crate::keyboard_base::KeyBacklight>,

@@ -90,3 +90,18 @@ pre-dim brightness 148. Each card opened 33–37 s after the last input.
 - **Discarded measurement.** The first effects-off attempt matched the card's
   wrapper with `pgrep -f`, so its "child" samples were the card itself. That
   part is trimmed from `clock-brightness-levels.txt`.
+
+## Operator at the cable (tasks 2.2, 4.4), build `whdjpxg9…`
+
+- **HDMI unplug (2.2).** The operator plugged HDMI in, let the panel dim,
+  unplugged it, and reported that brightness came back.
+  [`hdmi-unplug-journal.txt`](board/hdmi-unplug-journal.txt) shows HPD
+  disconnected at 19:02:07, then `output * power on` and the activity signal
+  `seat * cursor move 0 0` 0.5 s later.
+- **Clock tile on battery (4.4).** The operator reported that tapping Clock
+  "never does anything". On the charger, an injected tap on the same build
+  opened the card at 37 of 148 with focus. On battery, not starting is the
+  specified behaviour, but the "needs the charger" message was not visible.
+  The tile now reads "Charger only", greyed, while no charger is online.
+- **Mouse (4.3).** The operator accepted the injected uinput mouse in place of
+  plugging in a real one.
