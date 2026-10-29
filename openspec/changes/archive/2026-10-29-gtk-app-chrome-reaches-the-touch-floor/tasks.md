@@ -7,4 +7,5 @@
 
 - [x] 2.1 Test-activate a build, launch Net and Files, and capture them with grim (injected touch). Menu bar and header buttons must measure at least 64 px and no window may overflow the panel. Record under `docs/evidence/gtk-touch-floor/`.
   Done 2026-10-27 (build `dhmp8mdi…` and `kllh24ww…`, injected taps): Net's menu bar is 72 px and its toolbar 72 px; Files' path-bar button is 88 px and sidebar row 84 px; both windows fit 1232x568. `docs/evidence/gtk-touch-floor/`.
-- [ ] 2.2 The operator taps Net's menus and Files' header on glass. Physical proof: a timestamped operator report tied to the installed build.
+- [x] 2.2 The operator taps Net's menus and Files' header on glass. Physical proof: a timestamped operator report tied to the installed build.
+  *Glass, operator report, 2026-10-29T22:23Z, build `ql630glm…`: "it all worked" (`docs/evidence/glass-checklist-2026-10-29/operator-report.md`).*

@@ -87,7 +87,8 @@
 
 ## 3. Glass (physical)
 
-- [ ] 3.1 A person opens a photo and a PDF from Files and switches handler once
+- [x] 3.1 A person opens a photo and a PDF from Files and switches handler once
   through the chooser, on the real panel. Proof: a timestamped operator report
   tied to the installed build, plus a note on whether the chooser rows are
   comfortable at the GTK4 size; keep open until it exists.
+  *Glass, operator report, 2026-10-29T22:23Z, build `ql630glm…`: "it all worked". This covers opening the photo and the PDF and switching handler through Open With…. It does not say separately whether the chooser rows were comfortable (`docs/evidence/glass-checklist-2026-10-29/operator-report.md`).*

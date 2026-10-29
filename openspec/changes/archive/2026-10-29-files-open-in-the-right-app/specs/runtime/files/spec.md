@@ -2,8 +2,8 @@
 
 ### Requirement: A file opens in its default app and another app can be chosen
 
-<!-- UNVERIFIED: the defaults and the chooser are specified from source read at cff47b1e (nix/shell.nix, nix/handheld-desktop-entries.nix). No board run has opened a file from Files yet (files-open-in-the-right-app tasks 2 and 3), and the Zathura entry's desktop ID and types are unread. -->
-*Grounding: `nix/shell.nix` sets MIME defaults only for `text/plain`, `text/markdown` and `text/x-markdown`, and records that no `xdg-desktop-portal` runs on the image; `nix/handheld-desktop-entries.nix` gives Viewnior the image types and both file managers `inode/directory`. No board observation.*
+*Grounding (2026-10-28, board, injected): opening `open-test.png` and the PDF from Files started Viewnior and Zathura, and Open With listed the alternative handler (`docs/evidence/open-with/board/README.md`). On glass, 2026-10-29, build `ql630glm…`, the operator opened a photo and a PDF and switched handler once: "it all worked" (`docs/evidence/glass-checklist-2026-10-29/operator-report.md`).*
+*Grounding: `nix/shell.nix` sets MIME defaults only for `text/plain`, `text/markdown` and `text/x-markdown`, and records that no `xdg-desktop-portal` runs on the image; `nix/handheld-desktop-entries.nix` gives Viewnior the image types and both file managers `inode/directory`. Source read at cff47b1e.*
 
 The system SHALL ship a default application, from the image and not from a person's home directory, for images, PDF documents, folders and plain text. Opening a file of one of those types from Files, or with `xdg-open`, SHALL start that application on that file. Where a second installed application declares the file's type, Files SHALL offer it through its Open With dialog, and choosing it SHALL open the file in that application for that one open. A person's own association SHALL take precedence over the image's. The system SHALL NOT run a desktop portal to do this.
 

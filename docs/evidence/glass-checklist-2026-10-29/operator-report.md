@@ -84,3 +84,29 @@ opened (`docs/evidence/apps-alert/README.md`, "Banners after the shade
 closes"). The code was the same on `2867v7pm…`, so on that build a banner
 could have failed to show for this reason rather than because of Quiet. The
 bug is fixed in `ql630glm…`.
+
+## Glass checks on `ql630glm…`, reported 2026-10-29T22:23Z
+
+The build `/nix/store/ql630glmr9j0smkf5b0l14y0cxlmsjhg-nixos-system-nixos-26.11.20260919.20b1ddd`
+was the boot default. The operator was given three checks:
+
+1. Tap Net's menus and Files' header buttons. Are they easy to hit?
+2. In Files, open `open-test.png` and `open-test.pdf`, then long-press one,
+   choose Open With… and pick another app. Were the chooser rows comfortable?
+3. Turn Quiet off, run a 10 s Timer with its card closed, and watch for
+   "Timer finished". Then say when ready, for a probe notification.
+
+The operator's reply, verbatim:
+
+> it all worked
+
+What this covers:
+
+- Items 1 and 2 were performed on glass and worked. The reply does not
+  separately say whether the chooser rows were comfortable, only that the
+  step worked.
+- Item 3: the board corroborates the Timer part. Quiet read `off`, and
+  history held `Timer / Timer finished` at 22:22:34Z. The operator never
+  said they were ready for the probe, so it was not sent and no app
+  notification banner was seen on glass. `apps-and-timers-can-alert-the-user`
+  3.6 ("both banners") stays open for that.

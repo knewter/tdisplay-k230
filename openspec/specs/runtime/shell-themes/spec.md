@@ -593,7 +593,9 @@ closed by a host test alone.
 
 *Grounding (2026-10-29): the operator read Files at 100% on glass on build `2867v7pm…`: "works great." (`docs/evidence/gtk-text-size/README.md`).*
 
-The appearance adapter SHALL give GTK3 applications the active theme's colours, a touch-readable font size and controls at least 44 px tall, from files it generates per theme generation and links into the shell user's GTK3 configuration. It SHALL give GTK3 and GTK4 applications the same base text size, matching the shell's body text at the 100% text step, and SHALL multiply that size by the Settings text-size step (100%, 130%, 160% or 200%). A GTK application started after the step changes SHALL use the new size. It SHALL NOT overwrite GTK3 or GTK4 configuration it did not write. GTK3 and GTK4 applications SHALL show a close button only.
+*Grounding (2026-10-27, board, injected): Net's menu bar and toolbar measured 72 px, and Files' path-bar button 88 px and sidebar row 84 px, in grim captures on builds `dhmp8mdi…` and `kllh24ww…` (`docs/evidence/gtk-touch-floor/`). On glass, 2026-10-29, build `ql630glm…`, the operator tapped Net's menus and Files' header: "it all worked" (`docs/evidence/glass-checklist-2026-10-29/operator-report.md`).*
+
+The appearance adapter SHALL give GTK3 applications the active theme's colours, a touch-readable font size and controls whose hit areas are at least 72 px tall for menu bar rows, buttons, entries and tabs and at least 76 px for popup menu items, from files it generates per theme generation and links into the shell user's GTK3 configuration. It SHALL give GTK4 applications a generated `gtk-4.0/gtk.css` of the same intent, with header buttons at least 64 px and buttons, menu items and list rows at least 72 px, and no colours. It SHALL give GTK3 and GTK4 applications the same base text size, matching the shell's body text at the 100% text step, and SHALL multiply that size by the Settings text-size step (100%, 130%, 160% or 200%). A GTK application started after the step changes SHALL use the new size. It SHALL NOT overwrite GTK3 or GTK4 configuration it did not write. GTK3 and GTK4 applications SHALL show a close button only.
 
 #### Scenario: A puzzle after a theme change
 - **WHEN** a theme is applied and Same Game is then launched
@@ -610,6 +612,14 @@ The appearance adapter SHALL give GTK3 applications the active theme's colours, 
 #### Scenario: An app left open across a step change
 - **WHEN** Net is open while the person changes the text size
 - **THEN** Net keeps its current text size until it is closed and opened again
+
+#### Scenario: A menu bar under a thumb
+- **WHEN** Net is launched
+- **THEN** its menu bar rows are at least 72 px tall
+
+#### Scenario: Files' header
+- **WHEN** Files (Nautilus) is launched
+- **THEN** its header buttons are at least 64 px square
 
 ### Requirement: The theme chooser's carousels end softly at their column edges
 
