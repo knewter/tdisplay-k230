@@ -2631,7 +2631,7 @@ impl ShellClient {
             return;
         };
         if !k230_shell_rust::home_widgets::battery::charger_online(std::path::Path::new("/sys/class/power_supply")) {
-            self.service_view.message = Some("The clock screen needs the charger".into());
+            self.service_view.message = Some("Clock needs the charger".into());
             self.renderer.set_services(self.service_view.clone());
             self.dirty = true;
             return;

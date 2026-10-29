@@ -2370,6 +2370,8 @@ DATA 5c580a11e0473ed864c890d72b86eac27d68dd3d08ecaa5b061f1578b016b30e docs/evide
 DATA 8f4137e04f1b7571f4d8d0670466d048bc58901ebf2657c47b5b91bf1b41dde1 docs/evidence/resting-display-follow-ups/board/clock-dot-3.png
 DATA cdad9e553f3d513f28b33aa9d1b60744fcaca7000a43e2ebb9121695271a9d37 docs/evidence/resting-display-follow-ups/board/settings-idle-rows.png
 DATA 96c4071fd2bac7bffefda7761c1836a98e3362620ab06886925391a59b7aeef0 docs/evidence/resting-display-follow-ups/board/shade-clock-tile.png
+DATA 670e0bc5d06dd3442f2adb071c9c6248832b6b8da0c485b73cf71dcda40bfa72 docs/evidence/resting-display-follow-ups/board/clock-tile-battery.png
+DATA 0f150ae1e483e3c5f16fb0eeebac502a7d9dae3b83c826f252c8942cbb049495 docs/evidence/resting-display-follow-ups/board/clock-tile-battery-tapped.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4559,3 +4561,12 @@ Native grim captures of Settings idle rows, the shade Clock tile and the clock s
 | `docs/evidence/resting-display-follow-ups/board/clock-dot-3.png` | 6968 | DATA | `8f4137e04f1b7571f4d8d0670466d048bc58901ebf2657c47b5b91bf1b41dde1` |
 | `docs/evidence/resting-display-follow-ups/board/settings-idle-rows.png` | 35050 | DATA | `cdad9e553f3d513f28b33aa9d1b60744fcaca7000a43e2ebb9121695271a9d37` |
 | `docs/evidence/resting-display-follow-ups/board/shade-clock-tile.png` | 43601 | DATA | `96c4071fd2bac7bffefda7761c1836a98e3362620ab06886925391a59b7aeef0` |
+
+## Clock tile on battery captures
+
+Native grim captures of the shade Clock tile on battery and its message (injected board, 2026-10-28)
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/resting-display-follow-ups/board/clock-tile-battery.png` | 40872 | DATA | `670e0bc5d06dd3442f2adb071c9c6248832b6b8da0c485b73cf71dcda40bfa72` |
+| `docs/evidence/resting-display-follow-ups/board/clock-tile-battery-tapped.png` | 43737 | DATA | `0f150ae1e483e3c5f16fb0eeebac502a7d9dae3b83c826f252c8942cbb049495` |

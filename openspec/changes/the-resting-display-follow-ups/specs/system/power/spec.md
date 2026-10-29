@@ -23,7 +23,7 @@ same way a touch or key does, and SHALL NOT reach the app beneath it.
 
 ### Requirement: The clock screen starts on demand
 
-<!-- UNVERIFIED: the battery case (tile on battery starts nothing) is host-only. Injected 2026-10-28 on the charger: the shade tile opened the card at 37 of 148 with focus, and one touch closed it and restored 148 (docs/evidence/resting-display-follow-ups/README.md). -->
+*Grounding (2026-10-28): injected board. On the charger the shade tile opened the card at 37 of 148 with focus, and one touch closed it and restored 148. On battery the tile read "Charger only", and a tap started nothing and showed "Clock needs the charger" (docs/evidence/resting-display-follow-ups/README.md).*
 A person SHALL be able to start the clock screen from the shade or Home
 without waiting for the idle timeout. It SHALL then behave as if idle opened
 it: input closes it, and on battery it SHALL NOT start.

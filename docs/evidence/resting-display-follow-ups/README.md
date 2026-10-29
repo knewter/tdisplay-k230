@@ -105,3 +105,13 @@ pre-dim brightness 148. Each card opened 33–37 s after the last input.
   The tile now reads "Charger only", greyed, while no charger is online.
 - **Mouse (4.3).** The operator accepted the injected uinput mouse in place of
   plugging in a real one.
+- **Clock tile on battery, after the change** (build `37nvncgk…`, charger
+  `online=0`, injected tap). The shade shows the tile greyed as "Charger
+  only" ([`clock-tile-battery.png`](board/clock-tile-battery.png)).
+  - A tap on it started nothing: brightness stayed 148, no
+    `k230-exhibition`, and no card exec in the journal
+    ([`clock-tile-battery.txt`](board/clock-tile-battery.txt)).
+  - The shade showed "Clock needs the charger"
+    ([`clock-tile-battery-tapped.png`](board/clock-tile-battery-tapped.png)).
+    The first wording, "The clock screen needs the charger", was cut off at
+    that width and was shortened.

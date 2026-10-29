@@ -81,7 +81,7 @@
   148 and returned focus to the terminal (`docs/evidence/resting-display-follow-ups/README.md` § Clock tile). A real mouse is still needed.
   Accepted 2026-10-28 by the operator without a real mouse ("consider it accepted or verify
   with faux mouse"); the proof is the injected uinput relative pointer above.
-- [ ] 4.4 A shade tile or a Home action to start the exhibition on demand.
+- [x] 4.4 A shade tile or a Home action to start the exhibition on demand.
   Host 2026-10-28: a "Clock" tile (last in the wide shade's grid) closes the shade and runs
   `k230-idle-dimmer exhibit-now`, which on the charger dims and opens the card with
   `--on-close ... resume`, so input restores brightness though swayidle never went idle. On
@@ -96,6 +96,9 @@
   Operator 2026-10-28, charger unplugged: tapping Clock did nothing, which is the battery
   behaviour, but the battery message was not visible, so the tap looked dead. The tile now reads
   "Charger only", greyed, while no charger is online, and "Start" on the charger.
+  Done 2026-10-28, injected board on battery (build `37nvncgk…`): the tile read "Charger only"
+  greyed, a tap started nothing (brightness 148, no card) and showed "Clock needs the charger"
+  (docs/evidence/resting-display-follow-ups/README.md § Operator at the cable).
 - [ ] 4.5 Camera (exhibition 4.7, moved 2026-10-28 when the operator reassigned the webcam;
   optional, gates nothing): the webcam on the panel records a clock minute change, one
   position drift and one effect. Look at consecutive raw frames first. Camera evidence, not
