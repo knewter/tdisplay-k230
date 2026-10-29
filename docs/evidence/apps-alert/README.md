@@ -135,6 +135,21 @@ and unmapped the banner about 4.6 s later. `board/banner-after-shade-closed.png`
 is the banner over the overview. Quiet was off for the test, then turned back
 on with the tile.
 
+### Boot default and ordinary boot
+
+On the operator's decision ("Promote it", 2026-10-29T22:03Z,
+`docs/evidence/glass-checklist-2026-10-29/operator-report.md`), with the
+charger online and the same kernel, initrd and dtbs as `1lpsniwg…`, `init=` in
+`/boot/bootargs.txt` was set to `ql630glm…` (backup
+`/var/tmp/bootargs.txt.before-ql630glmr9j0smkf5b0l14y0cxlmsjhg`), the system
+profile was set to it, and the board rebooted at 22:04Z.
+`/run/booted-system` was `ql630glm…`, `shell.service` and `shell-ui.service`
+were active, and no units had failed. The same shade-then-notify steps
+(shade opened by swipe, Quiet turned off with the tile, shade closed by
+swipe, critical `busctl` at 22:06:20Z) mapped a banner
+(`board/banner-after-shade-ordinary-boot.png`). Quiet was turned back on
+afterwards.
+
 ## Not covered
 
 The operator's glass check (3.6).

@@ -2304,6 +2304,7 @@ DATA d0971b44ef6604cc9f0b5c11d07586a3a03636d66c36b57df382e3b61c84fa2c docs/evide
 DATA 01097affc6893ea9e3278d8ec8676e04926ca5489d0d343d25bca12c083a72cf docs/evidence/home-notification-count/host/home-count3-200-568x1232.png
 DATA 945cb4443ee71bdec39ad1e2fef64607872b73d6a018be0478a728e22cefa191 docs/evidence/apps-alert/board/banner-timer-card-open.png
 DATA f2ab317e35c30c7e9c7d88327eb66ced42332be2be79cc02132d11d2f21b7de6 docs/evidence/apps-alert/board/banner-after-shade-closed.png
+DATA f2ab317e35c30c7e9c7d88327eb66ced42332be2be79cc02132d11d2f21b7de6 docs/evidence/apps-alert/board/banner-after-shade-ordinary-boot.png
 DATA 36ad1f8093998f5f3d59d19227729d99b07c0beca28b5563410bc425997b7522 docs/evidence/apps-alert/board/shade-gnotification-history.png
 DATA 0c07a5f9900750d6e2e7f4bf53225fce58ea25c7418ba67ca59b2db030352ee1 docs/evidence/apps-alert/board/banner-gnotification.png
 DATA aa4d659e60e2c11e8da922f1b4ba1f1b74156b4d5b70fdc2781e105958da8a9a docs/evidence/apps-alert/board/banner-timer-card-closed.png
@@ -4448,6 +4449,7 @@ Native grim captures from the board of Timer expiry banners and the Timer with t
 | --- | ---: | --- | --- |
 | `docs/evidence/apps-alert/board/banner-timer-card-open.png` | 5801 | DATA | `945cb4443ee71bdec39ad1e2fef64607872b73d6a018be0478a728e22cefa191` |
 | `docs/evidence/apps-alert/board/banner-after-shade-closed.png` | 97815 | DATA | `f2ab317e35c30c7e9c7d88327eb66ced42332be2be79cc02132d11d2f21b7de6` |
+| `docs/evidence/apps-alert/board/banner-after-shade-ordinary-boot.png` | 97815 | DATA | `f2ab317e35c30c7e9c7d88327eb66ced42332be2be79cc02132d11d2f21b7de6` |
 | `docs/evidence/apps-alert/board/shade-gnotification-history.png` | 71822 | DATA | `36ad1f8093998f5f3d59d19227729d99b07c0beca28b5563410bc425997b7522` |
 | `docs/evidence/apps-alert/board/banner-gnotification.png` | 30020 | DATA | `0c07a5f9900750d6e2e7f4bf53225fce58ea25c7418ba67ca59b2db030352ee1` |
 | `docs/evidence/apps-alert/board/banner-timer-card-closed.png` | 5762 | DATA | `aa4d659e60e2c11e8da922f1b4ba1f1b74156b4d5b70fdc2781e105958da8a9a` |
