@@ -33,3 +33,14 @@ the shade, which lists the event (the shade is where content belongs);
 closing it returned to Home with "1". Page 2's Weather widget is covered in
 the capture because it shows a location. Dismiss all in the shade then
 removed the count (checked with a crop of the corner, not committed).
+
+## Corner padding (task 2.5), 2026-10-29
+
+On the glass the operator reported that the count "kinda runs into the
+rounded corner of the screen" and asked for more top-right padding.
+`count-8px-before.png` (build `vf91pbq6…`, native `grim`) shows the pill 8 px
+from the top and right edges. `COUNT_MARGIN` is now 24 px.
+`count-24px-after.png` (build `37g1magg…`, test-activated, native `grim`,
+count 1) shows the pill further inside the corner. A `grim` capture does not
+show the panel's physical corner mask, so whether it now clears the corner is
+for the operator to judge on the glass.

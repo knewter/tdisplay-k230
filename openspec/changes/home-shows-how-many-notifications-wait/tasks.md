@@ -43,6 +43,13 @@ input and glass separately.
   tied to the installed build, in the same directory. Keep this task open until
   it exists.
 
+- [x] 2.5 Defect from the glass, 2026-10-29: the count pill ran into the
+  panel's rounded top-right corner at an 8 px margin. The margin is now 24 px
+  (`COUNT_MARGIN` in `home_screen.rs`). Proof (host): `cargo test --offline`
+  in `nix/rust-shell-client` (all pass); board `grim` before and after in
+  `docs/evidence/home-notification-count/board/README.md` § Corner padding.
+  Whether the pill now clears the corner on the glass is part of 2.4.
+
 ## 3. Closeout
 
 - [ ] 3.1 Archive once 2.4 is done. Proof:

@@ -2390,6 +2390,8 @@ DATA e4593e4358dbc9bddfe37b3adced8877f94131eb52ac034e4c9f8fe4d8775387 docs/evide
 DATA c96425b5fb7e4eedc9c6fed9973c5e3494b437e209d1b2516e4e7fca8f56daf5 docs/evidence/do-not-disturb/board/shade-200-quiet-off.png
 DATA 3a8597980c2d7babda0d46b8d6d98708c95f5e3a70cb0a7bb5746d67cbd87f20 docs/evidence/do-not-disturb/board/shade-200-quiet-on.png
 DATA 47f43cfafed7267fcf37c32ce1eb4f4406498025c1da7079a8f31391085f01a3 docs/evidence/a-focused-text-field/board/base-attached/base-echo-terminal.png
+DATA 3cde93ea0f347c4044ad22f79947032ee112f6b65d568078384321d766d7635f docs/evidence/home-notification-count/board/count-8px-before.png
+DATA 2c960160ea76dc15f684488de7696f8d46f5a1308922592c84bb926c23cc1f66 docs/evidence/home-notification-count/board/count-24px-after.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4634,3 +4636,12 @@ Native grim on build vf91pbq6: Help and Settings in portrait by live output rota
 | `docs/evidence/do-not-disturb/board/shade-200-quiet-off.png` | 42562 | DATA | `c96425b5fb7e4eedc9c6fed9973c5e3494b437e209d1b2516e4e7fca8f56daf5` |
 | `docs/evidence/do-not-disturb/board/shade-200-quiet-on.png` | 42481 | DATA | `3a8597980c2d7babda0d46b8d6d98708c95f5e3a70cb0a7bb5746d67cbd87f20` |
 | `docs/evidence/a-focused-text-field/board/base-attached/base-echo-terminal.png` | 20542 | DATA | `47f43cfafed7267fcf37c32ce1eb4f4406498025c1da7079a8f31391085f01a3` |
+
+## Home count corner padding captures (2026-10-29)
+
+Native grim of Home's notification count pill at the old 8 px and new 24 px corner margin.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/home-notification-count/board/count-8px-before.png` | 214066 | DATA | `3cde93ea0f347c4044ad22f79947032ee112f6b65d568078384321d766d7635f` |
+| `docs/evidence/home-notification-count/board/count-24px-after.png` | 208875 | DATA | `2c960160ea76dc15f684488de7696f8d46f5a1308922592c84bb926c23cc1f66` |

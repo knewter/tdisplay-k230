@@ -303,8 +303,10 @@ pub fn pending_count_log(count: usize) -> String {
 }
 
 /// Gap kept between the count pill and the right edge and between it and the
-/// top of the panel.
-const COUNT_MARGIN: f64 = 8.0;
+/// top of the panel. The panel's top-right corner is rounded: at 8 px the
+/// pill ran into it on the glass (operator, 2026-10-29), so the margin clears
+/// a corner radius of up to about 100 px for the 40 px pill.
+const COUNT_MARGIN: f64 = 24.0;
 
 /// Where Home's count pill sits: the top-right corner, `label_w` x `label_h`
 /// being the pill's own size. The pill hugs the right side margin and the top
@@ -1476,7 +1478,7 @@ mod tests {
             for (pw, ph) in [(44.0, 40.0), (120.0, 80.0)] {
                 let (x, y, rw, rh) = count_pill_rect(w, pw, ph, &cells);
                 assert!(x + rw <= f64::from(w) && y >= 0.0, "{w}x{h} inside the panel");
-                assert!(x + rw > f64::from(w) - 24.0, "{w}x{h} hugs the right edge");
+                assert!(x + rw >= f64::from(w) - COUNT_MARGIN, "{w}x{h} hugs the right edge");
                 for &(ox, oy, ow, oh) in &cells {
                     assert!(
                         !(x < ox + ow && x + rw > ox && y < oy + oh && y + rh > oy),
@@ -1489,7 +1491,7 @@ mod tests {
 
     #[test]
     fn count_pill_moves_up_off_an_occupied_corner() {
-        let blocker = [(0.0, 0.0, 1000.0, 20.0)];
+        let blocker = [(0.0, 0.0, 1000.0, 40.0)];
         let (_, y, _, _) = count_pill_rect(1000, 40.0, 30.0, &blocker);
         assert_eq!(y, 0.0, "clamped to the panel top, never below an occupied cell");
     }
