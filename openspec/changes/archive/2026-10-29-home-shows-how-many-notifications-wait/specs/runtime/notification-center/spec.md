@@ -3,7 +3,7 @@
 ### Requirement: A glance outside the shade reveals only a count
 
 *Grounding: the broker's privacy rules for previews in `tools/notification_center.py` (`History.snapshot`, `private`) and the existing "Privacy and interruption have safe defaults" requirement; the shell's rule that a sliding surface declares no opaque region (`runtime/shell`, "A surface that slides SHALL NOT declare an opaque region while it moves").*
-<!-- UNVERIFIED: no glance has been drawn or captured; Home's count is built by `home-shows-how-many-notifications-wait` and awaits its board proof. -->
+*Grounding (board, 2026-10-27): Home's count from a private event showed only the integer, with no source or text, in a native capture (docs/evidence/home-notification-count/board/README.md).*
 Any indicator of pending notifications shown while the shade is closed SHALL show a number or a dot and nothing else. It SHALL NOT show a source, summary, body, app icon or priority, and SHALL NOT differ between a private and a non-private event. It SHALL be drawn into a surface the shell already owns and SHALL NOT declare an opaque region on a surface that slides.
 
 #### Scenario: A private text arrives

@@ -38,10 +38,11 @@ input and glass separately.
   an ordinary event shows no banner and the count still rises. Same directory.
   Skip and say so if the other change is not installed.
   Done 2026-10-27 15:43Z (injected): with Quiet on two ordinary events showed no banner and the count rose to 3. `docs/evidence/home-notification-count/board/`.
-- [ ] 2.4 Glass: the operator confirms on the panel that the count is legible
+- [x] 2.4 Glass: the operator confirms on the panel that the count is legible
   and not mistaken for a control. Physical proof: a timestamped operator report
   tied to the installed build, in the same directory. Keep this task open until
   it exists.
+  *Operator at the glass, 2026-10-29, build `37g1magg…`: the operator called the pill "the notification" and asked only for more corner padding (2.5). After the 24 px margin, asked whether the count clears the corner, they answered "good". `docs/evidence/home-notification-count/board/README.md` § Corner padding.*
 
 - [x] 2.5 Defect from the glass, 2026-10-29: the count pill ran into the
   panel's rounded top-right corner at an 8 px margin. The margin is now 24 px
@@ -52,5 +53,5 @@ input and glass separately.
 
 ## 3. Closeout
 
-- [ ] 3.1 Archive once 2.4 is done. Proof:
+- [x] 3.1 Archive once 2.4 is done. Proof:
   `openspec validate home-shows-how-many-notifications-wait --strict`.

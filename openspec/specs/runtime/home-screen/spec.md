@@ -933,3 +933,21 @@ A dock whose icons are packed against its start with two or more free slots afte
 #### Scenario: Four apps in a six-slot dock
 - **WHEN** Home loads a layout whose dock holds four apps in slots 1 to 4 of six
 - **THEN** the four apps move to slots 2 to 5, and later loads leave them where the person puts them
+
+### Requirement: Home shows how many notifications wait
+
+*Grounding: the client's existing broker poll and `NotificationSnapshot::count` in `nix/rust-shell-client/src/main.rs` and `service_data.rs`; Home's lack of any notification state in `nix/rust-shell-client/src/home_screen.rs`; the shell's rule against permanent controls in `runtime/shell`.*
+*Grounding (board, 2026-10-27 to 10-29): with injected events the count read 3, then 2 after a dismissal, and cleared. It showed no private text, and Home paging and the shade pull still worked. On the glass the operator read it as the notification indicator and accepted it after its margin moved to 24 px (docs/evidence/home-notification-count/board/README.md).*
+Home SHALL show the number of notifications the broker holds while that number is above zero, in its top-right corner, as text painted into Home's own surface. The number SHALL equal the count the shade's list heading states, SHALL read `99+` above 99, and SHALL NOT be drawn at zero. It SHALL NOT be a touch target, SHALL NOT cover an icon, widget or dock cell, and SHALL NOT create a surface of its own. It SHALL update within about two seconds of the broker's count changing.
+
+#### Scenario: Events wait while Home is showing
+- **WHEN** three events are retained and Home is showing with the shade closed
+- **THEN** Home shows 3 in its top-right corner
+
+#### Scenario: Everything is dismissed
+- **WHEN** the person dismisses every dismissible event
+- **THEN** the count leaves Home, unless an ongoing critical event remains, in which case it shows 1
+
+#### Scenario: Pull down from the count
+- **WHEN** a person pulls down from the top edge at the count
+- **THEN** the shade opens as it does elsewhere on the edge, and the count is not tapped
