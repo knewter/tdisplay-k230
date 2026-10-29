@@ -2378,6 +2378,7 @@ DATA b1eb68ec503f1e5a9abe40b356781fb49fc2b269104241eb793191e9a5fa46ac docs/evide
 DATA bc4e05491816fd0381ab7479f3a1a826828a9a093df4d6638df4aa2906c79e0e docs/evidence/a-focused-text-field/board/base-attached/gesture.png
 DATA 266249167404404b297e63352a2cd8a92e7c07bd32ba8f07059343566b80bbae docs/evidence/a-focused-text-field/board/base-attached/gtk-typed.png
 DATA 8aac4e8af34c0feb4f1ffd08c83c94c1fdbaad11cb7922c816dd02d71d750bb7 docs/evidence/a-focused-text-field/board/base-attached/terminal.png
+DATA b21e4a13398385ec0bca98caf796173bc6b6afc2c658c4c69d8f0f29f271686e docs/evidence/a-focused-text-field/board/base-attached/osk-typed-ls.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4596,3 +4597,11 @@ Native grim captures on build vf91pbq6, 2026-10-28: drawer search, foot and a GT
 | `docs/evidence/a-focused-text-field/board/base-attached/gesture.png` | 17636 | DATA | `bc4e05491816fd0381ab7479f3a1a826828a9a093df4d6638df4aa2906c79e0e` |
 | `docs/evidence/a-focused-text-field/board/base-attached/gtk-typed.png` | 15555 | DATA | `266249167404404b297e63352a2cd8a92e7c07bd32ba8f07059343566b80bbae` |
 | `docs/evidence/a-focused-text-field/board/base-attached/terminal.png` | 6307 | DATA | `8aac4e8af34c0feb4f1ffd08c83c94c1fdbaad11cb7922c816dd02d71d750bb7` |
+
+## OSK typing capture (focused text field 3.6)
+
+Native grim on build vf91pbq6, 2026-10-28: ls typed on the on-screen keyboard ran in foot with the base attached.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/a-focused-text-field/board/base-attached/osk-typed-ls.png` | 26172 | DATA | `b21e4a13398385ec0bca98caf796173bc6b6afc2c658c4c69d8f0f29f271686e` |

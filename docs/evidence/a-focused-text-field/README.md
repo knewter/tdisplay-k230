@@ -96,3 +96,9 @@ same fields raising the keyboard.
 the keyboard rising over the drawer search with the base attached, tried it
 again on the glass and replied "worked great" (2026-10-28). That is a glass
 report without detail: it records no field list and no typed text.
+
+**On-screen keyboard typing (task 3.6, glass half), injected.** On the same
+build with the base attached, a terminal was opened from the drawer and the
+keyboard raised with the two-finger swipe. Injected taps on its `l`, `s` and
+Enter keys ran `ls`, which listed the home directory, and the keyboard stayed
+up throughout ([`osk-typed-ls.png`](board/base-attached/osk-typed-ls.png)).
