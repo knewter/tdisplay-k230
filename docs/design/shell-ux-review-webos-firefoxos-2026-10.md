@@ -216,7 +216,7 @@ Also: OSK (two-finger up from bottom, handle down to hide), power sheet (hold po
 
 Relevant paths, all under `.claude/worktrees/bg31`:
 - `openspec/specs/runtime/shell/spec.md`
-- `openspec/changes/the-shade-leads-with-time-and-quick-tiles/proposal.md`
+- `openspec/changes/archive/2026-10-29-the-shade-leads-with-time-and-quick-tiles/proposal.md`
 - `nix/rust-shell-client/src/service_ui.rs`
 - `nix/rust-shell-client/src/main.rs`
 - `nix/rust-shell-client/src/help.rs`

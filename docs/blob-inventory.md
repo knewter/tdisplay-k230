@@ -2399,6 +2399,8 @@ DATA 3f9d0d96a05413066dfe64384698342a86331a7519860c2859244fa1c07e25f1 docs/evide
 DATA fa37d89428cb4942be14d61ab3cbc2e131f42d74cb1d7f939f1fe9ef1c1e2d7b docs/evidence/gtk-text-size/board/net-100.png
 DATA 288157ea33cc4796876d3776cb0e4a761635bea426f5dd2aba733c0572ade5c1 docs/evidence/gtk-text-size/board/net-200-menu.png
 DATA 48b323e7268aa04ed653de7cae0759d95970f4194995dfbaeaf0fab18f0fa654 docs/evidence/gtk-text-size/board/net-200.png
+DATA 8aac4e8af34c0feb4f1ffd08c83c94c1fdbaad11cb7922c816dd02d71d750bb7 docs/evidence/shade-pass/board/ordinary-boot/boot-2867.png
+DATA 275fe8f652588360252ded26f73a54eb834547b32ac80d940478b22f07c384fd docs/evidence/shade-pass/board/ordinary-boot/boot-2867-shade.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4666,3 +4668,12 @@ Native grim captures of Files and Net at 100% and 200%, and Files with the pre-c
 | `docs/evidence/gtk-text-size/board/net-100.png` | 11184 | DATA | `fa37d89428cb4942be14d61ab3cbc2e131f42d74cb1d7f939f1fe9ef1c1e2d7b` |
 | `docs/evidence/gtk-text-size/board/net-200-menu.png` | 21703 | DATA | `288157ea33cc4796876d3776cb0e4a761635bea426f5dd2aba733c0572ade5c1` |
 | `docs/evidence/gtk-text-size/board/net-200.png` | 15482 | DATA | `48b323e7268aa04ed653de7cae0759d95970f4194995dfbaeaf0fab18f0fa654` |
+
+## Shade after an ordinary boot
+
+Native grim captures from build 2867v7pm after an ordinary boot, before and after an injected swipe that opens the shade.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/shade-pass/board/ordinary-boot/boot-2867.png` | 6307 | DATA | `8aac4e8af34c0feb4f1ffd08c83c94c1fdbaad11cb7922c816dd02d71d750bb7` |
+| `docs/evidence/shade-pass/board/ordinary-boot/boot-2867-shade.png` | 41162 | DATA | `275fe8f652588360252ded26f73a54eb834547b32ac80d940478b22f07c384fd` |

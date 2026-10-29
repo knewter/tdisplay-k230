@@ -19,5 +19,6 @@
 - [x] 2.2 The operator checks the shade on glass. Physical proof: a timestamped
   operator report tied to the installed build.
   *Operator at the glass, 2026-10-29 00:34 CDT, build `37g1magg…`: "5 good" (`docs/evidence/glass-checklist-2026-10-29/operator-report.md`).*
-- [ ] 2.3 Promote the build from master to the boot default and verify an
+- [x] 2.3 Promote the build from master to the boot default and verify an
   ordinary boot.
+  *Ordinary boot, 2026-10-29 10:12 CDT: the board booted `2867v7pm…` as the boot default, and an injected swipe opened the shade in a grim capture (`docs/evidence/shade-pass/board/ordinary-boot/README.md`).*

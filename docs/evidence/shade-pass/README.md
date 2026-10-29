@@ -1,6 +1,6 @@
 # The shade leads with time and quick tiles: evidence
 
-Change: `openspec/changes/the-shade-leads-with-time-and-quick-tiles/`.
+Change: `openspec/changes/archive/2026-10-29-the-shade-leads-with-time-and-quick-tiles/`.
 
 ## Host (task 1.3)
 
