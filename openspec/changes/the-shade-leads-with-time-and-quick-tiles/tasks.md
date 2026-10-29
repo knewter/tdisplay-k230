@@ -16,7 +16,8 @@
 
 - [x] 2.1 Test-activate the build. Capture the shade with grim, and tap each
   tile with injected touch. Proof: `docs/evidence/shade-pass/board/`.
-- [ ] 2.2 The operator checks the shade on glass. Physical proof: a timestamped
+- [x] 2.2 The operator checks the shade on glass. Physical proof: a timestamped
   operator report tied to the installed build.
+  *Operator at the glass, 2026-10-29 00:34 CDT, build `37g1magg…`: "5 good" (`docs/evidence/glass-checklist-2026-10-29/operator-report.md`).*
 - [ ] 2.3 Promote the build from master to the boot default and verify an
   ordinary boot.

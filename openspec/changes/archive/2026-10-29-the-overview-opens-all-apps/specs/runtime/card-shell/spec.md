@@ -2,7 +2,7 @@
 
 ### Requirement: The overview offers a way to All apps
 
-*Grounding: board, injected touch, 2026-10-27 (docs/evidence/overview-all-apps/README.md).*
+*Grounding: board, injected touch, 2026-10-27 (docs/evidence/overview-all-apps/README.md); the operator tapped "All apps ›" on glass, "all apps works" on build `37g1magg…`, 2026-10-29 (docs/evidence/glass-checklist-2026-10-29/operator-report.md).*
 
 The card overview SHALL show an "All apps ›" label at the right of its title row. A tap on it that misses every card SHALL return Home and then open the app drawer. Its target SHALL be at least 99 px tall and SHALL NOT take a tap that lands on a card.
 

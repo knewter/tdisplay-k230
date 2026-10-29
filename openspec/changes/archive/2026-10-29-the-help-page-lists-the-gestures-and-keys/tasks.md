@@ -14,5 +14,6 @@
 - [x] 2.1 Test-activate the build and capture Help with grim at both
   orientations, scrolled through. Proof: `docs/evidence/help-refresh/board/`.
   *Done: landscape on build `dhmp8mdi…` (2026-10-27) and portrait on `vf91pbq6…` (2026-10-28, live output rotation, not a portrait image). Native `grim` captures in `docs/evidence/help-refresh/board/`.*
-- [ ] 2.2 The operator reads Help on glass. Physical proof: a timestamped
+- [x] 2.2 The operator reads Help on glass. Physical proof: a timestamped
   operator report tied to the installed build.
+  *Operator at the glass, 2026-10-29 00:34 CDT, build `37g1magg…`: "7 good" (`docs/evidence/glass-checklist-2026-10-29/operator-report.md`).*

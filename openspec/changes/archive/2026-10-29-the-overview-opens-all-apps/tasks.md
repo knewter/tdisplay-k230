@@ -11,5 +11,6 @@
   tap "All apps ›" (injected touch), and confirm the drawer opens.
   Proof: `docs/evidence/overview-all-apps/` with grim captures and the
   compositor log lines.
-- [ ] 2.2 The operator taps "All apps ›" on glass. Physical proof: a
+- [x] 2.2 The operator taps "All apps ›" on glass. Physical proof: a
   timestamped operator report tied to the installed build.
+  *Operator at the glass, 2026-10-29 00:34 CDT, build `37g1magg…`: "all apps works" (`docs/evidence/glass-checklist-2026-10-29/operator-report.md`).*

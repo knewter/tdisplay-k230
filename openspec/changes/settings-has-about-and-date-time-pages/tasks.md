@@ -36,8 +36,9 @@
   saved under `docs/evidence/settings-about/board/`. Until then the sync row stays
   UNVERIFIED.
   Done 2026-10-27T03:53:32Z over SSH (build `kllh24ww…`): `/run/systemd/timesync/synchronized` exists (22:45 local), and About's System reads `kllh24ww · nixos-system-…`, matching `readlink /run/current-system`. `docs/evidence/settings-about/README.md`.
-- [ ] 3.3 The operator reads both pages on glass. Physical proof: a timestamped
+- [x] 3.3 The operator reads both pages on glass. Physical proof: a timestamped
   operator report tied to the installed build.
+  *Operator at the glass, 2026-10-29 00:34 CDT, build `37g1magg…`: "8 good" (`docs/evidence/glass-checklist-2026-10-29/operator-report.md`).*
 
 ## 4. Follow-ups, recorded and not started
 

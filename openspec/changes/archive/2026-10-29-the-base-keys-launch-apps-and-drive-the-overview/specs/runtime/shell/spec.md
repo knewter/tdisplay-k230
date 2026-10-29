@@ -4,7 +4,7 @@
 
 *Grounding: Operator and board-read 2026-10-14: LILYGO opens the drawer, LILYGO+Tab the overview, Fn+LILYGO saves a screenshot (docs/evidence/keyboard-base/keys/README.md). The key roles come from LILYGO `ui_hardware.c`.*
 
-<!-- UNVERIFIED: the drawer's key search and the overview's keys await board proof (the-base-keys-launch-apps-and-drive-the-overview tasks 2.1-2.3). -->
+*Grounding (2026-10-27/29): the drawer's key search and the overview's keys by injected keys with grim captures (docs/evidence/base-keys/), and on the real base by the operator, "4 works" on build `37g1magg…` (docs/evidence/glass-checklist-2026-10-29/operator-report.md).*
 
 The LILYGO key SHALL open the app drawer with its search taking the base's keys and the on-screen keyboard left down. Typing SHALL filter the drawer, the first match SHALL be marked, Enter SHALL launch it, and Esc SHALL clear the query or, when it is empty, close the drawer. LILYGO with Tab SHALL open the card overview. While the overview is shown, Left and Right SHALL choose a card, Enter SHALL open it, Esc SHALL go back and Backspace SHALL close it; those keys SHALL reach applications unchanged once the overview has closed. Fn with LILYGO SHALL take a screenshot of the panel. Esc SHALL perform the shell's back action when no application has keyboard focus, and SHALL reach the application unchanged otherwise.
 

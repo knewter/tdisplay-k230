@@ -17,5 +17,6 @@
 - [x] 2.2 Inject LILYGO+Tab, Right, Enter, then LILYGO+Tab, Esc, then type in
   a terminal. The chosen app opens, Esc returns, and the terminal receives
   the plain keys afterwards (`swaymsg -t get_binding_state` reads `default`).
-- [ ] 2.3 The operator does 2.1 and 2.2 on the real base. Physical proof: a
+- [x] 2.3 The operator does 2.1 and 2.2 on the real base. Physical proof: a
   timestamped operator report tied to the installed build.
+  *Operator at the glass, 2026-10-29 00:34 CDT, build `37g1magg…`: "4 works" (`docs/evidence/glass-checklist-2026-10-29/operator-report.md`).*
