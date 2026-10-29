@@ -91,3 +91,8 @@ after the shell restart: `k230-keyboard-base-last-key` did not exist, so the
 matrix. There is no same-build control without the base, because the base
 cannot be detached in software. Before this rule, 3.3 and 3.4 showed the
 same fields raising the keyboard.
+
+**Operator report.** After this deploy the operator, who had first reported
+the keyboard rising over the drawer search with the base attached, tried it
+again on the glass and replied "worked great" (2026-10-28). That is a glass
+report without detail: it records no field list and no typed text.
