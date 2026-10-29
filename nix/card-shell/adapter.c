@@ -3129,6 +3129,7 @@ static void edge_client_up(uint64_t time) {
 		wlr_seat_touch_notify_up(edge.seat->wlr_seat, (uint32_t)time, edge.id);
 		wlr_seat_touch_notify_frame(edge.seat->wlr_seat);
 	}
+	edge.forwarded = false;
 }
 static bool edge_replaying;
 static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, uint64_t event_ms);
@@ -3519,7 +3520,11 @@ static bool input_up(struct sway_seat *seat, int32_t id, uint64_t event_ms) {
 			if (backdrop)
 				sway_log(SWAY_INFO, "K230_CARD_SHELL edge backdrop tap x=%.0f y=%.0f apps=%d",
 					edge.x, edge.y, apps);
-			edge_reset(false);
+			/* Cancel a still-forwarded client point. The last lift need not be
+			 * the forwarded contact's: a keyboard chord can own a second
+			 * finger without counting it here, and Sway's default seatop has
+			 * no touch-up handler to release the point later. */
+			edge_reset(true);
 			if (home) enter(seat);
 			else if (apps) overview_open_apps();
 			else if (backdrop) home_settle(true);
@@ -3814,7 +3819,25 @@ static void display_wake(void) {
 	}
 	list_free(results);
 }
+/* A held contact id is unique, so a seat point that already carries the id of
+ * a new down lost its up. Every edge gesture refuses to start while the seat
+ * holds any point, so one lost up used to disable them all until the
+ * compositor restarted. Release it the way its up would have. */
+static void release_stale_touch_point(struct sway_seat *seat, struct wlr_touch *touch,
+		int32_t id, uint32_t time_msec) {
+	if (!wlr_seat_touch_get_point(seat->wlr_seat, id)) return;
+	sway_log(SWAY_INFO, "K230_CARD_SHELL stale-touch-point id=%" PRId32
+		" points=%u edge=%d forwarded=%d", id,
+		(unsigned)wlr_seat_touch_num_points(seat->wlr_seat), edge.active, edge.forwarded);
+	if (edge.active && edge.id == id) edge_reset(true);
+	if (!wlr_seat_touch_get_point(seat->wlr_seat, id)) return;
+	struct wlr_touch_up_event up = {.touch = touch, .time_msec = time_msec, .touch_id = id};
+	if (seat->seatop_impl->touch_up) seat->seatop_impl->touch_up(seat, &up);
+	else wlr_seat_touch_notify_up(seat->wlr_seat, time_msec, id);
+	wlr_seat_touch_notify_frame(seat->wlr_seat);
+}
 bool card_shell_down(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, double x, double y, uint32_t time_msec) {
+	release_stale_touch_point(seat, touch, id, time_msec);
 	/* A touch on a dark panel only wakes it: consume the whole sequence so
 	 * the app underneath never sees a tap it could not have been aimed at. */
 	bool wake = false;
@@ -3891,7 +3914,10 @@ static char *debug_scene_text(void) {
 	wl_list_for_each(c, &shell.cards, link)
 		if (c->view && c->view->container && c->view->container->card_shell_ordinary_maximized)
 			ordinary_maximized_cards++;
-	size_t capacity = 2048;
+	/* The touch-down gate's own inputs, so a gesture that will not start can
+	 * be attributed over IPC without restarting with a route trace. */
+	struct sway_seat *gate_seat = input_manager_current_seat();
+	size_t capacity = 2560;
 	char *text = malloc(capacity);
 	if (!text)
 		return NULL;
@@ -3943,7 +3969,9 @@ static char *debug_scene_text(void) {
 		"scene_redraw_coalesced=%" PRIu64 " scene_timer_coalesced=%" PRIu64
 		" scene_render_syncs=%" PRIu64 " scene_structural_syncs=%" PRIu64
 		" selected_scene_valid=%d selected_scene_x=%d selected_scene_y=%d"
-		" filter_nearest=%" PRIu64 " filter_bilinear=%" PRIu64,
+		" filter_nearest=%" PRIu64 " filter_bilinear=%" PRIu64
+		" touch_points=%u pointer_from_touch=%d popup_mapped=%d launcher_mapped=%d"
+		" blocked_until_up=%d contact=%d edge_tracking=%d edge_active=%d edge_forwarded=%d",
 		shell.active, shell.deck ? shell.deck->node.enabled : -1,
 		canvas, gradient, ordinary,
 		ordinary_maximized_cards, shell.appearance_enabled,
@@ -3955,7 +3983,12 @@ static char *debug_scene_text(void) {
 		shell.scene_redraw_coalesced, shell.scene_timer_coalesced,
 		shell.scene_render_syncs, shell.scene_structural_syncs,
 		selected_scene_valid, selected_scene_x, selected_scene_y,
-		shell.filter_nearest, shell.filter_bilinear);
+		shell.filter_nearest, shell.filter_bilinear,
+		gate_seat ? (unsigned)wlr_seat_touch_num_points(gate_seat->wlr_seat) : 0,
+		gate_seat ? gate_seat->cursor->simulating_pointer_from_touch : -1,
+		shell.output ? popup_mapped() : -1, shell.output ? launcher_mapped() : -1,
+		shell.policy.blocked_until_up, shell.policy.contact, shell.policy.edge.tracking,
+		edge.active, edge.forwarded);
 	if (written < 0 || (size_t)written >= capacity) {
 		free(text);
 		return NULL;
