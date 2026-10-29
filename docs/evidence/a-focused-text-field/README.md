@@ -107,3 +107,8 @@ up throughout ([`osk-typed-ls.png`](board/base-attached/osk-typed-ls.png)).
 build, asked to type `echo base ok` on the base in Terminal and press Enter,
 the operator confirmed that it printed `base ok` exactly ("yup", 2026-10-28).
 This rests on the operator's report; no capture was taken.
+
+A later native `grim` of that terminal
+([`base-echo-terminal.png`](board/base-attached/base-echo-terminal.png),
+2026-10-28 ~23:40) shows `echo base ok` followed by the line `base ok`, as
+the operator reported.

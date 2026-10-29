@@ -70,3 +70,19 @@ capture, so this run covers the file surviving the reboot and being read by
 the restarted shell, not this build running from boot. The earlier
 shell-restart check is above. Quiet was turned off again by the tile
 afterwards; the file read `off`.
+
+## Largest vision step on the board (task 3.2), injected
+
+Build `vf91pbq6…` (test-activated, then the boot default), 2026-10-28 ~23:40 local, landscape. Settings → Vision → Text size was set to 200% by injected
+taps, and the shade opened with `--surface shade`.
+
+- `shade-200-quiet-off.png`: tile "Quiet / Off", no moon on the status line.
+- `shade-200-quiet-on.png`: after a tap at (388, 207) the tile read "Quiet /
+  On", the moon appeared on the status line, and
+  `/var/lib/k230-shell-prefs/do-not-disturb` read `on` (04:43:02Z).
+- `shade-200-quiet-off-again.png`: a second tap turned it off, the moon
+  disappeared, and the file read `off`.
+
+In all three, both sliders lie fully on the 1232x568 panel. At 200% the tile
+words render at a reduced size, the shrink that task 2.3 leaves to the
+coordinator. Text size was returned to 100% afterwards.

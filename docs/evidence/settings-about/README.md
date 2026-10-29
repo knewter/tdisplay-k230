@@ -31,3 +31,18 @@ Settings rows. Build `/nix/store/kllh24ww1vhybcdf6z9z6jz859584jsb-nixos-system-n
 Over SSH at 03:53:32Z: `/run/systemd/timesync/synchronized` exists, and
 `readlink /run/current-system` is the `kllh24ww…` path above. The portrait
 captures and the operator's reading on glass remain open.
+
+## Board captures (portrait, and landscape Settings)
+
+Evidence class: board, native `grim` capture. Build `vf91pbq6…` (test-activated, then the boot default), 2026-10-28 ~23:40 local. The panel was rotated live with `swaymsg output DSI-1 transform normal` and restored to `270` afterwards. No portrait image was installed. Taps used a copy of `ui.py` without its landscape assertion, with coordinates converted from portrait. About and
+Date & time were opened from the drawer search: the base-attached drawer
+took injected keys "about" and "date", then Enter.
+
+- `board/settings-portrait.png`, `board/settings-landscape.png`: the Settings
+  page at each orientation.
+- `board/about-portrait.png`: System `vf91pbq6 · nixos-system-nixo…`, which
+  matches the running build.
+- `board/date-time-portrait.png`: America/Chicago (UTC-05:00), Network time
+  Synchronized, Clock format 24-hour.
+
+The operator reading both pages on glass remains open (task 3.3).

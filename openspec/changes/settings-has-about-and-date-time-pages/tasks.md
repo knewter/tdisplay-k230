@@ -22,12 +22,13 @@
 
 ## 3. Board (hardware-only)
 
-- [ ] 3.1 Test-activate the build and capture Settings, About and Date & time
+- [x] 3.1 Test-activate the build and capture Settings, About and Date & time
   with grim at both orientations. Proof: `docs/evidence/settings-about/board/`.
   Operator command: `./tools/msh.py` session on the board, then
   `grim` per `docs/evidence/help-refresh/` practice, after
   `nix build .#nixosConfigurations.k230.config.system.build.toplevel --out-link <scratch>/system`
   and a live `switch-to-configuration test`.
+  *Done: About and Date & time in landscape on `kllh24ww…` (2026-10-27). Settings in both orientations, and About and Date & time in portrait, on `vf91pbq6…` (2026-10-28, live output rotation, not a portrait image). `docs/evidence/settings-about/`.*
 - [x] 3.2 Record on the board whether `/run/systemd/timesync/synchronized`
   exists after sync, and that About's system hash equals
   `readlink /run/current-system` there. Proof:

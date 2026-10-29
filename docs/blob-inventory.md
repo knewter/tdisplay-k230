@@ -2379,6 +2379,17 @@ DATA bc4e05491816fd0381ab7479f3a1a826828a9a093df4d6638df4aa2906c79e0e docs/evide
 DATA 266249167404404b297e63352a2cd8a92e7c07bd32ba8f07059343566b80bbae docs/evidence/a-focused-text-field/board/base-attached/gtk-typed.png
 DATA 8aac4e8af34c0feb4f1ffd08c83c94c1fdbaad11cb7922c816dd02d71d750bb7 docs/evidence/a-focused-text-field/board/base-attached/terminal.png
 DATA b21e4a13398385ec0bca98caf796173bc6b6afc2c658c4c69d8f0f29f271686e docs/evidence/a-focused-text-field/board/base-attached/osk-typed-ls.png
+DATA b7de5b5f60f5e8557d76abe378082f879362438fd771b6dc81634e308b852879 docs/evidence/help-refresh/board/help-portrait-1.png
+DATA 4d99cafc7a9befb0b0687e448570cd7decfea1bc5017d5068f73190f45a7fc30 docs/evidence/help-refresh/board/help-portrait-2.png
+DATA d33b368c2fc269e3f735efbcfb6c2f08d69874f01a9920b0a45f86496c789e42 docs/evidence/help-refresh/board/help-portrait-3.png
+DATA 3bfd17d7c9701e4dd7347aa149f40b05f3d018ea6c6a99705e7cb5d38e39ccb9 docs/evidence/settings-about/board/settings-portrait.png
+DATA 72c682ae4ad0d7725cf7ee2419625ddfbccc952ce8e4cadbe939356a0fc8bc7a docs/evidence/settings-about/board/settings-landscape.png
+DATA 8988895e711fcd3b23f132d11dfe52f0f20f546b0ea78fb73bd9d9378260bd66 docs/evidence/settings-about/board/about-portrait.png
+DATA 53c95d02b22e27f7611a2aa0e381bbb17ee678735f236649b25e850cbc66a80d docs/evidence/settings-about/board/date-time-portrait.png
+DATA e4593e4358dbc9bddfe37b3adced8877f94131eb52ac034e4c9f8fe4d8775387 docs/evidence/do-not-disturb/board/shade-200-quiet-off-again.png
+DATA c96425b5fb7e4eedc9c6fed9973c5e3494b437e209d1b2516e4e7fca8f56daf5 docs/evidence/do-not-disturb/board/shade-200-quiet-off.png
+DATA 3a8597980c2d7babda0d46b8d6d98708c95f5e3a70cb0a7bb5746d67cbd87f20 docs/evidence/do-not-disturb/board/shade-200-quiet-on.png
+DATA 47f43cfafed7267fcf37c32ce1eb4f4406498025c1da7079a8f31391085f01a3 docs/evidence/a-focused-text-field/board/base-attached/base-echo-terminal.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4605,3 +4616,21 @@ Native grim on build vf91pbq6, 2026-10-28: ls typed on the on-screen keyboard ra
 | Path | Bytes | Class | SHA256 |
 | --- | ---: | --- | --- |
 | `docs/evidence/a-focused-text-field/board/base-attached/osk-typed-ls.png` | 26172 | DATA | `b21e4a13398385ec0bca98caf796173bc6b6afc2c658c4c69d8f0f29f271686e` |
+
+## Board captures for Help, Settings About, Do Not Disturb at 200%, and the base echo (2026-10-28)
+
+Native grim on build vf91pbq6: Help and Settings in portrait by live output rotation, the shade at the 200% text step with Quiet off/on/off, Settings landscape, and the terminal showing echo base ok.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/help-refresh/board/help-portrait-1.png` | 87164 | DATA | `b7de5b5f60f5e8557d76abe378082f879362438fd771b6dc81634e308b852879` |
+| `docs/evidence/help-refresh/board/help-portrait-2.png` | 98601 | DATA | `4d99cafc7a9befb0b0687e448570cd7decfea1bc5017d5068f73190f45a7fc30` |
+| `docs/evidence/help-refresh/board/help-portrait-3.png` | 82068 | DATA | `d33b368c2fc269e3f735efbcfb6c2f08d69874f01a9920b0a45f86496c789e42` |
+| `docs/evidence/settings-about/board/settings-portrait.png` | 62134 | DATA | `3bfd17d7c9701e4dd7347aa149f40b05f3d018ea6c6a99705e7cb5d38e39ccb9` |
+| `docs/evidence/settings-about/board/settings-landscape.png` | 70258 | DATA | `72c682ae4ad0d7725cf7ee2419625ddfbccc952ce8e4cadbe939356a0fc8bc7a` |
+| `docs/evidence/settings-about/board/about-portrait.png` | 36337 | DATA | `8988895e711fcd3b23f132d11dfe52f0f20f546b0ea78fb73bd9d9378260bd66` |
+| `docs/evidence/settings-about/board/date-time-portrait.png` | 37849 | DATA | `53c95d02b22e27f7611a2aa0e381bbb17ee678735f236649b25e850cbc66a80d` |
+| `docs/evidence/do-not-disturb/board/shade-200-quiet-off-again.png` | 42575 | DATA | `e4593e4358dbc9bddfe37b3adced8877f94131eb52ac034e4c9f8fe4d8775387` |
+| `docs/evidence/do-not-disturb/board/shade-200-quiet-off.png` | 42562 | DATA | `c96425b5fb7e4eedc9c6fed9973c5e3494b437e209d1b2516e4e7fca8f56daf5` |
+| `docs/evidence/do-not-disturb/board/shade-200-quiet-on.png` | 42481 | DATA | `3a8597980c2d7babda0d46b8d6d98708c95f5e3a70cb0a7bb5746d67cbd87f20` |
+| `docs/evidence/a-focused-text-field/board/base-attached/base-echo-terminal.png` | 20542 | DATA | `47f43cfafed7267fcf37c32ce1eb4f4406498025c1da7079a8f31391085f01a3` |

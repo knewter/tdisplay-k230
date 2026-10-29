@@ -73,9 +73,10 @@ installed image (UNVERIFIED).
   critical event is exercised by the host test only unless the policy can be
   driven on the board; say which.
   Done 2026-10-27 (injected, `ui.py` taps rather than `board-pointer.py`, D-Bus events): ordinary event with no banner and listed in history at 15:43:36Z; real Timer banner under Quiet at 16:03:22Z. Base-battery critical: host test only. `docs/evidence/do-not-disturb/board/`.
-- [ ] 3.2 Injected board: `grim` captures of the shade with the tile off and
+- [x] 3.2 Injected board: `grim` captures of the shade with the tile off and
   on show the moon glyph appear and disappear, and the sliders stay on the
   panel at the largest vision step. Same directory.
+  *Done 2026-10-28, injected, build `vf91pbq6…`, at 200% (`docs/evidence/do-not-disturb/board/README.md` § Largest vision step): the moon appears and disappears with the tile, and both sliders stay on the panel.*
 - [x] 3.3 Injected board: the Settings row and the tile agree after each is
   toggled. Same directory.
 - [x] 3.4 Injected board: turn quiet mode on, reboot, and record that it is
