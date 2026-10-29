@@ -1,0 +1,29 @@
+--- a/gdk/wayland/gdkcairocontext-wayland.c
++++ b/gdk/wayland/gdkcairocontext-wayland.c
+@@ -163,15 +163,21 @@
+   else
+     self->paint_surface = gdk_wayland_cairo_context_create_surface (self);
+ 
+-  surface_region = gdk_wayland_cairo_context_surface_get_region (self->paint_surface);
+-  if (surface_region)
+-    cairo_region_union (region, surface_region);
+-
++  /* Give the other buffers only this frame's new damage. The paint
++   * surface's backlog is damage those buffers already drew; adding it to
++   * them as well never lets damage shrink, so with two alternating buffers
++   * (a compositor that holds the last one until the next commit) a single
++   * full-surface frame repeats on every later frame. */
+   for (l = self->surfaces; l; l = l->next)
+     {
+-      gdk_wayland_cairo_context_surface_add_region (l->data, region);
++      if (l->data != self->paint_surface)
++        gdk_wayland_cairo_context_surface_add_region (l->data, region);
+     }
+ 
++  surface_region = gdk_wayland_cairo_context_surface_get_region (self->paint_surface);
++  if (surface_region)
++    cairo_region_union (region, surface_region);
++
+   /* clear the repaint area */
+   cr = cairo_create (self->paint_surface);
+   cairo_set_operator (cr, CAIRO_OPERATOR_CLEAR);

@@ -76,3 +76,32 @@ spinner running.
 `nix/patches/gtk4-wayland-cairo-damage.patch` gives the other buffers only
 the frame's new damage, then unions the paint buffer's own backlog into the
 region it repaints.
+
+## Patched GTK, loaded by hand (task 2.1)
+
+Evidence class: the board with injected launches. This is not yet a system
+build. The patched gtk4 (`/nix/store/44233ralwykx4v001h9i07dcm8wpa4k6-gtk4-riscv64-unknown-linux-gnu-4.22.4`,
+derivation `kdn7aa7w…`, the same one the overlay in `nix/hardware.nix`
+evaluates to) was copied to the board. Each test process's
+`/proc/<pid>/maps` showed it mapping that `libgtk-4.so.1.2200.4`. For the
+Python probe, `GI_TYPELIB_PATH` needed the patched typelib first, because
+the typelib names its library by absolute store path.
+
+| Window | GTK | Commits | Full-buffer damages | Typical damage |
+|---|---|---|---|---|
+| lone `AdwSpinner`, 15 s | stock | 444 | 444 | `(0, 0, 1282, 618)` |
+| lone `AdwSpinner`, 15 s | patched | 794 | 2 | about 25×26 px at the spinner, e.g. `(631, 315, 26, 25)` |
+| Files on `/home/shell`, 20 s | stock | 427 | 425 | `(0, 0, 1282, 618)` |
+| Files on `/home/shell`, 20 s | patched | 10 | 2 (at startup) | the file view `(325, 141, 932, 452)` once loaded, then small header regions |
+
+Files on `/home/shell` through the stock launcher plus
+`LD_LIBRARY_PATH=<patched gtk4>/lib`: the main thread went idle 8.4 s after
+launch (`IDLE at t=8.4 main_ticks=264`). Two stock launches were still busy
+after 300 s. `patched-loaded.png` is a grim capture about 12 s after a
+patched launch: all four entries, no loading bar, and no stale pixels where
+the spinner was. `stock-loading.png` is the stock launch stuck on
+"Loading…".
+
+Scripts (copied to `scripts/`, run from `/var/tmp` on the board): `files_probe.py` (launch, then sample
+per-thread CPU every 2 s until two quiet samples or 300 s),
+`files_ab.sh`, `spin_probe.py` and `spin_probe.sh`. `spin_probe.sh` reads the typelib path from `/var/tmp/gi_typelib_path`, which was taken from Portfolio's wrapper.

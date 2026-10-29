@@ -52,6 +52,17 @@ in
         if prev.stdenv.hostPlatform.system == "riscv64-linux"
         then prev.callPackage ./pixman-rvv.nix { pixman = prev.pixman; }
         else prev.pixman;
+      # GTK4's Wayland cairo context re-adds each buffer's damage backlog
+      # to the other buffers, so with sway holding the last buffer until
+      # the next commit every animated frame repainted the whole window and
+      # starved Files' folder loading. See
+      # docs/evidence/files-app/slow-load/README.md.
+      gtk4 =
+        if prev.stdenv.hostPlatform.system == "riscv64-linux"
+        then prev.gtk4.overrideAttrs (old: {
+          patches = (old.patches or [ ]) ++ [ ./patches/gtk4-wayland-cairo-damage.patch ];
+        })
+        else prev.gtk4;
     })
   ];
   k230.rootGrowth.enable = lib.mkDefault true;

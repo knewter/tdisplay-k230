@@ -2401,6 +2401,8 @@ DATA 288157ea33cc4796876d3776cb0e4a761635bea426f5dd2aba733c0572ade5c1 docs/evide
 DATA 48b323e7268aa04ed653de7cae0759d95970f4194995dfbaeaf0fab18f0fa654 docs/evidence/gtk-text-size/board/net-200.png
 DATA 8aac4e8af34c0feb4f1ffd08c83c94c1fdbaad11cb7922c816dd02d71d750bb7 docs/evidence/shade-pass/board/ordinary-boot/boot-2867.png
 DATA 275fe8f652588360252ded26f73a54eb834547b32ac80d940478b22f07c384fd docs/evidence/shade-pass/board/ordinary-boot/boot-2867-shade.png
+DATA b7a2c501962463cdc82acc1580671567efa00f49906ef9b0a23c7aa70aade589 docs/evidence/files-app/slow-load/stock-loading.png
+DATA ee884d51c39d84cf27b2ab62654511aae9f0208538b32ce23eab5bebfc8e4286 docs/evidence/files-app/slow-load/patched-loaded.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4677,3 +4679,12 @@ Native grim captures from build 2867v7pm after an ordinary boot, before and afte
 | --- | ---: | --- | --- |
 | `docs/evidence/shade-pass/board/ordinary-boot/boot-2867.png` | 6307 | DATA | `8aac4e8af34c0feb4f1ffd08c83c94c1fdbaad11cb7922c816dd02d71d750bb7` |
 | `docs/evidence/shade-pass/board/ordinary-boot/boot-2867-shade.png` | 41162 | DATA | `275fe8f652588360252ded26f73a54eb834547b32ac80d940478b22f07c384fd` |
+
+## Files slow load
+
+Grim captures from build 2867v7pm: Files stuck on Loading… with stock GTK, and loaded with the patched GTK (files-finishes-loading-while-it-shows-a-spinner).
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/files-app/slow-load/stock-loading.png` | 15869 | DATA | `b7a2c501962463cdc82acc1580671567efa00f49906ef9b0a23c7aa70aade589` |
+| `docs/evidence/files-app/slow-load/patched-loaded.png` | 24649 | DATA | `ee884d51c39d84cf27b2ab62654511aae9f0208538b32ce23eab5bebfc8e4286` |
