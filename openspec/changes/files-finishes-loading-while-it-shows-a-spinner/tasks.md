@@ -17,10 +17,11 @@
   goes idle on the home folder. Proof: the numbers in
   `docs/evidence/files-app/slow-load/README.md`.
   *Board, injected launches, 2026-10-29: spinner damage went from 444 of 444 frames full-buffer to 2 of 794, and Files went idle 8.4 s after launch instead of being still busy after 300 s.*
-- [ ] 2.2 Test-activate the system build. Open Files from the drawer with
+- [x] 2.2 Test-activate the system build. Open Files from the drawer with
   injected touch, and grim-capture the loaded home folder with no stale
   pixels around the loading bar. Record the time to idle. Proof: the same
   README and its captures.
+  *Board, injected touch, 2026-10-29, build `1lpsniwg…` test-activated: Files was idle within 10 s of starting, and a grim capture 12 s after the tap shows the loaded home folder (`system-build-drawer-loaded.png`).*
 - [ ] 2.3 Glass: the operator opens Files from the drawer and reports
   whether the folder appears promptly. Physical proof: a timestamped
   operator report tied to the installed build.

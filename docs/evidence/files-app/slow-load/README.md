@@ -105,3 +105,35 @@ the spinner was. `stock-loading.png` is the stock launch stuck on
 Scripts (copied to `scripts/`, run from `/var/tmp` on the board): `files_probe.py` (launch, then sample
 per-thread CPU every 2 s until two quiet samples or 300 s),
 `files_ab.sh`, `spin_probe.py` and `spin_probe.sh`. `spin_probe.sh` reads the typelib path from `/var/tmp/gi_typelib_path`, which was taken from Portfolio's wrapper.
+
+## System build, opened from the drawer (task 2.2)
+
+Evidence class: the board with injected touch. Nobody touched the glass.
+Build `/nix/store/1lpsniwgxxz9bqk83261lbb0k8q6hpqz-nixos-system-nixos-26.11.20260919.20b1ddd`,
+activated with `switch-to-configuration test` on 2026-10-29. The Files
+process (pid 14670) mapped
+`/nix/store/44233ralwykx4v001h9i07dcm8wpa4k6-gtk4-riscv64-unknown-linux-gnu-4.22.4/lib/libgtk-4.so.1.2200.4`.
+
+At 18:55:27 UTC, `ui.py` opened the drawer and tapped the Files icon at
+(917, 150). `scripts/files_idle.py` was already running. It waits for the
+`.nautilus-wrapp` process, then samples the main thread's CPU ticks every
+2 s:
+
+```
+t=2.0 dticks=56 total=73
+t=4.0 dticks=53 total=126
+t=6.0 dticks=138 total=264
+t=8.0 dticks=47 total=311
+t=10.0 dticks=0 total=311
+t=12.0 dticks=0 total=311
+IDLE by t=10.0 main_ticks=311
+```
+
+The main thread went idle within 10 s of the process appearing. A grim
+capture 4 s after the tap still showed the shell's "Files" launch
+placeholder. `system-build-drawer-loaded.png`, captured 12 s after the
+tap, shows the home folder's four entries with no loading bar and no stale
+pixels.
+It is byte-identical to `patched-loaded.png` from task 2.1 (SHA-256
+`ee884d51…`), so the system build draws the loaded folder exactly as the
+hand-loaded library did.
