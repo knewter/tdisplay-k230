@@ -30,7 +30,7 @@
   1232x568 with quiet mode off and on, with and without the modem, at 100%
   and at the largest vision step, saved under
   `docs/evidence/do-not-disturb/host/`. These are host renders, not glass.
-- [ ] 2.3 The renders show every tile label and state without cutting a
+- [x] 2.3 The renders show every tile label and state without cutting a
   word, and both sliders fully on the panel at the largest step. If a word
   still shrinks below the caption size, shorten the copy and rerender. Proof:
   the 100% and largest-step renders above.
@@ -41,6 +41,7 @@
   The label is "Quiet" ("Do Not Disturb" did not fit), Wi-Fi says "Online" or
   "Offline", Keyboard says "Toggle". Open until the coordinator accepts the
   200% shrink or picks shorter copy. See `docs/evidence/do-not-disturb/host/README.md`.
+  *Decided by the operator, 2026-10-29T22:03Z, from the choices offered: "Accept the shrink". The 200% tile words stay smaller than the caption size; the copy is unchanged (`docs/evidence/glass-checklist-2026-10-29/operator-report.md`).*
 
 ## 3. Board (hardware-only; one operator holds the board)
 
@@ -95,5 +96,6 @@ installed image (UNVERIFIED).
 
 ## 4. Closeout
 
-- [ ] 4.1 Archive once 3.5 is done and `the-shade-leads-with-time-and-quick-tiles`
+- [x] 4.1 Archive once 3.5 is done and `the-shade-leads-with-time-and-quick-tiles`
   has archived. Proof: `openspec validate do-not-disturb-quiets-banners-and-keeps-history --strict`.
+  *Host, 2026-10-29: valid. `the-shade-leads-with-time-and-quick-tiles` archived on 2026-10-29; the requirements were synced to `runtime/notification-center` and `runtime/device-settings`.*

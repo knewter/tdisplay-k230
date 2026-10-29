@@ -63,3 +63,24 @@ produces no banner while Quiet is on, or that a 10 s Timer breaks through.
 The operator said only that the result "looked fine". The injected-board
 results in `docs/evidence/do-not-disturb/board/` are still the only recorded
 evidence for those behaviours.
+
+## Operator decisions, 2026-10-29T22:03Z
+
+These are decisions, not observations. They were made in chat, by picking from
+the options offered.
+
+- Make `ql630glm…` (the banner fix) the boot default: "Promote it".
+- `do-not-disturb-quiets-banners-and-keeps-history` 2.3, the tile words
+  rendering at about 70% size at the 200% text step: "Accept the shrink".
+- `settings-has-about-and-date-time-pages` 4.1 and 4.2: "Split them out",
+  each into its own successor proposal, so the change can archive.
+- `apps-and-timers-can-alert-the-user` 4.1–4.3: "Record and defer". 4.1
+  keeps the monotonic clock because this image does not suspend. 4.2 and
+  4.3 move to a successor proposal.
+
+A note on the item 6 waiver above. Later the same day, the board showed that
+no banner appeared once the shade had been opened, until the drawer was next
+opened (`docs/evidence/apps-alert/README.md`, "Banners after the shade
+closes"). The code was the same on `2867v7pm…`, so on that build a banner
+could have failed to show for this reason rather than because of Quiet. The
+bug is fixed in `ql630glm…`.
