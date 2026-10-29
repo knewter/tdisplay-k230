@@ -5,8 +5,9 @@
   patched gtk4 builds:
   `nix build .#nixosConfigurations.k230-mainline-drm-shell-landscape-hdmi.pkgs.gtk4`.
   *Host build, 2026-10-29: derivation `kdn7aa7w…` built to `44233ral…`. The overlay evaluates to the same derivation.*
-- [ ] 1.2 Build the board system with the patch. Proof:
+- [x] 1.2 Build the board system with the patch. Proof:
   `nix build .#nixosConfigurations.k230-mainline-drm-shell-landscape-hdmi.config.system.build.toplevel`.
+  *Host build, 2026-10-29: `/nix/store/1lpsniwgxxz9bqk83261lbb0k8q6hpqz-nixos-system-nixos-26.11.20260919.20b1ddd`; its closure holds only the patched gtk4 (`44233ral…`).*
 
 ## 2. Board (hardware-only; one operator holds the board)
 
