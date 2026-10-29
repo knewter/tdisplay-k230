@@ -698,7 +698,7 @@ let
     exec ${touchLauncherBase}/bin/k230-touch-launcher "$@"
   '';
   # Input-method client that raises/lowers wvkbd on text-field focus
-  # (openspec/changes/a-focused-text-field-raises-the-keyboard). Finds the
+  # (openspec/changes/archive/2026-10-28-a-focused-text-field-raises-the-keyboard). Finds the
   # session's Wayland socket the same way rustShell does.
   oskFocus = pkgs.writeShellScriptBin "k230-osk-focus-session" ''
     if [ -z "''${WAYLAND_DISPLAY:-}" ]; then
@@ -1952,7 +1952,7 @@ in
     };
 
     # Text-field focus raises and lowers the on-screen keyboard
-    # (openspec/changes/a-focused-text-field-raises-the-keyboard). An
+    # (openspec/changes/archive/2026-10-28-a-focused-text-field-raises-the-keyboard). An
     # input-method-v2 client with no keyboard grab: it never sees or alters
     # keys. Blocks in the Wayland queue, so it costs nothing while idle.
     systemd.services.shell-osk-focus = lib.mkIf (cfg.coherentShell && cfg.focusKeyboard) {

@@ -102,3 +102,8 @@ build with the base attached, a terminal was opened from the drawer and the
 keyboard raised with the two-finger swipe. Injected taps on its `l`, `s` and
 Enter keys ran `ls`, which listed the home directory, and the keyboard stayed
 up throughout ([`osk-typed-ls.png`](board/base-attached/osk-typed-ls.png)).
+
+**Base typing (task 3.6, base half), operator at the glass.** On the same
+build, asked to type `echo base ok` on the base in Terminal and press Enter,
+the operator confirmed that it printed `base ok` exactly ("yup", 2026-10-28).
+This rests on the operator's report; no capture was taken.

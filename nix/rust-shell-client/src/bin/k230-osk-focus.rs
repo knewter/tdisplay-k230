@@ -1,5 +1,5 @@
 //! Raises the on-screen keyboard when a text field takes focus and lowers it
-//! when focus leaves (openspec/changes/a-focused-text-field-raises-the-keyboard).
+//! when focus leaves (openspec/changes/archive/2026-10-28-a-focused-text-field-raises-the-keyboard).
 //!
 //! A bare input-method-v2 client. It binds the seat's input method, waits for
 //! `activate`/`deactivate`/`done`, and runs the same
