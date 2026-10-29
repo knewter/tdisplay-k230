@@ -36,14 +36,14 @@
 
 ## 3. Board (hardware-only)
 
-- [ ] 3.1 Test-activate a build, switch to 12-hour with injected touch, and
+- [x] 3.1 Test-activate a build, switch to 12-hour with injected touch, and
   grim-capture each clock in task 1.1. Then restart the shell and reboot, and
   confirm the choice holds. Proof (board, injected):
   `docs/evidence/clock-format/board/`.
-  *Partial, board injected, 2026-10-29, on the test-activated `p393r76c`.
-  Done: the switch was turned on by an injected tap; every listed clock was
-  captured in 12-hour form; the choice held across a shell restart. Open:
-  the reboot. That needs the build promoted to the boot default.*
+  *Board, injected, 2026-10-29, on `p393r76c`. An injected tap turned the
+  switch on, and every listed clock was captured in 12-hour form. The choice
+  held across a shell restart, and across a reboot after the operator
+  approved promoting the build to the boot default.*
 - [ ] 3.2 Glass: the operator switches the format and reads the clocks.
   Physical proof: a timestamped operator report tied to the installed build.
 

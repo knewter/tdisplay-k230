@@ -21,9 +21,17 @@ America/Chicago (UTC-05:00).
 | `idle-clock-12h.png` | ~22:58 | The idle clock screen, after 80 s without input (idle timeout 1 min, on the charger): `5:58`, with `PM · Thursday 29 October`. |
 | `shade-after-restart.png` | ~22:59 | `systemctl restart shell` at 22:58:54. The unit was active again at 22:58:56, the file still read `12-hour`, and the shade reads `5:59 PM`. |
 
-Not yet shown: whether the choice holds across a reboot. A reboot boots the
-current default (`ql630glm`), which lacks this change, so that step waits for
-the operator to approve promoting `p393r76c`.
+## Reboot (after promotion)
+
+The operator approved promotion on 2026-10-29 ("promote it"), with the charger
+online (`bq25890-charger-0/online` = 1). The kernel, initrd and dtbs matched
+the old default. `/boot/bootargs.txt` was backed up to
+`/var/tmp/bootargs.txt.before-p393r76c`, its `init=` was pointed at
+`p393r76c…/init`, and the system profile was set to the same path.
+
+| File | When (UTC) | Shows |
+| --- | --- | --- |
+| `shade-after-reboot.png` | ~23:40 | `systemctl reboot` at 23:36:34. SSH and the shell were back by 23:38:42. `/run/current-system` and the kernel command line's `init=` both name `p393r76c`, the file reads `12-hour`, and the shade reads `6:38 PM`. |
 
 The Home widgets other than Bubble (Thin, Dot matrix) were not placed on the
 board's Home. The host renders (`../host/`) cover them.

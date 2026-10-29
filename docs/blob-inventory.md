@@ -2437,6 +2437,7 @@ DATA 3419f1f76acc0ebfc65d1db7d2f95bae864a8cac769b048dea2f9f9a3436d50c docs/evide
 DATA da9815f72c176b21fefd610fd39e2a8306327f644a67b29a04c487b71643679d docs/evidence/clock-format/board/shade-12h.png
 DATA 2486277ce5d309fc856b62a8b85999f3931fca8d9c1f5db945fda2dc82f98002 docs/evidence/clock-format/board/shade-24h.png
 DATA 9acd2bed1022d59ed6bbb18a3c963aaf7594da941c66dd0ad7058eaa804550ee docs/evidence/clock-format/board/shade-after-restart.png
+DATA 426ddb2f197b9b76c2cf0428720f11121af32d139ec9977a7fbe061156e429c0 docs/evidence/clock-format/board/shade-after-reboot.png
 DATA f23366a3fe42967983075726827e500dd3d267d27c79a078f0c890f49ebbd481 docs/evidence/clock-format/board/weather-12h.png
 ```
 
@@ -4771,4 +4772,5 @@ Board captures of the 12-hour clock (settings-chooses-a-12-or-24-hour-clock task
 | `docs/evidence/clock-format/board/shade-12h.png` | 41564 | DATA | `da9815f72c176b21fefd610fd39e2a8306327f644a67b29a04c487b71643679d` |
 | `docs/evidence/clock-format/board/shade-24h.png` | 40920 | DATA | `2486277ce5d309fc856b62a8b85999f3931fca8d9c1f5db945fda2dc82f98002` |
 | `docs/evidence/clock-format/board/shade-after-restart.png` | 41514 | DATA | `9acd2bed1022d59ed6bbb18a3c963aaf7594da941c66dd0ad7058eaa804550ee` |
+| `docs/evidence/clock-format/board/shade-after-reboot.png` | 42618 | DATA | `426ddb2f197b9b76c2cf0428720f11121af32d139ec9977a7fbe061156e429c0` |
 | `docs/evidence/clock-format/board/weather-12h.png` | 16917 | DATA | `f23366a3fe42967983075726827e500dd3d267d27c79a078f0c890f49ebbd481` |
