@@ -22,12 +22,15 @@
   pixels around the loading bar. Record the time to idle. Proof: the same
   README and its captures.
   *Board, injected touch, 2026-10-29, build `1lpsniwg…` test-activated: Files was idle within 10 s of starting, and a grim capture 12 s after the tap shows the loaded home folder (`system-build-drawer-loaded.png`).*
-- [ ] 2.3 Glass: the operator opens Files from the drawer and reports
+- [x] 2.3 Glass: the operator opens Files from the drawer and reports
   whether the folder appears promptly. Physical proof: a timestamped
   operator report tied to the installed build.
-- [ ] 2.4 Promote the build to the boot default and verify an ordinary boot.
+  *Glass, operator report, 2026-10-29T20:27Z, build `1lpsniwg…` test-activated: "opened fast, folder showed".*
+- [x] 2.4 Promote the build to the boot default and verify an ordinary boot.
+  *Board, 2026-10-29: bootargs `init=` set to `1lpsniwg…` on the charger. After the reboot `/run/booted-system` was `1lpsniwg…`, and Files opened from the drawer with injected touch showed the loaded home folder (`ordinary-boot-loaded.png`).*
 
 ## 3. Closeout
 
-- [ ] 3.1 Archive once 2.1–2.4 are done. Proof:
+- [x] 3.1 Archive once 2.1–2.4 are done. Proof:
   `openspec validate files-finishes-loading-while-it-shows-a-spinner --strict`.
+  *Host, 2026-10-29: valid; requirements synced to `openspec/specs/runtime/files/spec.md`.*

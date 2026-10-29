@@ -2404,6 +2404,7 @@ DATA 275fe8f652588360252ded26f73a54eb834547b32ac80d940478b22f07c384fd docs/evide
 DATA b7a2c501962463cdc82acc1580671567efa00f49906ef9b0a23c7aa70aade589 docs/evidence/files-app/slow-load/stock-loading.png
 DATA ee884d51c39d84cf27b2ab62654511aae9f0208538b32ce23eab5bebfc8e4286 docs/evidence/files-app/slow-load/patched-loaded.png
 DATA ee884d51c39d84cf27b2ab62654511aae9f0208538b32ce23eab5bebfc8e4286 docs/evidence/files-app/slow-load/system-build-drawer-loaded.png
+DATA ee884d51c39d84cf27b2ab62654511aae9f0208538b32ce23eab5bebfc8e4286 docs/evidence/files-app/slow-load/ordinary-boot-loaded.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4689,4 +4690,5 @@ Grim captures from build 2867v7pm: Files stuck on Loading… with stock GTK, and
 | --- | ---: | --- | --- |
 | `docs/evidence/files-app/slow-load/stock-loading.png` | 15869 | DATA | `b7a2c501962463cdc82acc1580671567efa00f49906ef9b0a23c7aa70aade589` |
 | `docs/evidence/files-app/slow-load/system-build-drawer-loaded.png` | 24649 | DATA | `ee884d51c39d84cf27b2ab62654511aae9f0208538b32ce23eab5bebfc8e4286` |
+| `docs/evidence/files-app/slow-load/ordinary-boot-loaded.png` | 24649 | DATA | `ee884d51c39d84cf27b2ab62654511aae9f0208538b32ce23eab5bebfc8e4286` |
 | `docs/evidence/files-app/slow-load/patched-loaded.png` | 24649 | DATA | `ee884d51c39d84cf27b2ab62654511aae9f0208538b32ce23eab5bebfc8e4286` |

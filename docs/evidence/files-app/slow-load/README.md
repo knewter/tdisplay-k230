@@ -137,3 +137,30 @@ pixels.
 It is byte-identical to `patched-loaded.png` from task 2.1 (SHA-256
 `ee884d51…`), so the system build draws the loaded folder exactly as the
 hand-loaded library did.
+
+## Glass report (task 2.3)
+
+Evidence class: real glass interaction by the operator, reported in chat.
+Build `1lpsniwg…` test-activated, as in task 2.2. After being asked to open
+Files from the drawer, the operator reported at 2026-10-29T20:27Z, verbatim:
+
+> opened fast, folder showed
+
+## Boot default and ordinary boot (task 2.4)
+
+With the charger online, `init=` in `/boot/bootargs.txt` was changed from
+`2867v7pm…` to `1lpsniwg…` (backup at
+`/var/tmp/bootargs.txt.before-1lpsniwgxxz9bqk83261lbb0k8q6hpqz`), and
+`/nix/var/nix/profiles/system` was set to the new build. Both builds use the
+same kernel, initrd and device tree. The board rebooted at about 20:28 UTC.
+Afterwards `/run/booted-system` and `/run/current-system` were both `1lpsniwg…`,
+`shell.service` and `shell-ui.service` were active, and no units had failed.
+
+Evidence class: the board with injected touch. At 20:31:57 UTC `ui.py` opened
+the drawer and tapped Files. `ordinary-boot-loaded.png`, captured 12 s after
+the tap, shows the loaded home folder; it is byte-identical to the two earlier
+captures (`ee884d51…`). Files (pid 1273) mapped the patched
+`libgtk-4.so.1.2200.4` from `44233ral…`, and its main thread used 8 ticks in
+the 10 s after 20:32:24 UTC. `files_idle.py` had been started just before the
+tap but printed `NO FILES PROCESS`, so it did not time this launch. The cause
+was not investigated.

@@ -4,7 +4,7 @@
 
 *Grounding (2026-10-29): on build `2867v7pm…`, Files showed "Loading…" for more than 300 s on a four-entry home folder while visible, and finished once hidden (`docs/evidence/files-app/slow-load/README.md`).*
 
-<!-- UNVERIFIED: the patched build has not run on the board yet (files-finishes-loading-while-it-shows-a-spinner tasks 2.x). -->
+*Grounding (2026-10-29, patched build `1lpsniwg…`): opened from the drawer with injected touch, Files went idle within 10 s and showed the home folder, also after an ordinary boot. The operator reported on the glass: "opened fast, folder showed" (`docs/evidence/files-app/slow-load/README.md`).*
 
 When Files opens a local folder of a few entries on the panel, it SHALL show
 the folder's contents while its window stays visible, without the person
@@ -26,7 +26,7 @@ main thread SHALL go idle.
 
 *Grounding (2026-10-29): `WAYLAND_DEBUG` showed every frame of a lone `AdwSpinner` window damaging the whole 1282×618 buffer while sway alternated two buffers. The cause was read in GTK 4.22.4 `gdk/wayland/gdkcairocontext-wayland.c` (`docs/evidence/files-app/slow-load/README.md`).*
 
-<!-- UNVERIFIED: the patched build has not run on the board yet (files-finishes-loading-while-it-shows-a-spinner tasks 2.x). -->
+*Grounding (2026-10-29, patched GTK4 `44233ral…`): the lone `AdwSpinner` window sent 2 full-buffer damages in 794 commits, the rest about 25×26 px at the spinner (`docs/evidence/files-app/slow-load/README.md`).*
 
 A GTK4 app on the board, drawing with the software renderer, SHALL report
 damage to the compositor only for the parts of its window that changed in
