@@ -1,0 +1,12 @@
+#!/bin/sh
+# Launch Files while the on-screen keyboard is up, hide the keyboard while Files starts.
+for p in $(ps -eo pid=,comm= | awk '$2 ~ /nautilus/ {print $1}'); do kill -9 $p; done; sleep 1
+P=$(pgrep -x k230-shell-rust | head -1)
+E=$(sudo tr "\0" "\n" < /proc/$P/environ | grep -E "^(K230_|XDG_RUNTIME|WAYLAND|HOME=|PATH=)" | tr "\n" " ")
+SIG=/nix/store/s8fndzjybxfy7cn8b2lzlf498fpw1msw-k230-keyboard-gesture-signal/bin/k230-keyboard-gesture-signal
+M="$(dirname "$(readlink -f /proc/$(systemctl show -p MainPID --value shell)/exe)")/swaymsg -s /run/shell/sway-ipc.sock"
+echo "$(date +%T) show"; sudo -u shell env $E $SIG show; sleep 2
+echo "$(date +%T) launch"; sudo -u shell $M "exec env WAYLAND_DEBUG=1 /run/current-system/sw/bin/nautilus --new-window > /var/tmp/naut-wl2.log 2>&1" >/dev/null
+N=${HIDE_AFTER:-4} sh /var/tmp/filesrect.sh | grep "^+"
+echo "$(date +%T) hide"; sudo -u shell env $E $SIG hide
+N=8 sh /var/tmp/filesrect.sh | grep "^+"

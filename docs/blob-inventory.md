@@ -2372,6 +2372,7 @@ DATA cdad9e553f3d513f28b33aa9d1b60744fcaca7000a43e2ebb9121695271a9d37 docs/evide
 DATA 96c4071fd2bac7bffefda7761c1836a98e3362620ab06886925391a59b7aeef0 docs/evidence/resting-display-follow-ups/board/shade-clock-tile.png
 DATA 670e0bc5d06dd3442f2adb071c9c6248832b6b8da0c485b73cf71dcda40bfa72 docs/evidence/resting-display-follow-ups/board/clock-tile-battery.png
 DATA 0f150ae1e483e3c5f16fb0eeebac502a7d9dae3b83c826f252c8942cbb049495 docs/evidence/resting-display-follow-ups/board/clock-tile-battery-tapped.png
+DATA 630806f60e55b9133c3e52db7bd4a1a3f762d89f229eaac3f90875de30c6971c docs/evidence/open-with/board/files-full-card.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4570,3 +4571,11 @@ Native grim captures of the shade Clock tile on battery and its message (injecte
 | --- | ---: | --- | --- |
 | `docs/evidence/resting-display-follow-ups/board/clock-tile-battery.png` | 40872 | DATA | `670e0bc5d06dd3442f2adb071c9c6248832b6b8da0c485b73cf71dcda40bfa72` |
 | `docs/evidence/resting-display-follow-ups/board/clock-tile-battery-tapped.png` | 43737 | DATA | `0f150ae1e483e3c5f16fb0eeebac502a7d9dae3b83c826f252c8942cbb049495` |
+
+## Files full-card capture (open-with 2.5)
+
+Native grim of Files opened from the drawer on build 37nvncgk, 2026-10-28.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/open-with/board/files-full-card.png` | 15192 | DATA | `630806f60e55b9133c3e52db7bd4a1a3f762d89f229eaac3f90875de30c6971c` |

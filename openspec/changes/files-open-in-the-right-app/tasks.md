@@ -62,7 +62,7 @@
   `open-test.png` in Files opened Viewnior, and the native `grim`
   `docs/evidence/open-with/board/viewnior-rotate-icons.png` shows both rotate
   icons drawn.
-- [ ] 2.5 Files opens as a full card. Reported: Files opened floating, about
+- [x] 2.5 Files opens as a full card. Reported: Files opened floating, about
   890 px wide. Host reading: the Sway rule `for_window [app_id=".+"] card_shell
   ordinary, floating enable, resize set 100 ppt 100 ppt, move position 0 0`
   already matches `org.gnome.Nautilus`, and 890x550 is Nautilus's own default
@@ -83,6 +83,7 @@
   at fault. Next: log the xdg_toplevel configure and the size Nautilus commits
   (`WAYLAND_DEBUG=1`) to see whether it refuses the configured height or
   whether the card shell draws it short.
+  *Done 2026-10-28, injected, build `37nvncgk…` (docs/evidence/open-with/board/README.md § 2.5): four launches (drawer ×2, `swaymsg exec`, keyboard-first) filled 1232x568. `WAYLAND_DEBUG` shows Nautilus committing the configured size, or 1232x380 (its minimum) when the keyboard has reduced the layout to 272. The earlier short window matches that keyboard-reduced layout; it was not reproduced on this build, so the cause is inferred.*
 
 ## 3. Glass (physical)
 

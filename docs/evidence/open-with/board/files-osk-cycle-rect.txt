@@ -1,0 +1,12 @@
+20:51:56 show
++1s rect 0 0 1232 272 window 1232 272 floating focused
++2s rect 0 0 1232 272 window 1232 272 floating focused
++3s rect 0 0 1232 272 window 1232 272 floating focused
++4s rect 0 0 1232 272 window 1232 272 floating focused
+20:52:05 hide
++1s rect 0 0 1232 568 window 1232 568 floating focused
++2s rect 0 0 1232 568 window 1232 568 floating focused
++3s rect 0 0 1232 568 window 1232 568 floating focused
++4s rect 0 0 1232 568 window 1232 568 floating focused
++5s rect 0 0 1232 568 window 1232 568 floating focused
++6s rect 0 0 1232 568 window 1232 568 floating focused

@@ -5,9 +5,9 @@ X=drawer
 
 echo "output: $(sudo -u shell $M -t get_outputs -r | grep -o '"rect": {[^}]*}' | head -1)"
 echo "launched from the drawer (tap on Files) just before this script"
-for i in $(seq 1 12); do sleep 1
-  echo "+${i}s $(sudo -u shell $M -t get_tree -r | python3 -c 'import json,sys
+for i in $(seq 1 ${N:-12}); do sleep 1
+  echo "+${i}s $(sudo -u shell $M -t get_tree -r | /nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3 -c 'import json,sys
 def walk(n):
-    if n.get("app_id")=="org.gnome.Nautilus": print("rect", n["rect"]["x"], n["rect"]["y"], n["rect"]["width"], n["rect"]["height"], "floating" if n.get("type")=="floating_con" else "tiled", "focused" if n.get("focused") else "")
+    if n.get("app_id")=="org.gnome.Nautilus": print("rect", n["rect"]["x"], n["rect"]["y"], n["rect"]["width"], n["rect"]["height"], "window", (n.get("window_rect") or {}).get("width"), (n.get("window_rect") or {}).get("height"), "floating" if n.get("type")=="floating_con" else "tiled", "focused" if n.get("focused") else "")
     for c in n.get("nodes",[])+n.get("floating_nodes",[]): walk(c)
 walk(json.load(sys.stdin))')"; done

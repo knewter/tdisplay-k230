@@ -68,3 +68,46 @@ window about 890 px wide, not full screen. A single tap only selects
   Recommended Apps with Viewnior and Zathura, then Other Apps starting with
   Files (`files-open-with-list.png`, `files-open-with-list-scrolled.png`).
   Cancel was tapped; no handler was changed.
+
+## 2.5 Files as a full card, build `37nvncgk…`, 2026-10-28
+
+The run was injected and unattended on the board, with the charger online
+and `shell-idle` stopped. The earlier short window (about 1232x380, build
+`q8k8w3mb…`) was seen during on-screen-keyboard work. Four new launches on
+this build all filled the card:
+
+- **Drawer launch, twice.** In [`files-full-drawer-rect.txt`](files-full-drawer-rect.txt),
+  `get_tree` shows the container and the window rect at 1232x568 from +2 s
+  to +15 s. [`files-full-card.png`](files-full-card.png) is the `grim`
+  taken after that. The second drawer launch, made after the clock card had
+  closed, matched it.
+- **`swaymsg exec` with `WAYLAND_DEBUG=1`.** In
+  [`files-wayland-sizes.txt`](files-wayland-sizes.txt), Nautilus starts with
+  its own 890x550 window geometry and declares a minimum of 360x380. When
+  sway configures 1232x568, Nautilus sets its window geometry to 1232x568 in
+  the next commit. The 890x550 that `get_tree` reports as `geometry` is that
+  first commit; sway does not update the field.
+- **Keyboard raised, then hidden, over Files.**
+  [`files-osk-cycle-rect.txt`](files-osk-cycle-rect.txt) shows the rect
+  falling to 1232x272 while the keyboard was up and returning to 1232x568
+  within 1 s of `hide`.
+- **Launch with the keyboard already up.** This is the second half of
+  `files-wayland-sizes.txt` and [`files-osk-first-rect.txt`](files-osk-first-rect.txt).
+  Sway configured 1232x272. Nautilus could not go below its 380 minimum and
+  committed 1232x380, the size of the earlier short window. Mapping the new
+  card dropped the keyboard, sway configured 1232x568, and Nautilus filled it
+  within 0.7 s.
+
+**Reading.** Files fills the card whenever the layout gives it the full
+height. The earlier short window matches the 1232x380 that Nautilus commits
+for a layout reduced by the keyboard. It is most likely a layout left reduced
+by the keyboard show/hide race that `bc450ea8` later fixed. That link is
+inferred; the earlier state was not reproduced on this build.
+
+**Not covered.** While the keyboard is up, Files cannot fit: its 380 px
+minimum is taller than the 272 px left. On the first launch, the Home view
+also showed "Loading…" for more than a minute before its files appeared
+(`files-full-card.png` is from that wait). Neither is part of 2.5.
+
+Scripts: [`filesrect.sh.txt`](filesrect.sh.txt), [`oskcycle.sh.txt`](oskcycle.sh.txt),
+[`oskfirst.sh.txt`](oskfirst.sh.txt).

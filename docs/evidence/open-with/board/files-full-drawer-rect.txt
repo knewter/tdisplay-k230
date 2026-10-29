@@ -1,0 +1,18 @@
+20:51:10
+output: 
+launched from the drawer (tap on Files) just before this script
++1s 
++2s rect 0 0 1232 568 window 1232 568 floating focused
++3s rect 0 0 1232 568 window 1232 568 floating focused
++4s rect 0 0 1232 568 window 1232 568 floating focused
++5s rect 0 0 1232 568 window 1232 568 floating focused
++6s rect 0 0 1232 568 window 1232 568 floating focused
++7s rect 0 0 1232 568 window 1232 568 floating focused
++8s rect 0 0 1232 568 window 1232 568 floating focused
++9s rect 0 0 1232 568 window 1232 568 floating focused
++10s rect 0 0 1232 568 window 1232 568 floating focused
++11s rect 0 0 1232 568 window 1232 568 floating focused
++12s rect 0 0 1232 568 window 1232 568 floating focused
++13s rect 0 0 1232 568 window 1232 568 floating focused
++14s rect 0 0 1232 568 window 1232 568 floating focused
++15s rect 0 0 1232 568 window 1232 568 floating focused
