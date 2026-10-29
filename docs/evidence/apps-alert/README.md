@@ -150,6 +150,16 @@ swipe, critical `busctl` at 22:06:20Z) mapped a banner
 (`board/banner-after-shade-ordinary-boot.png`). Quiet was turned back on
 afterwards.
 
+## Does this image suspend? (task 4.1), 2026-10-29
+
+Read-only over SSH, build `ql630glm…`: `/sys/power/state` is `freeze mem`,
+and `/sys/power/mem_sleep` is `[s2idle]`. `sleep.target` and `suspend.target`
+are `linked`. logind sets `HandlePowerKey=ignore` and
+`HandlePowerKeyLongPress=ignore`. The idle path is `swayidle -w timeout 30
+k230-idle-dimmer dim … timeout 60 k230-idle-dimmer off`, which dims and blanks
+but does not suspend. A journal search across the 3 retained boots for
+`PM: suspend entry` or a reached sleep target found 0 lines.
+
 ## Not covered
 
 The operator's glass check (3.6).

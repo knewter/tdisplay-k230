@@ -42,14 +42,17 @@
 
 ## 4. Follow-ups, recorded and not started
 
-- [ ] 4.1 A 24/12-hour preference: state in the settings broker and every clock
+- [x] 4.1 A 24/12-hour preference: state in the settings broker and every clock
   consumer reading it. Needs its own proposal.
-- [ ] 4.2 Changing the time zone and NTP from the device: needs a design for
+  *Moved, on the operator's decision of 2026-10-29T22:03Z ("Split them out"), to `openspec/changes/settings-chooses-a-12-or-24-hour-clock/`, which carries it word for word. Not implemented here.*
+- [x] 4.2 Changing the time zone and NTP from the device: needs a design for
   privilege and persistence, since `time.timeZone` is build-time. Needs its own
   proposal.
+  *Moved, on the same decision, to `openspec/changes/settings-sets-the-time-zone-and-network-time/`, which carries it word for word. Not implemented here.*
 
 ## 5. Promotion
 
-- [ ] 5.1 After review, merge to `master`, push, check CI, and archive with
+- [x] 5.1 After review, merge to `master`, push, check CI, and archive with
   `openspec archive` only once tasks 3 and 4 are decided (4 may move to a
   successor proposal; see AGENTS.md on scope splits).
+  *2026-10-29: the source landed on master earlier (task 3 builds). Task 3 is done and task 4 moved to successors. Validated with `openspec validate settings-has-about-and-date-time-pages --strict`, synced to `runtime/device-settings`, and archived.*

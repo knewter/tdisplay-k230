@@ -30,6 +30,9 @@ Each of these needs the reserved board, the installed build and, for 3.1 and 3.2
 
 ## 4. Open
 
-- [ ] 4.1 The Timer alerts late if the board suspends with a timer pending (monotonic clock stops). Decide, with a board observation of whether this image suspends, whether the helper must use `CLOCK_BOOTTIME`.
-- [ ] 4.2 A shell restart ends a pending timer silently. Decide whether the helper should move out of `shell.service`'s cgroup, or the restart should say so.
-- [ ] 4.3 `NotificationClosed` for closes the person makes in the shade, and `ActionInvoked`, are not delivered. Open a successor change if an app needs either.
+- [x] 4.1 The Timer alerts late if the board suspends with a timer pending (monotonic clock stops). Decide, with a board observation of whether this image suspends, whether the helper must use `CLOCK_BOOTTIME`.
+  *Board, read-only, 2026-10-29, build `ql630glm…`: `/sys/power/state` offers `freeze mem`, and `mem_sleep` offers only `[s2idle]`. logind ignores the power key, the idle path (`swayidle` → `k230-idle-dimmer dim/off`) dims and blanks but never suspends, and the journal holds no suspend entry in the 3 retained boots. Decided by the operator, 2026-10-29T22:03Z ("Record and defer"): keep `CLOCK_MONOTONIC` while the image does not suspend. `docs/evidence/apps-alert/README.md`.*
+- [x] 4.2 A shell restart ends a pending timer silently. Decide whether the helper should move out of `shell.service`'s cgroup, or the restart should say so.
+  *Moved, on the operator's decision of 2026-10-29T22:03Z, to `openspec/changes/pending-timers-survive-restarts-and-apps-hear-dismissals/`. Not decided or implemented here.*
+- [x] 4.3 `NotificationClosed` for closes the person makes in the shade, and `ActionInvoked`, are not delivered. Open a successor change if an app needs either.
+  *Moved to the same successor on the same decision. Not implemented here.*
