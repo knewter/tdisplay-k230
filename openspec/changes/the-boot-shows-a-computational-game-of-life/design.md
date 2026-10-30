@@ -103,6 +103,22 @@ is a layer-shell surface on the BACKGROUND layer with no exclusive zone and no
 keyboard interactivity. It opens no DRM device, cannot cover shell surfaces,
 and leaving it is `kill`.
 
+**Shared parts are a frame-source interface, Life is the first producer
+(added 2026-10-30).** `src/boot_frame.h`/`src/boot_frame.c` define
+`struct bf_source` (start, step, publish) and `bf_run`, the freestanding stage-1
+loop: invalidate the record window, draw frame 0, then step/flush/publish per
+frame. Every record starts with a common prefix (magic, ABI version, length,
+boot-instance token, source id at byte 30, FNV-1a checksum) and Linux checks
+prefix, checksum and the `/chosen/canaan,life-instance` token before handing
+the payload to the owner of that source id (0/1 = Life, 2..255 free). Life
+plugs in through `src/boot_life_stage1.c`; its Linux consumer is
+`nix/drm-splash/life.c`, keyed the same way. A text-effects producer needs its
+own `bf_source`, a Linux-side consumer next to `life.c`, and a source id; the
+U-Boot glue (`nix/uboot-k230-life/k230_boot_life.c`), the Kconfig/hook patch,
+the reserved window, the dormant-by-env gate, the memory checker and the
+install procedure are reused as they are. Names already pushed
+(`life`, `canaan,life-instance`) were not renamed.
+
 ## Risks / Trade-offs
 
 - [The static handoff remains physically wrong] → block implementation acceptance

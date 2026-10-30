@@ -81,7 +81,8 @@ uint32_t gol_frame_hash_xrgb(const void *fb, size_t stride_bytes);
  *  26  height (u16)  GOL_H
  *  28  cell_px (u8)  GOL_CELL_PX
  *  29  owner (u8)    enum gol_owner, who wrote it last
- *  30  reserved      0
+ *  30  source id (u8) BF_SOURCE_LIFE = 1 (earlier drafts wrote 0; both accepted)
+ *  31  reserved      0
  *  32  frame_generation  generation last drawn into the framebuffer
  *  36  checksum      FNV-1a over bytes [0,36) then the grid
  *  40  grid          GOL_GRID_BYTES

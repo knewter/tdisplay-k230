@@ -1,5 +1,5 @@
 # Host engine test (host build/test evidence only; no board, U-Boot or QEMU)
-# date: 2026-10-30T13:11:34Z  host: Linux x86_64  cc: cc (GCC) 16.2.1 20260810
+# date: 2026-10-30T13:35:29Z  host: Linux x86_64  cc: cc (GCC) 16.2.1 20260810
 # command: cc -std=c11 -Wall -Wextra -Werror -I src tests/test_game_of_life.c src/game_of_life.c -o /tmp/test-game-of-life && /tmp/test-game-of-life
 # cross-check: grid hashes reproduced by an independent numpy implementation (same xorshift32 soup, torus B3/S23, FNV-1a over packed rows)
 engine: grid 142x308 cells, 4 px/cell, panel 568x1232, record 5584 bytes, abi 1

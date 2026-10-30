@@ -5,7 +5,7 @@
  * it says nothing about U-Boot's caches, the panel, or the real RAM window.
  *
  *   cc -std=c11 -Wall -Wextra -Werror -I src tests/test_boot_life_stage1.c \
- *      src/boot_life_stage1.c src/game_of_life.c -o /tmp/test-boot-life-stage1
+ *      src/boot_life_stage1.c src/boot_frame.c src/game_of_life.c -o /tmp/test-boot-life-stage1
  */
 #include <stdio.h>
 #include <stdlib.h>

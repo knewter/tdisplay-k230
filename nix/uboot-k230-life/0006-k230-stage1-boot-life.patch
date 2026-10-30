@@ -57,7 +57,7 @@
  
  
  obj-$(CONFIG_K230_BARE_DISP_LOGO) += k230_logo.o st7701.o  display_logo.o
-+obj-$(CONFIG_K230_BOOT_LIFE) += game_of_life.o boot_life_stage1.o k230_boot_life.o
++obj-$(CONFIG_K230_BOOT_LIFE) += game_of_life.o boot_frame.o boot_life_stage1.o k230_boot_life.o
  
  
  EXTRA_CFLAGS += -I$(srctree)/arch/$(ARCH)/cpu/k230/

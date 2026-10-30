@@ -117,7 +117,7 @@ in
     # The shared portable engine and the stage-1 loop come straight from src/,
     # the same files the host tests build; the U-Boot glue and Kconfig/hook
     # patch are in nix/uboot-k230-life/.
-    for f in game_of_life.c game_of_life.h boot_life_stage1.c boot_life_stage1.h; do
+    for f in game_of_life.c game_of_life.h boot_life_stage1.c boot_life_stage1.h boot_frame.c boot_frame.h; do
       cp ${../src}/$f board/canaan/common/logo/$f
     done
     cp ${./uboot-k230-life}/k230_boot_life.c board/canaan/common/logo/k230_boot_life.c

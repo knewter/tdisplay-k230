@@ -15,6 +15,7 @@
 #ifndef BOOT_LIFE_STAGE1_H
 #define BOOT_LIFE_STAGE1_H
 
+#include "boot_frame.h"
 #include "game_of_life.h"
 
 struct boot_life_ops {

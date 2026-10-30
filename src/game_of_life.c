@@ -271,6 +271,7 @@ void gol_record_encode(const struct gol_state *s, uint8_t *out)
 	put16(out + 26, GOL_H);
 	out[28] = GOL_CELL_PX;
 	out[29] = s->owner;
+	out[30] = 1; /* BF_SOURCE_LIFE */
 	put32(out + 32, s->frame_generation);
 	memcpy(out + GOL_RECORD_HEADER_BYTES, s->grid.bits, GOL_GRID_BYTES);
 	sum = gol_fnv1a(out, 36, GOL_FNV_INIT);
@@ -289,6 +290,8 @@ enum gol_status gol_record_decode(struct gol_state *s, const uint8_t *buf, size_
 		return GOL_BAD_VERSION;
 	if (get32(buf + 8) != GOL_RECORD_BYTES || len < GOL_RECORD_BYTES)
 		return GOL_BAD_LENGTH;
+	if (buf[30] > 1)
+		return GOL_BAD_MAGIC; /* another producer's record */
 	if (get16(buf + 24) != GOL_W || get16(buf + 26) != GOL_H || buf[28] != GOL_CELL_PX)
 		return GOL_BAD_DIMENSIONS;
 	sum = gol_fnv1a(buf, 36, GOL_FNV_INIT);

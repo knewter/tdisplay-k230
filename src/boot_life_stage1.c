@@ -2,54 +2,75 @@
 
 #include <string.h>
 
-/* Kept out of the stack: U-Boot's stack is small. */
+/* Game of Life as the first boot_frame producer (src/boot_frame.h).  State is
+ * static: U-Boot's stack is small. */
 static struct gol_state state;
 static struct gol_grid prev;
 static struct gol_grid next;
-static uint8_t scratch[GOL_RECORD_BYTES];
+static unsigned redrawn;
 
-static void publish(const struct boot_life_cfg *cfg, const struct boot_life_ops *ops)
+static int life_start(void *ctx, const struct bf_target *t, uint32_t seed)
 {
+	(void)ctx;
+	if (t->width != GOL_PANEL_W || t->height != GOL_PANEL_H || t->stride_bytes != GOL_PANEL_W * 4u)
+		return -1;
+	gol_state_init_default(&state, 1, seed);
+	gol_render_xrgb(&state.grid, t->fb, t->stride_bytes);
+	redrawn = 0;
+	return 0;
+}
+
+static int life_step(void *ctx, const struct bf_target *t)
+{
+	(void)ctx;
+	prev = state.grid;
+	gol_step(&next, &prev);
+	state.grid = next;
+	state.generation++;
+	redrawn += gol_render_xrgb_diff(&prev, &state.grid, t->fb, t->stride_bytes);
+	return 0;
+}
+
+static long life_publish(void *ctx, uint8_t *out, size_t max, uint32_t instance, uint32_t *frame)
+{
+	(void)ctx;
+	if (max < GOL_RECORD_BYTES)
+		return -1;
+	state.boot_instance = instance;
 	state.owner = GOL_OWNER_UBOOT;
 	state.frame_generation = state.generation;
-	gol_record_encode(&state, scratch);
-	memcpy(cfg->record, scratch, GOL_RECORD_BYTES);
-	ops->flush(ops->ctx, cfg->record, GOL_RECORD_BYTES);
+	gol_record_encode(&state, out);
+	*frame = state.generation;
+	return GOL_RECORD_BYTES;
 }
 
 int boot_life_stage1_run(const struct boot_life_cfg *cfg, const struct boot_life_ops *ops,
 			 struct boot_life_result *out)
 {
-	unsigned i;
+	struct bf_source src = { "life", BF_SOURCE_LIFE, NULL, life_start, life_step, life_publish };
+	struct bf_ops bops = { ops ? ops->ctx : NULL, ops ? ops->flush : NULL,
+			       ops ? ops->delay_ms : NULL };
+	struct bf_cfg c;
+	struct bf_result r;
 
 	memset(out, 0, sizeof(*out));
-	if (!cfg || !ops || !cfg->fb || !cfg->record || cfg->record_window < GOL_RECORD_BYTES ||
-	    !cfg->boot_instance)
+	if (!cfg || !ops || !cfg->fb || !cfg->record || cfg->record_window < GOL_RECORD_BYTES)
 		return -1;
-
-	/* Invalidate whatever a previous boot or owner left in the window. */
-	memset(cfg->record, 0, GOL_RECORD_HEADER_BYTES);
-	ops->flush(ops->ctx, cfg->record, GOL_RECORD_HEADER_BYTES);
-
-	gol_state_init_default(&state, cfg->boot_instance, cfg->seed);
-	gol_render_xrgb(&state.grid, cfg->fb, GOL_PANEL_W * 4u);
-	ops->flush(ops->ctx, cfg->fb, (size_t)GOL_PANEL_W * 4u * GOL_PANEL_H);
-	publish(cfg, ops);
-
-	for (i = 0; i < cfg->frames; i++) {
-		if (cfg->frame_ms)
-			ops->delay_ms(ops->ctx, cfg->frame_ms);
-		prev = state.grid;
-		gol_step(&next, &prev);
-		state.grid = next;
-		state.generation++;
-		out->cells_redrawn += gol_render_xrgb_diff(&prev, &state.grid, cfg->fb,
-							   GOL_PANEL_W * 4u);
-		ops->flush(ops->ctx, cfg->fb, (size_t)GOL_PANEL_W * 4u * GOL_PANEL_H);
-		publish(cfg, ops);
-	}
+	c.target.fb = cfg->fb;
+	c.target.stride_bytes = GOL_PANEL_W * 4u;
+	c.target.width = GOL_PANEL_W;
+	c.target.height = GOL_PANEL_H;
+	c.record = cfg->record;
+	c.record_window = cfg->record_window;
+	c.boot_instance = cfg->boot_instance;
+	c.seed = cfg->seed;
+	c.frames = cfg->frames;
+	c.frame_ms = cfg->frame_ms;
+	if (bf_run(&c, &bops, &src, &r))
+		return -1;
 	out->generation = state.generation;
-	out->instance = state.boot_instance;
+	out->instance = r.instance;
 	out->grid_hash = gol_grid_hash(&state.grid);
+	out->cells_redrawn = redrawn;
 	return 0;
 }
