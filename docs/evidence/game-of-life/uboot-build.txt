@@ -22,3 +22,9 @@ Failures found and fixed on the way (each by a nix build, not by assumption):
   stdint/stddef unavailable under U-Boot's -nostdinc            -> src/boot_compat.h (4e3a73ab)
   `schedule` is already a function-like macro in USB gadget code -> no schedule(); hook calls cyclic_run() (3e0da269)
   `options` in nix/hardware.nix broke the plain config module   -> nix/boot-life-options.nix (053a2525)
+
+Fixed build after the 2026-10-30 board hang (commit 1ea623ff; cyclic_run guarded by GD_FLG_RELOC and gd->timer):
+nix build .#stage1-boot-life --option max-jobs 1 --option cores 1
+  -> /nix/store/9y501p3v6myn3wfva4rybygqrfdkn7ji-k230-stage1-packaging-boot-life
+  fn_ug_u-boot.bin  389698 bytes, sha256 2b2844df5de0f5171966c1d1933c6bba098ed1164df123862af20c653d9812c9
+  NOT installed; needs a fresh install approval.
