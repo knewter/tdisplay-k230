@@ -96,8 +96,8 @@ int main(int argc, char **argv) {
     return 3;
   }
   view.rootObject()->setProperty("negativeControl", negative);
-  view.setWidth(568);
-  view.setHeight(1232);
+  view.setWidth(1232);
+  view.setHeight(568);
   bool first = true;
   QObject::connect(&view, &QQuickWindow::frameSwapped, &view, [&]() {
     logEvent("commit");

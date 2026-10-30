@@ -18,7 +18,8 @@ source does not select a graphics API. Incidental Qt graphics libraries in the
 closure remain subject to inspection. No Qt Multimedia, Qt Virtual Keyboard,
 Quickshell, Controls, or external services are imported by the QML scene.
 
-The 568×1232 initial window is a test viewport matching the panel pixels;
+The 1232×568 initial window is a test viewport matching the landscape logical
+output of the current shell session (DSI-1, 568×1232 panel at transform 270);
 it is not a claim about the eventual scaled logical UI size. Real touch,
 keyboard/input-method behavior, animation continuity and performance require
 the reserved-board trial. The binary is not added to the normal image.

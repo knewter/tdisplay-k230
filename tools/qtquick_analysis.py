@@ -27,7 +27,7 @@ CEILINGS = OrderedDict([
 ])
 WORKLOAD = OrderedDict([
     ("id", WORKLOAD_ID),
-    ("viewport", [568, 1232]),
+    ("viewport", [1232, 568]),
     ("scale", 1),
     ("pairs", 3),
     ("idle_s", 30),

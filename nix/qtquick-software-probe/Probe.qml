@@ -2,8 +2,8 @@ import QtQuick
 
 Rectangle {
     id: root
-    width: 568
-    height: 1232
+    width: 1232
+    height: 568
     color: "#161b28"
     property bool negativeControl: false
     property bool selected: false
@@ -12,7 +12,7 @@ Rectangle {
     Rectangle {
         id: header
         width: parent.width
-        height: 136
+        height: 80
         color: "#26344c"
         Text {
             anchors.centerIn: parent
@@ -25,9 +25,9 @@ Rectangle {
     Flickable {
         id: list
         x: 20
-        y: 152
-        width: parent.width - 40
-        height: 510
+        y: 96
+        width: 580
+        height: 452
         contentHeight: items.height
         clip: true
         boundsBehavior: Flickable.StopAtBounds
@@ -55,8 +55,8 @@ Rectangle {
     }
 
     Rectangle {
-        x: 20; y: 682
-        width: parent.width - 40; height: 90
+        x: 628; y: 96
+        width: 584; height: 90
         radius: 12; color: "#31415d"
         TextInput {
             id: editor
@@ -73,8 +73,8 @@ Rectangle {
 
     Rectangle {
         id: moving
-        x: root.moved ? root.width - width - 20 : 20
-        y: 796
+        x: root.moved ? root.width - width - 20 : 628
+        y: 206
         width: 172; height: 90
         radius: 14
         color: root.moved ? "#9bcfff" : "#f9c67a"
@@ -86,7 +86,7 @@ Rectangle {
     }
 
     Rectangle {
-        x: 20; y: 912; width: parent.width - 40; height: 112
+        x: 628; y: 316; width: 584; height: 112
         color: "#31415d"; radius: 12
         Image {
             id: tileImage
@@ -101,11 +101,11 @@ Rectangle {
         }
     }
     ShaderEffect {
-        x: 20; y: 1038; width: 96; height: 64
+        x: 628; y: 448; width: 96; height: 64
         visible: root.negativeControl
         property variant source: tileImage
     }
     Rectangle {
-        x: 132; y: 1038; width: 96; height: 64; color: "#ff5b79"
+        x: 740; y: 448; width: 96; height: 64; color: "#ff5b79"
     }
 }

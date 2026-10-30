@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
            "\"mover_left\":\"%06x\",\"mover_right\":\"%06x\",\"swatch\":\"%06x\","
            "\"scroll\":%d,\"selected\":%d,\"moved\":%d,\"focused\":%d,\"text\":\"%s\","
            "\"flicking\":%d,\"width\":%d,\"height\":%d,\"max_scroll\":%d}\n",
-           at(2, 600), at(10, 10), at(40, SC_LIST_Y + 4), at(SC_EDITOR_X + 4, SC_EDITOR_Y + 4),
+           at(2, 300), at(10, 10), at(40, SC_LIST_Y + 4), at(SC_EDITOR_X + 4, SC_EDITOR_Y + 4),
            at(SC_MOVER_X_LEFT + 4, SC_MOVER_Y + 40), at(SC_MOVER_X_RIGHT + 4, SC_MOVER_Y + 40),
            at(SC_SWATCH_X + 40, SC_SWATCH_Y + 30), (int)s.scroll, s.selected, s.moved, s.focused, s.text,
            s.flicking, SC_WIDTH, SC_HEIGHT, SC_MAX_SCROLL);

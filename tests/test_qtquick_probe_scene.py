@@ -50,6 +50,8 @@ class SceneParity(unittest.TestCase):
         self.assertEqual(int(flick.group(1)), num("SC_LIST_H"))
         self.assertIn("x: %d\n" % num("SC_LIST_X"), QML)
         self.assertIn("y: %d\n" % num("SC_LIST_Y"), QML)
+        self.assertIn("width: %d\n        height: %d" % (num("SC_LIST_W"), num("SC_LIST_H")), QML)
+        self.assertIn("width: %d; height: %d" % (num("SC_EDITOR_W"), num("SC_EDITOR_H")), QML)
         self.assertIn("model: %d" % num("SC_ROW_COUNT"), QML)
         self.assertIn("height: %d\n                    radius: 12" % num("SC_ROW_H"), QML)
         self.assertIn("spacing: %d" % num("SC_ROW_SPACING"), QML)
@@ -61,9 +63,10 @@ class SceneParity(unittest.TestCase):
         self.assertIn("y: %d\n" % num("SC_MOVER_Y"), QML)
         self.assertIn("width: %d; height: %d" % (num("SC_MOVER_W"), num("SC_MOVER_H")), QML)
         self.assertEqual(num("SC_MOVER_X_RIGHT"), num("SC_WIDTH") - num("SC_MOVER_W") - 20)
+        self.assertIn(": %d\n        y: %d" % (num("SC_MOVER_X_LEFT"), num("SC_MOVER_Y")), QML)
         self.assertIn("duration: %d" % num("SC_ANIM_MS"), QML)
-        self.assertIn("x: %d; y: %d; width: parent.width - 40; height: %d"
-                      % (num("SC_PANEL_X"), num("SC_PANEL_Y"), num("SC_PANEL_H")), QML)
+        self.assertIn("x: %d; y: %d; width: %d; height: %d"
+                      % (num("SC_PANEL_X"), num("SC_PANEL_Y"), num("SC_PANEL_W"), num("SC_PANEL_H")), QML)
         self.assertIn("x: %d; y: %d" % (num("SC_SWATCH_X"), num("SC_SWATCH_Y")), QML)
         self.assertIn("width: %d; height: %d" % (num("SC_SWATCH_W"), num("SC_SWATCH_H")), QML)
 
@@ -109,7 +112,7 @@ class ScriptedScene(unittest.TestCase):
 
     def test_initial_frame(self):
         r = self.run_fixture()
-        self.assertEqual((r["width"], r["height"]), (568, 1232))
+        self.assertEqual((r["width"], r["height"]), (1232, 568))
         self.assertEqual(r["bg"], "161b28")
         self.assertEqual(r["header"], "26344c")
         self.assertEqual(r["row1"], "31415d")
@@ -118,35 +121,35 @@ class ScriptedScene(unittest.TestCase):
         self.assertFalse(r["selected"] or r["moved"] or r["focused"])
 
     def test_tap_row_selects_first_row_colour(self):
-        r = self.run_fixture("tap:100,190")
+        r = self.run_fixture("tap:100,120")
         self.assertTrue(r["selected"])
         self.assertEqual(r["row1"], "4b6ea8")
-        self.assertEqual(self.run_fixture("tap:100,190", "tap:100,190")["row1"], "31415d")
+        self.assertEqual(self.run_fixture("tap:100,120", "tap:100,120")["row1"], "31415d")
 
     def test_gap_between_rows_is_not_a_tap(self):
-        # row 1 spans y=152..226; the 12 px gap follows it.
-        self.assertFalse(self.run_fixture("tap:100,232")["selected"])
+        # row 1 spans y=96..170; the 12 px gap follows it.
+        self.assertFalse(self.run_fixture("tap:100,176")["selected"])
 
     def test_drag_scrolls_and_clamps(self):
-        self.assertEqual(self.run_fixture("drag:300,600,300,500,200")["scroll"] > 0, True)
-        r = self.run_fixture("drag:300,640,300,160,120", "drag:300,640,300,160,120",
-                             "drag:300,640,300,160,120", "drag:300,640,300,160,120")
+        self.assertEqual(self.run_fixture("drag:300,400,300,300,200")["scroll"] > 0, True)
+        r = self.run_fixture("drag:300,500,300,110,120", "drag:300,500,300,110,120",
+                             "drag:300,500,300,110,120", "drag:300,500,300,110,120")
         self.assertEqual(r["scroll"], r["max_scroll"])
-        r = self.run_fixture("drag:300,200,300,640,120")
+        r = self.run_fixture("drag:300,110,300,500,120")
         self.assertEqual(r["scroll"], 0)
 
     def test_drag_beyond_threshold_is_not_a_tap(self):
-        self.assertFalse(self.run_fixture("drag:100,190,100,260,100")["selected"])
+        self.assertFalse(self.run_fixture("drag:100,120,100,190,100")["selected"])
 
     def test_mover_animates_and_retargets(self):
-        r = self.run_fixture("tap:100,830")
+        r = self.run_fixture("tap:700,240")
         self.assertTrue(r["moved"])
         self.assertEqual(r["mover_left"], "161b28")  # it left the left edge
         self.assertEqual(r["mover_right"][:2] != "f9", True)
-        self.assertEqual(self.run_fixture("tap:100,830", "tap:100,830")["moved"], False)
+        self.assertEqual(self.run_fixture("tap:700,240", "tap:700,240")["moved"], False)
 
     def test_editor_focus_and_typing(self):
-        r = self.run_fixture("tap:100,720", "type:ab", "back")
+        r = self.run_fixture("tap:700,130", "type:ab", "back")
         self.assertTrue(r["focused"])
         self.assertEqual(r["text"], "Tap to edita")
         self.assertEqual(self.run_fixture("type:zz")["text"], "Tap to edit")  # not focused
@@ -158,9 +161,9 @@ class ScriptedScene(unittest.TestCase):
             data = ppm.read_bytes()
             header_end = data.index(b"255\n") + 4
             pixels = data[header_end:]
-            self.assertEqual(len(pixels), 568 * 1232 * 3)
-            row = lambda y: pixels[y * 568 * 3:(y + 1) * 568 * 3]
-            self.assertGreater(len(set(row(70))), 2)  # title glyphs differ from the bar colour
+            self.assertEqual(len(pixels), 1232 * 568 * 3)
+            row = lambda y: pixels[y * 1232 * 3:(y + 1) * 1232 * 3]
+            self.assertGreater(len(set(row(40))), 2)  # title glyphs differ from the bar colour
 
 
 @unittest.skipUnless(shutil.which("wayland-scanner") and shutil.which("cc"), "needs wayland-scanner")
