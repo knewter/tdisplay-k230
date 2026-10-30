@@ -337,7 +337,7 @@ times higher, the step budget is re-derived from that run before anything is ena
 ## Risks / Trade-offs
 
 - [One online CPU, boot is CPU-bound] -> lowest priority, frame dropping, and a
-  measured CPU-per-frame figure (task 3.3) before any boot-time enablement.
+  measured CPU-per-frame figure before any boot-time enablement: on the board the player costs 6.9 ms of CPU a frame for `beams` at 30 fps (18 % of the one CPU, `board-player-offscreen.txt`), so the unit's priority and frame dropping matter, and a cheaper effect or a lower frame rate is a setting.
 - [Hidden flags change on a ttfx bump] -> pinned revision, golden hashes in
   `tests/test_textfx_frames.py`.
 - [Stage 1 pixel format of the scanout] -> inherited from the Life glue (the

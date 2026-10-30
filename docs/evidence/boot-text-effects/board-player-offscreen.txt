@@ -1,0 +1,26 @@
+# k230-textfx (nix build .#k230-textfx, linked no_std engine) run by hand on the board in --output-file mode, 2026-10-30T16:03:33Z
+# binary sha256 prefix 98ea3747c6d1a38a
+Linux 7.3.0-rc5 riscv64
+ 11:03:33  up   1:24,  1 user,  load average: 1.14, 1.03, 0.68
+## board run 1: k230-textfx --engine lib --effect wipe --seed 3 --banner /var/tmp/K230.txt --output-file /var/tmp/o1.xrgb --no-pace --hash-frames 0,40,137
+hash frame 0 cell=0x378f9fed surface=0x2a8795c5
+hash frame 40 cell=0x26c2e8cf surface=0xff9e3de5
+hash frame 137 cell=0x4eb5f4ab surface=0xff9c9625
+final frames=138 cell=0x4eb5f4ab surface=0xff9c9625
+k230-textfx: stats frames=138 presented=3 coalesced=0 wall_ms=124 self_user_ms=114 self_sys_ms=30 ttfx_user_ms=0 ttfx_sys_ms=0
+59ed77b97bfc6916193e5e03319f3c607351a85aed7e59873a5ab1c6ba7c7e1d
+## board run 2: k230-textfx --engine lib --record-payload /var/tmp/record.bin --texts /var/tmp/texts.txt --engine-id 7 --output-file /var/tmp/o2.xrgb --no-pace --hash-frames 31,93
+k230-textfx: continuing after frame 30 (hash 0x47a13607 verified)
+hash frame 31 cell=0x47a13607 surface=0xeebab305
+final frames=78 cell=0x47a13607 surface=0xeebab305
+k230-textfx: stats frames=78 presented=1 coalesced=0 wall_ms=76 self_user_ms=78 self_sys_ms=21 ttfx_user_ms=0 ttfx_sys_ms=0
+8012383569ee0d0c1eba39dc6fd6062fa0828577775752e1dd75b4ec97283d44
+## board run 3: k230-textfx --engine lib --effect beams --seed 3 --banner /var/tmp/K230.txt --output-file /var/tmp/o3.xrgb --max-frames 60 --idle
+final frames=60 cell=0xdabdf84e surface=0x977d15c5
+k230-textfx: stats frames=60 presented=60 coalesced=0 wall_ms=2269 self_user_ms=370 self_sys_ms=42 ttfx_user_ms=0 ttfx_sys_ms=0
+# cleanup done
+
+# host expectation: the same commands run with the host build of the same player (x86-64, same sources and engine) print identical hash lines;
+# whole-surface sha256 of /var/tmp/o1.xrgb and o2.xrgb equal the host's (59ed77b9..., 80123835...).
+# run 3 (60 frames of beams paced at 30 fps, --idle): cpu = self user 370 ms + sys 42 ms for 60 frames = 6.9 ms per frame (engine step + cell draws), 18% of one CPU at 30 fps.
+# evidence class: board process run in --output-file mode (no DRM, no panel); not a boot observation and says nothing about the glass.
