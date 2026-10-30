@@ -9,7 +9,10 @@ let
   # platform's Qt6ShaderToolsTools is the one bounded correction; nothing else
   # in the closure is changed.
   qtdeclarative = qt6Packages.qtdeclarative.overrideAttrs (old: {
-    cmakeFlags = (old.cmakeFlags or [ ]) ++ [ "-DQt6ShaderToolsTools_DIR=${shaderToolsTools}" ];
+    cmakeFlags = (old.cmakeFlags or [ ]) ++ [
+      "-DQt6ShaderToolsTools_DIR=${shaderToolsTools}"
+      "-DQt6QuickTools_DIR=${host.qtdeclarative}/lib/cmake/Qt6QuickTools"
+    ];
   });
 in
 stdenv.mkDerivation {
@@ -23,6 +26,7 @@ stdenv.mkDerivation {
   cmakeFlags = [
     "-DQT_HOST_PATH=${host.qtbase}"
     "-DQt6QmlTools_DIR=${host.qtdeclarative}/lib/cmake/Qt6QmlTools"
+    "-DQt6QuickTools_DIR=${host.qtdeclarative}/lib/cmake/Qt6QuickTools"
     "-DQt6ShaderTools_DIR=${host.qtshadertools}/lib/cmake/Qt6ShaderTools"
     "-DQt6ShaderToolsTools_DIR=${shaderToolsTools}"
   ];
