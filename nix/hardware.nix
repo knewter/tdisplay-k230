@@ -35,10 +35,19 @@ let
   };
   wifiSettingsBroker = pkgs.callPackage ./wifi-settings-broker.nix { };
   splashOwnerEnabled = !config.k230.panelConsole && config.k230.shell.enable;
+  bootSplashConstants = import ./boot-splash.nix;
+  lifeArgs = lib.optionalString config.k230.bootLife.enable
+    " --life --life-state /run/k230-life/state --life-instance /proc/device-tree/chosen/canaan,life-instance";
   k230SpeakerTest = pkgs.callPackage ./k230-speaker-test.nix { };
 in
 {
   imports = [ ./panel-console.nix ./root-growth-service.nix ];
+
+  # the-boot-shows-a-computational-game-of-life: Linux continues the stage-1
+  # Game of Life from the state record in the splash reservation (validated
+  # against /chosen/canaan,life-instance; any failure draws the deterministic
+  # default).  Off by default; the static logo owner is unchanged without it.
+  options.k230.bootLife.enable = lib.mkEnableOption "the early-Linux Game of Life continuation in the splash owner";
   # Build the actual board closure against the tested RVV Pixman recipe.
   # Its hwprobe gate retains scalar dispatch when the kernel omits V or
   # PIXMAN_DISABLE=rvv is set. The overlay is board-only; QEMU keeps its
@@ -298,11 +307,29 @@ in
       Group = "shell";
       RuntimeDirectory = "k230-drm-splash";
       RuntimeDirectoryMode = "0700";
-      ExecStart = "${drmSplash}/bin/k230-drm-splash --ready-file /run/k230-drm-splash/state";
+      ExecStart = "${drmSplash}/bin/k230-drm-splash --ready-file /run/k230-drm-splash/state${lifeArgs}";
+      SupplementaryGroups = lib.optional config.k230.bootLife.enable "input";
       KillSignal = "SIGTERM";
       TimeoutStopSec = "5s";
       Restart = "on-failure";
       RestartSec = 1;
+    };
+  };
+
+  # Root-side, read-only copy of the stage-1 record window for the
+  # unprivileged owner above.  Runs before it; failure is non-fatal (the
+  # owner then logs "no stage-1 state record" and draws the default).
+  systemd.services.k230-life-capture = lib.mkIf (splashOwnerEnabled && config.k230.bootLife.enable) {
+    description = "Copy the stage-1 Game of Life record for the splash owner";
+    wantedBy = [ "k230-drm-splash.service" ];
+    before = [ "k230-drm-splash.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      RuntimeDirectory = "k230-life";
+      RuntimeDirectoryMode = "0750";
+      Group = "shell";
+      ExecStart = "-${drmSplash}/bin/k230-life-capture --phys ${bootSplashConstants.lifeRecordAddress} --size ${bootSplashConstants.lifeRecordWindow} --out /run/k230-life/state";
     };
   };
 

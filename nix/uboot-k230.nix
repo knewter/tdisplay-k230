@@ -36,6 +36,9 @@
   # one legible, reversible line.
 , useGcc13 ? false
 , cpu0IdentityProbe ? false
+  # Opt-in stage-1 Game of Life (openspec the-boot-shows-a-computational-game-of-life).
+  # Off by default: the default output is byte-identical to before.
+, bootLife ? false
 }:
 
 let
@@ -64,6 +67,11 @@ in
     CONFIG_K230_BARE_DISP_LOGO=y
     CONFIG_K230_BARE_DISP_LOGO_RM69A10=y
     CONFIG_K230_BARE_DISP_LOGO_FB_ADDR=${splash.framebufferAddress}
+  '' + lib.optionalString bootLife ''
+    CONFIG_K230_BOOT_LIFE=y
+    CONFIG_K230_BOOT_LIFE_RECORD_ADDR=${splash.lifeRecordAddress}
+    CONFIG_K230_BOOT_LIFE_WINDOW_BYTES=${splash.lifeRecordWindow}
+    CONFIG_K230_BOOT_LIFE_RESERVED_BYTES=${splash.framebufferSize}
   '';
   # Turning USB_GADGET on makes a dozen previously-hidden symbols visible
   # (USB_FUNCTION_FASTBOOT, USB_GADGET_MANUFACTURER, ...), and a non-
@@ -105,6 +113,14 @@ in
       echo "applying $p"
       patch -p1 < "$p"
     done
+  '' + lib.optionalString bootLife ''
+    # The shared portable engine and the stage-1 loop come straight from src/,
+    # the same files the host tests build; the U-Boot glue and Kconfig/hook
+    # patch are in nix/uboot-k230-life/.
+    cp ${../src/game_of_life.c} ${../src/game_of_life.h} \
+       ${../src/boot_life_stage1.c} ${../src/boot_life_stage1.h} \
+       ${./uboot-k230-life/k230_boot_life.c} board/canaan/common/logo/
+    patch -p1 < ${./uboot-k230-life/0006-k230-stage1-boot-life.patch}
   '' + lib.optionalString cpu0IdentityProbe ''
     # Experimental read-only CPU0 SPL diagnostic. Never included in the
     # ordinary stage-1 derivation; it only reports CSRs before the existing

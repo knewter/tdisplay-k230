@@ -1,0 +1,112 @@
+--- a/arch/riscv/cpu/k230/Kconfig
++++ b/arch/riscv/cpu/k230/Kconfig
+@@ -70,6 +70,50 @@
+ 	  Physical address reserved for the RM69A10 XRGB8888 scanout.
+ 	  The project Nix fragment supplies the nonzero board address.
+ 
++config K230_BOOT_LIFE
++	bool "Stage-1 Game of Life on the RM69A10 logo scanout"
++	depends on K230_BARE_DISP_LOGO_RM69A10
++	default n
++	help
++	  After the logo is lit, advance a deterministic Game of Life on the
++	  same scanout and publish a versioned, checksummed state record for
++	  the next owner (openspec change
++	  the-boot-shows-a-computational-game-of-life).  Opt-in; the static
++	  logo handoff is unchanged when this is off.
++
++config K230_BOOT_LIFE_RECORD_ADDR
++	hex "Game of Life state record address"
++	depends on K230_BOOT_LIFE
++	default 0x0
++	help
++	  Inside the splash reservation, after the scanout; supplied by
++	  nix/boot-splash.nix (framebuffer address + lifeRecordOffset).
++
++config K230_BOOT_LIFE_WINDOW_BYTES
++	hex "Game of Life record window size"
++	depends on K230_BOOT_LIFE
++	default 0x2000
++
++config K230_BOOT_LIFE_RESERVED_BYTES
++	hex "Size of the splash reservation that contains scanout and record"
++	depends on K230_BOOT_LIFE
++	default 0x400000
++
++config K230_BOOT_LIFE_SEED
++	hex "Deterministic default seed"
++	depends on K230_BOOT_LIFE
++	default 0x4b323330
++
++config K230_BOOT_LIFE_FRAMES
++	int "Generations to run before booting the kernel"
++	depends on K230_BOOT_LIFE
++	default 40
++
++config K230_BOOT_LIFE_FRAME_MS
++	int "Delay between generations in milliseconds"
++	depends on K230_BOOT_LIFE
++	default 50
++
+ config K230_HDMI_LCD_I2C_BUS
+ 	int "k230 hdmi lcd i2c bus"
+ 	default 3
+--- a/board/canaan/common/logo/Makefile
++++ b/board/canaan/common/logo/Makefile
+@@ -25,6 +25,7 @@
+ 
+ 
+ obj-$(CONFIG_K230_BARE_DISP_LOGO) += k230_logo.o st7701.o  display_logo.o
++obj-$(CONFIG_K230_BOOT_LIFE) += game_of_life.o boot_life_stage1.o k230_boot_life.o
+ 
+ 
+ EXTRA_CFLAGS += -I$(srctree)/arch/$(ARCH)/cpu/k230/
+--- a/board/canaan/common/logo/k230_logo.c
++++ b/board/canaan/common/logo/k230_logo.c
+@@ -380,6 +380,10 @@
+         return -1;
+ 
+     k230_display_logo_ready = 1;
++#ifdef CONFIG_K230_BOOT_LIFE
++    /* Opt-in; a failure leaves the lit logo exactly as the static path would. */
++    k230_boot_life_run();
++#endif
+     return 0;
+ }
+ 
+--- a/board/canaan/common/logo/display_logo.h
++++ b/board/canaan/common/logo/display_logo.h
+@@ -544,4 +544,8 @@
+ int st7701_init(k_connector_info *info);
+ uint32_t dwc_dsi_enable(uint32_t enable);
+ void kd_vo_set_vtth_intr(bool status, uint32_t vpos);
++#ifdef CONFIG_K230_BOOT_LIFE
++int k230_boot_life_run(void);
++uint32_t k230_boot_life_instance(void);
++#endif
+ #endif
+--- a/board/canaan/common/k230_board_common.c
++++ b/board/canaan/common/k230_board_common.c
+@@ -608,6 +608,22 @@
+             printf("cannot set stage-1 splash flag: %d\n", ret);
+     }
+ #endif
++#ifdef CONFIG_K230_BOOT_LIFE
++    /* Same-boot token for the Game of Life state record; absent means
++     * "do not trust the record".  Never carried across boots. */
++    {
++        int chosen = fdt_path_offset(blob, "/chosen");
++
++        if (chosen >= 0)
++            fdt_delprop(blob, chosen, "canaan,life-instance");
++        if (chosen >= 0 && k230_display_logo_is_ready() && k230_boot_life_instance()) {
++            int ret = fdt_setprop_u32(blob, chosen, "canaan,life-instance",
++                                      k230_boot_life_instance());
++            if (ret)
++                printf("cannot set Game of Life instance: %d\n", ret);
++        }
++    }
++#endif
+     return 0;
+ }
+ 

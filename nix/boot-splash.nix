@@ -18,5 +18,8 @@ in
   # 5 584 bytes (src/game_of_life.h GOL_RECORD_BYTES).
   # tools/check-boot-life-memory.py reads these values.
   lifeRecordOffset = "0x002ac000";
+  # Absolute form of framebufferAddress + lifeRecordOffset (Nix cannot add
+  # hex strings); tools/check-boot-life-memory.py rejects a mismatch.
+  lifeRecordAddress = "0x102ac000";
   lifeRecordWindow = "0x00002000";
 }

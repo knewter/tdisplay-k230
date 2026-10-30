@@ -11,11 +11,15 @@ stdenv.mkDerivation {
   buildPhase = ''
     $CC -std=c11 -O2 -Wall -Wextra -Werror -D_POSIX_C_SOURCE=200809L \
       -DDEFAULT_ASSET='"${bootSplashImage}/logo.xrgb"' \
-      -o k230-drm-splash drm-splash.c $($PKG_CONFIG --cflags --libs libdrm)
+      -I ${../../src} -I . \
+      -o k230-drm-splash drm-splash.c life.c ${../../src/game_of_life.c} $($PKG_CONFIG --cflags --libs libdrm)
+    $CC -std=c11 -O2 -Wall -Wextra -Werror -D_POSIX_C_SOURCE=200809L \
+      -o k230-life-capture life-capture.c
   '';
 
   installPhase = ''
     install -Dm755 k230-drm-splash $out/bin/k230-drm-splash
+    install -Dm755 k230-life-capture $out/bin/k230-life-capture
   '';
 
   meta = {

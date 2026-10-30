@@ -23,14 +23,29 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 
+#include "life.h"
+
 #define SPLASH_WIDTH 568
 #define SPLASH_HEIGHT 1232
 #define SPLASH_BYTES ((size_t)SPLASH_WIDTH * SPLASH_HEIGHT * 4)
 #define PRIMARY_PLANE_TYPE 1
 #define HANDOFF_POLL_NS 100000000L
+#define LIFE_POLL_NS 20000000L
 
 static volatile sig_atomic_t handoff_requested;
 static volatile sig_atomic_t stopping;
+
+/* Optional Game of Life continuation (--life).  Off by default: the static
+ * logo path below is unchanged. */
+struct life_run {
+    bool enabled;
+    struct life life;
+    struct life_opts opts;
+    unsigned run_seconds;
+    struct timespec next_tick;
+    struct timespec started;
+    unsigned ticks;
+};
 
 struct target {
     uint32_t connector_id;
@@ -262,24 +277,81 @@ static void release_replaced_buffer(int fd, struct buffer *buffer) {
     }
 }
 
+static void ts_add_ms(struct timespec *t, unsigned ms) {
+    t->tv_sec += ms / 1000;
+    t->tv_nsec += (long)(ms % 1000) * 1000000L;
+    if (t->tv_nsec >= 1000000000L) { t->tv_sec++; t->tv_nsec -= 1000000000L; }
+}
+
+static bool ts_reached(const struct timespec *now, const struct timespec *t) {
+    return now->tv_sec > t->tv_sec || (now->tv_sec == t->tv_sec && now->tv_nsec >= t->tv_nsec);
+}
+
+/* One cooperative step: handle touch, and advance/redraw when a tick is due. */
+static void life_service(struct life_run *run, struct buffer *buffer) {
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    bool inserted = life_touch_poll(&run->life) > 0;
+    if (inserted || ts_reached(&now, &run->next_tick)) {
+        if (!inserted) {
+            life_tick(&run->life);
+            run->ticks++;
+            do ts_add_ms(&run->next_tick, run->opts.interval_ms);
+            while (ts_reached(&now, &run->next_tick));
+        }
+        life_render_rgb565(&run->life, buffer->map, buffer->pitch);
+    }
+    if (run->run_seconds && now.tv_sec - run->started.tv_sec >= (time_t)run->run_seconds)
+        stopping = 1;
+}
+
+static void life_finish(struct life_run *run) {
+    life_log(&run->life, "stopping at generation %u after %u local ticks, %u gliders inserted, grid hash 0x%08x",
+        run->life.st.generation, run->ticks, run->life.gliders, gol_grid_hash(&run->life.st.grid));
+    life_close(&run->life);
+}
+
 int main(int argc, char **argv) {
     uint32_t format = DRM_FORMAT_RGB565;
     const char *ready_file = NULL;
+    struct life_run run = { .opts = { .interval_ms = 200, .seed = 0x4b323330u,
+        .input_dir = "/dev/input" } };
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "--format") == 0 && i + 1 < argc) {
             const char *value = argv[++i];
             if (strcmp(value, "rg16") == 0) format = DRM_FORMAT_RGB565;
             else if (strcmp(value, "ar24") == 0) format = DRM_FORMAT_ARGB8888;
-            else { fprintf(stderr, "usage: %s [--format rg16|ar24] --ready-file PATH\n", argv[0]); return 2; }
+            else { fprintf(stderr, "usage: %s [--format rg16|ar24] --ready-file PATH [--life ...]\n", argv[0]); return 2; }
         } else if (strcmp(argv[i], "--ready-file") == 0 && i + 1 < argc) {
             ready_file = argv[++i];
+        } else if (strcmp(argv[i], "--life") == 0) {
+            run.enabled = true;
+        } else if (strcmp(argv[i], "--life-state") == 0 && i + 1 < argc) {
+            run.opts.state_path = argv[++i];
+        } else if (strcmp(argv[i], "--life-instance") == 0 && i + 1 < argc) {
+            run.opts.instance_path = argv[++i];
+        } else if (strcmp(argv[i], "--life-report") == 0 && i + 1 < argc) {
+            run.opts.report_path = argv[++i];
+        } else if (strcmp(argv[i], "--life-input-dir") == 0 && i + 1 < argc) {
+            run.opts.input_dir = argv[++i];
+        } else if (strcmp(argv[i], "--life-seed") == 0 && i + 1 < argc) {
+            run.opts.seed = (uint32_t)strtoul(argv[++i], NULL, 0);
+        } else if (strcmp(argv[i], "--life-interval-ms") == 0 && i + 1 < argc) {
+            run.opts.interval_ms = (unsigned)strtoul(argv[++i], NULL, 0);
+        } else if (strcmp(argv[i], "--life-run-seconds") == 0 && i + 1 < argc) {
+            run.run_seconds = (unsigned)strtoul(argv[++i], NULL, 0);
         } else {
-            fprintf(stderr, "usage: %s [--format rg16|ar24] --ready-file PATH\n", argv[0]);
+            fprintf(stderr, "usage: %s [--format rg16|ar24] --ready-file PATH [--life ...]\n", argv[0]);
             return 2;
         }
     }
     if (!ready_file) { fprintf(stderr, "k230-drm-splash: --ready-file is required\n"); return 2; }
     if (install_signals()) return 1;
+    if (run.enabled && format != DRM_FORMAT_RGB565) {
+        fprintf(stderr, "k230-drm-splash: --life supports only rg16\n");
+        return 2;
+    }
+    if (run.opts.interval_ms == 0) run.opts.interval_ms = 200;
 
     int fd = open("/dev/dri/card0", O_RDWR | O_CLOEXEC);
     if (fd < 0) { fail("open /dev/dri/card0"); return 1; }
@@ -299,10 +371,22 @@ int main(int argc, char **argv) {
             target.mode.hdisplay, target.mode.vdisplay, SPLASH_WIDTH, SPLASH_HEIGHT);
         goto out_before_modeset;
     }
-    if (verify_primary_format(fd, &target, format) || read_asset(&asset) ||
+    if (verify_primary_format(fd, &target, format) ||
+        (!run.enabled && read_asset(&asset)) ||
         make_buffer(fd, target.mode.hdisplay, target.mode.vdisplay, format, &buffer))
         goto out_before_modeset;
-    fill_buffer(&buffer, asset, format);
+    if (run.enabled) {
+        /* Validate the stage-1 record, fall back to the default, then draw
+         * that grid instead of the static logo. */
+        life_load(&run.life, &run.opts);
+        life_touch_open(&run.life);
+        life_render_rgb565(&run.life, buffer.map, buffer.pitch);
+        clock_gettime(CLOCK_MONOTONIC, &run.started);
+        run.next_tick = run.started;
+        ts_add_ms(&run.next_tick, run.opts.interval_ms);
+    } else {
+        fill_buffer(&buffer, asset, format);
+    }
     if (drmModeSetCrtc(fd, target.crtc_id, buffer.fb_id, 0, 0, &target.connector_id, 1, &target.mode)) {
         fail("set splash mode");
         goto out_before_modeset;
@@ -313,25 +397,29 @@ int main(int argc, char **argv) {
         goto out_after_modeset;
 
     while (!stopping) {
+        if (run.enabled) life_service(&run, &buffer);
         if (handoff_requested) {
             handoff_requested = 0;
             if (drmDropMaster(fd)) { fail("drop DRM master for shell handoff"); continue; }
             if (write_ready(ready_file, "master-dropped\n")) break;
             fprintf(stderr, "k230-drm-splash: DRM master dropped; retaining fb %u for successor\n", buffer.fb_id);
             while (!stopping) {
+                if (run.enabled) life_service(&run, &buffer);
                 if (successor_has_replaced_framebuffer(fd, target.crtc_id, buffer.fb_id)) {
                     fprintf(stderr, "k230-drm-splash: successor replaced fb %u; releasing owner\n", buffer.fb_id);
                     successor_seen = true;
                     result = 0;
+                    if (run.enabled) life_finish(&run);
                     goto out_after_modeset;
                 }
-                struct timespec pause = { .tv_nsec = HANDOFF_POLL_NS };
+                struct timespec pause = { .tv_nsec = run.enabled ? LIFE_POLL_NS : HANDOFF_POLL_NS };
                 nanosleep(&pause, NULL);
             }
         }
-        struct timespec pause = { .tv_nsec = HANDOFF_POLL_NS };
+        struct timespec pause = { .tv_nsec = run.enabled ? LIFE_POLL_NS : HANDOFF_POLL_NS };
         nanosleep(&pause, NULL);
     }
+    if (run.enabled) life_finish(&run);
     fprintf(stderr, "k230-drm-splash: stopping without a successor; no explicit CRTC clear or framebuffer removal\n");
 
 out_after_modeset:

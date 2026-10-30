@@ -22,6 +22,9 @@
       # carries. See nix/stage1.nix and openspec/specs/image/boot-chain.
       k230Sdk = pkgs.callPackage ./nix/k230-sdk-src.nix { };
       ubootK230 = pkgsCross.callPackage ./nix/uboot-k230.nix { inherit k230Sdk; };
+      # Opt-in stage-1 Game of Life (the-boot-shows-a-computational-game-of-life).
+      # Never referenced by the normal stage1 package or any image.
+      ubootK230BootLife = ubootK230.override { bootLife = true; };
       ubootK230Cpu0IdentityProbe = ubootK230.override {
         cpu0IdentityProbe = true;
       };
@@ -894,6 +897,10 @@
         #   nix build .#stage1          the five files the card carries
         k230-sdk-src = k230Sdk;
         uboot-k230 = ubootK230;
+        # Opt-in stage-1 Game of Life U-Boot; build-only until a reviewed
+        # install procedure exists. Not part of stage1 or any image.
+        uboot-k230-boot-life = ubootK230BootLife;
+        stage1-boot-life = stage1.packagingOf { ubootDir = ubootK230BootLife; name = "k230-stage1-packaging-boot-life"; };
         # Isolated, default-off SPL diagnostic. Do not substitute this for
         # the normal stage1 package or treat it as an SMP implementation.
         uboot-k230-cpu0-identity-probe = ubootK230Cpu0IdentityProbe;

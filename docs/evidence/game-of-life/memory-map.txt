@@ -1,0 +1,58 @@
+# Game of Life record memory map (task 1.3). Host-side check over the DTB the board boots; no board write.
+# date: 2026-10-30T13:19:04Z
+# DTB: /boot/k230-tdisplay.dtb read from the running board over SSH (read-only), sha256 f6d31149d75d50fc997fe1d1aa1e7ba9c15c33ea682a6b858cda55f93225a618, 19048 bytes
+# boot file sizes from 'ls -l /boot' on the same board (Image 42752512, initrd.uimg 27328407, fw_jump_add_uboot_head.bin 270808, bootargs.txt 198).
+# Image size is the file size; the kernel's BSS beyond it is not measured here (the 2026-10-12 evidence bounds it: it would have to exceed 0xd4 MiB to reach 0x10000000).
+# Live U-Boot placement (relocaddr, LMB reservation, relocated initrd/DTB) is taken from the physical-board capture docs/evidence/stage1-memory-map.md sections 2.1/2.2 (docs/evidence/uboot-usb-host-coexist.txt); it is not re-measured by this tool.
+# Board /proc/iomem (read 2026-10-30) lists 10000000-103fffff : Reserved, i.e. the kernel does not own the window.
+#
+# --- DT reserved-memory node as compiled (dtc -I dtb -O dts) ---
+# 	reserved-memory {
+# 		#address-cells = <0x02>;
+# 		#size-cells = <0x02>;
+# 		ranges;
+# 
+# 		splash_framebuffer: framebuffer@10000000 {
+# 			reg = <0x00 0x10000000 0x00 0x400000>;
+# 			no-map;
+# 			phandle = <0x38>;
+# 		};
+# 	};
+#
+# --- command ---
+# python3 tools/check-boot-life-memory.py --dtb k230-tdisplay.dtb --size Image=42752512 --size initrd.uimg=27328407 --size fw_jump_add_uboot_head.bin=270808 --size bootargs.txt=198 --size dtb=19048
+Game of Life record memory check (host-side; DTB decompiled with dtc)
+DTB: k230-tdisplay.dtb
+/memory: 0x00000000..0x40000000
+reserved-memory framebuffer@10000000         0x10000000..0x10400000 no-map
+splash scanout (568x1232x4):   0x10000000..0x102ab600
+life record window:            0x102ac000..0x102ae000 (record 5584 bytes of 8192)
+intervals checked against the window:
+  stage-1 SPL/U-Boot/OpenSBI load region                       0x00000000..0x00400000  clear
+  bootargs.txt (ext4load 0x07000000)                           0x07000000..0x070000c6  clear
+  fw_jump_add_uboot_head.bin (ext4load 0x08000000)             0x08000000..0x080421d8  clear
+  Image (ext4load 0x00200000)                                  0x00200000..0x02ac5a00  clear
+  dtb (ext4load 0x08400000)                                    0x08400000..0x08404a68  clear
+  initrd.uimg (ext4load 0x09000000)                            0x09000000..0x0aa0ff97  clear
+  uboot-relocated (relocaddr..malloc top)                      0x3fb37920..0x40000000  clear
+  initrd-relocated by bootm                                    0x3e12f000..0x3fb36d4f  clear
+  dtb-relocated by bootm                                       0x0a0eb000..0x0a0ff682  clear
+RESULT: OK (window inside the no-map splash reservation, after the scanout, clear of every interval)
+exit: 0
+
+# --- rejection tests (tests/test_check_boot_life_memory.py; synthetic DTBs built with dtc) ---
+ok   shipped constants accepted
+ok   window inside the logo scanout rejected
+ok   window outside the reservation rejected
+ok   absolute/offset mismatch rejected
+ok   reservation without no-map rejected
+ok   window smaller than the record rejected
+ok   overlapping DT reserved node rejected
+ok   non-overlapping extra node accepted
+PASS (0 failures)
+
+# --- ownership, invalidation and fallback ---
+# Owner: the record lives at 0x102ac000..0x102ae000 inside the 4 MiB no-map splash reservation, after the 568x1232x4 scanout (ends 0x102ab600). No new reserved-memory node or RAM claim.
+# U-Boot writes it (owner=1) after each frame and stops before bootm; Linux's splash owner reads it (read-only, k230-life-capture through an mmap of /dev/mem) and keeps its own copy (owner=2) in process memory, never writing back.
+# Invalidation: U-Boot zeroes the 40-byte header before the first frame; the record carries magic, ABI version, length, dimensions and an FNV-1a checksum; /chosen/canaan,life-instance carries the boot's instance token and exists only when stage 1 published that record this boot.
+# Fallback: absent token, absent/short/zero/garbled record, version or dimension mismatch, bad checksum, or a token differing from the record -> deterministic default grid (seed 0x4b323330), logged with the reason (tests/test_life_load.c).
