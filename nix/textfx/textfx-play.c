@@ -43,6 +43,7 @@
 #endif
 
 #include "textfx.h"
+#include "textfx_record.h"
 
 #define PANEL_W 568u
 #define PANEL_H 1232u
@@ -63,6 +64,8 @@ struct opts {
 	const char *output_file;
 	bool drm;
 	const char *card, *ready_file, *asset, *stats_file;
+	const char *record_payload, *texts;
+	uint32_t engine_id; /* 0 = do not compare with the record */
 	bool no_pace, print_command, idle;
 	long max_frames;
 	long hash_frames[MAX_HASH_FRAMES];
@@ -165,30 +168,35 @@ struct child {
 	int fd;
 };
 
+static char text_buf[8192];
+static size_t text_len;
+
 static int start_child(const struct opts *o, struct child *c)
 {
 	const char *argv[40];
 	char store[256];
-	int pipefd[2], banner;
+	int pipefd[2], banner[2];
 	pid_t pid;
 
 	build_argv(o, argv, store, sizeof store);
-	banner = open(o->banner, O_RDONLY | O_CLOEXEC);
-	if (banner < 0) { fail("open banner"); return -1; }
-	if (pipe2(pipefd, O_CLOEXEC)) { fail("pipe"); close(banner); return -1; }
+	/* The text goes in through a pipe: at most 8 KiB, which a pipe holds without a reader. */
+	if (pipe2(banner, O_CLOEXEC)) { fail("pipe"); return -1; }
+	if (write(banner[1], text_buf, text_len) != (ssize_t)text_len) { fail("write text"); close(banner[0]); close(banner[1]); return -1; }
+	close(banner[1]);
+	if (pipe2(pipefd, O_CLOEXEC)) { fail("pipe"); close(banner[0]); return -1; }
 	pid = fork();
 	if (pid < 0) { fail("fork"); return -1; }
 	if (pid == 0) {
 		int devnull = open("/dev/null", O_WRONLY);
 
-		dup2(banner, 0);
+		dup2(banner[0], 0);
 		dup2(pipefd[1], 1);
 		if (devnull >= 0)
 			dup2(devnull, 2);
 		execv(o->ttfx, (char *const *)argv);
 		_exit(127);
 	}
-	close(banner);
+	close(banner[0]);
 	close(pipefd[1]);
 	c->pid = pid;
 	c->fd = pipefd[0];
@@ -546,6 +554,7 @@ static int usage(const char *argv0)
 	fprintf(stderr,
 		"usage: %s --ttfx PATH --banner PATH --effect NAME --seed N [--cols 35 --rows 38 --fps 30 --scale 2]\n"
 		"          (--output-file PATH | --drm [--card /dev/dri/card0] [--ready-file PATH] [--asset logo.xrgb])\n"
+		"          [--record-payload FILE --texts LIST [--engine-id 0xHEX]]   (instead of --effect/--seed/--cols/...)\n"
 		"          [--skip FRAME --expect-hash 0xHASH] [--hash-frames A,B,..] [--max-frames N]\n"
 		"          [--no-pace] [--idle] [--stats-file PATH] [--print-command] [-- effect args...]\n", argv0);
 	return 2;
@@ -575,6 +584,9 @@ static int parse_opts(int argc, char **argv, struct opts *o)
 		else if (!strcmp(a, "--card") && v) { o->card = v; ++i; }
 		else if (!strcmp(a, "--ready-file") && v) { o->ready_file = v; ++i; }
 		else if (!strcmp(a, "--asset") && v) { o->asset = v; ++i; }
+		else if (!strcmp(a, "--record-payload") && v) { o->record_payload = v; ++i; }
+		else if (!strcmp(a, "--engine-id") && v) { o->engine_id = (uint32_t)strtoul(v, NULL, 0); ++i; }
+		else if (!strcmp(a, "--texts") && v) { o->texts = v; ++i; }
 		else if (!strcmp(a, "--stats-file") && v) { o->stats_file = v; ++i; }
 		else if (!strcmp(a, "--max-frames") && v) { o->max_frames = atol(v); ++i; }
 		else if (!strcmp(a, "--no-pace")) o->no_pace = true;
@@ -590,13 +602,117 @@ static int parse_opts(int argc, char **argv, struct opts *o)
 			++i;
 		} else return -1;
 	}
-	if (!o->ttfx || !o->banner || !o->effect || !o->scale || !o->fps)
+	if (!o->ttfx || !o->scale || !o->fps || (!o->record_payload && (!o->banner || !o->effect)))
 		return -1;
 	if (o->cols * TFX_GLYPH_W * o->scale > PANEL_W || o->rows * TFX_GLYPH_H * o->scale > PANEL_H)
 		return -1;
 	if (o->skip >= 0 && !o->expect_hash)
 		return -1;
+	if (o->record_payload && !o->banner && !o->texts)
+		return -1;
 	return (o->drm ? 1 : 0) + (o->output_file ? 1 : 0) == 1 || o->print_command ? 0 : -1;
+}
+
+
+static ssize_t slurp(const char *path, void *buf, size_t cap)
+{
+	int fd = open(path, O_RDONLY | O_CLOEXEC);
+	size_t at = 0;
+
+	if (fd < 0)
+		return -1;
+	while (at < cap) {
+		ssize_t r = read(fd, (char *)buf + at, cap - at);
+
+		if (r < 0 && errno == EINTR)
+			continue;
+		if (r <= 0)
+			break;
+		at += (size_t)r;
+	}
+	close(fd);
+	return (ssize_t)at;
+}
+
+static char record_effect[TFX_REC_EFFECT_LEN + 1];
+static char texts_buf[16384];
+
+/*
+ * Fill in the run: from a hand-off record (effect, seed, canvas, the frame stage 1
+ * reached and its cell hash, the text by id), or from the command line.  A record
+ * that does not match this system (other engine, text list or text) is not trusted
+ * for the continuation: the run is played from frame 0 with whatever text is given.
+ */
+static int resolve_inputs(struct opts *o)
+{
+	struct tfx_run_desc d;
+	uint8_t payload[TFX_REC_PAYLOAD_BYTES];
+	ssize_t n;
+	bool trust = true, have_text = false;
+
+	if (o->record_payload) {
+		n = slurp(o->record_payload, payload, sizeof payload + 1);
+		if (n != (ssize_t)TFX_REC_PAYLOAD_BYTES || tfx_rec_decode(&d, payload, (size_t)n)) {
+			say("record payload %s is not a text-effects record", o->record_payload);
+			return -1;
+		}
+		memcpy(record_effect, d.effect, TFX_REC_EFFECT_LEN);
+		o->effect = record_effect;
+		o->seed = d.seed;
+		o->cols = d.cols;
+		o->rows = d.rows;
+		o->fps = d.fps;
+		if (o->engine_id && d.engine_id != o->engine_id) {
+			say("record engine id 0x%08x != this build's 0x%08x: not continuing", d.engine_id, o->engine_id);
+			trust = false;
+		}
+		if (o->texts && d.text_id != TFX_REC_TEXT_ENV) {
+			struct tfx_text list[16];
+			unsigned count;
+			ssize_t tn = slurp(o->texts, texts_buf, sizeof texts_buf);
+
+			count = tn > 0 ? tfx_texts_parse(texts_buf, (size_t)tn, list, 16) : 0;
+			if (d.text_id < count && list[d.text_id].len < sizeof text_buf &&
+			    tfx_text_hash(list[d.text_id].text, list[d.text_id].len) == d.text_hash) {
+				memcpy(text_buf, list[d.text_id].text, list[d.text_id].len);
+				text_len = list[d.text_id].len;
+				have_text = true;
+			} else {
+				say("text %u of the list does not match the record's text hash: not continuing", d.text_id);
+				trust = false;
+			}
+		}
+		if (!have_text && o->banner) {
+			ssize_t bn = slurp(o->banner, text_buf, sizeof text_buf);
+
+			if (bn > 0) {
+				text_len = (size_t)bn;
+				have_text = true;
+				if (tfx_text_hash(text_buf, text_len) != d.text_hash) {
+					say("given text does not match the record's text hash: not continuing");
+					trust = false;
+				}
+			}
+		}
+		if (!have_text) {
+			say("no text for the record");
+			return -1;
+		}
+		if (trust) {
+			o->skip = (long)d.last_frame;
+			o->expect_hash = d.cell_hash;
+		} else {
+			o->skip = -1;
+		}
+		return 0;
+	}
+	n = slurp(o->banner, text_buf, sizeof text_buf);
+	if (n <= 0) {
+		fail("read text");
+		return -1;
+	}
+	text_len = (size_t)n;
+	return 0;
 }
 
 int main(int argc, char **argv)
@@ -614,6 +730,8 @@ int main(int argc, char **argv)
 
 	if (parse_opts(argc, argv, &o))
 		return usage(argv[0]);
+	if (resolve_inputs(&o))
+		return 1;
 	if (o.print_command) {
 		const char *av[40];
 		char store[256];

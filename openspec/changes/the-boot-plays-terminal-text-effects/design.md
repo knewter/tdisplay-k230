@@ -165,7 +165,7 @@ grid (u32), an engine id (u32, FNV-1a of "ttfx 14ed274 nostd N": a mismatch mean
 side cannot promise identical frames), the effect name (24 bytes, NUL padded), the text id
 (u16 index into the build-time list, 0xFFFF for a text from the environment) and the text hash
 (u32 FNV-1a of the text bytes, so Linux detects firmware and system disagreeing about the
-list). About 80 bytes in the 8 KiB window. Validation order is Life's: prefix, checksum,
+list). Exactly 60 bytes (`TFX_REC_PAYLOAD_BYTES`) in the 8 KiB window. Validation order is Life's: prefix, checksum,
 boot-instance token against `/chosen/canaan,life-instance`, then the source id picks the
 consumer. `src/textfx_record.{h,c}` encodes and decodes the payload and is tested on the
 host; the prefix belongs to `boot_frame` and is added when that lands.

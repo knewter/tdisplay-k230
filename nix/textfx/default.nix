@@ -15,7 +15,7 @@ stdenv.mkDerivation {
   buildPhase = ''
     $CC -std=c11 -O2 -Wall -Wextra -Werror \
       -I ${../../src} \
-      -o k230-textfx textfx-play.c ${../../src/textfx.c} ${../../src/textfx_font.c} \
+      -o k230-textfx textfx-play.c ${../../src/textfx.c} ${../../src/textfx_font.c} ${../../src/textfx_record.c} \
       $($PKG_CONFIG --cflags --libs libdrm)
   '';
 
