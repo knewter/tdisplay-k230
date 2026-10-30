@@ -43,17 +43,38 @@
 
 ## 3. Board (hardware-only)
 
-- [ ] 3.1 Test-activate a build. Start a 2-minute Timer, close its card, run
+- [x] 3.1 Test-activate a build. Start a 2-minute Timer, close its card, run
   `systemctl restart shell` a minute in, and record what arrives and when.
   Proof (board, injected): `docs/evidence/timer-restart/board/`.
-- [ ] 3.2 Send a notification with an action from a probe app on the shell
+  *Board, console plus injected touch, 2026-10-30, `q8hbkb1g…` test-activated:
+  a 2:00 Timer started at about 01:08:06Z ran in
+  `k230-timer@….service`, survived `systemctl restart shell` at 01:09:07Z,
+  and "Timer finished" (source "Timer") arrived once at 01:10:06Z. Two
+  earlier runs on the same build also fired once after a restart, and a
+  reopened card adopted the countdown (`04:14 Running`). Not tested: a
+  reboot.*
+- [x] 3.2 Send a notification with an action from a probe app on the shell
   bus. Dismiss one and tap the action of another with injected touch, and
   record the signals the probe received. Proof (board, injected):
   `docs/evidence/notification-actions/board/`.
-- [ ] 3.3 Glass: the operator taps an action and dismisses a notification.
+  *Board, injected touch plus `action_probe.py`, 2026-10-30, `q8hbkb1g…`:
+  the adaptor advertises `actions`; a tapped Snooze gave `ActionInvoked(2,
+  snooze)` then `NotificationClosed(2, 2)`; a swipe gave
+  `NotificationClosed(7, 2)`; Dismiss all gave reason 2 for both rows; an
+  app's own close gave reason 3; after `systemctl restart
+  shell-notification-dbus` a tapped Open gave `ActionInvoked(1, open)` then
+  reason 2. Found, not fixed here: a sideways swipe does not start while
+  the landscape list fits without scrolling, and a restarted adaptor no
+  longer reports closes for notifications posted before the restart.*
+- [x] 3.3 Glass: the operator taps an action and dismisses a notification.
   Physical proof: a timestamped operator report tied to the installed build.
+  *Waived by the operator on 2026-10-29 ("you don't need my fingers on the
+  glass just do virtual events and watch screenshots",
+  `docs/evidence/glass-checklist-2026-10-29/operator-report.md`). No glass
+  evidence exists; the injected run in 3.2 stands in for it.*
 
 ## 4. Closeout
 
-- [ ] 4.1 Archive once 3.3 is done. Proof:
+- [x] 4.1 Archive once 3.3 is done. Proof:
   `openspec validate pending-timers-survive-restarts-and-apps-hear-dismissals --strict`.
+  *2026-10-30: valid; archived with the board evidence.*

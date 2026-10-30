@@ -2476,6 +2476,21 @@ DATA 9f8cdafb7e50f19be53f31d00f197f2a555254914059c9386a65ed3d1d3450a1 docs/evide
 DATA 047c2616339b278350d069d5e899e6a9911ba08af72119d5db7a1bd302b58ded docs/evidence/notification-actions/host/shade-actions-200-1232x568.png
 DATA 9b59aaf70f5e2090ac2ee43d219eb2da44891d89f26f93bcc297034bcfbaba11 docs/evidence/notification-actions/host/shade-actions-200-568x1232-scrolled.png
 DATA b73e5e22cdf135f25ecc0bb9a5fdec208a043c22c0a43abd25a4c46c59c195ab docs/evidence/notification-actions/host/shade-actions-200-568x1232.png
+DATA 1c5681a1da7b97f9134b358d775789eeb682f4609f5fa92439165fe6615e8e66 docs/evidence/timer-restart/board/tr-10-set-2min.png
+DATA e8d06358d50e99e6da66362e826c3111dd0e9227a40dd91ef1e961f027fa25b3 docs/evidence/timer-restart/board/tr-11-running.png
+DATA 580d03b18dcde77746a0859bee41c1b466062bb3a0a8a8e0dfe5d59eda4f197b docs/evidence/timer-restart/board/tr-12-shade-finished.png
+DATA 9c7023203bc718725d99f2edddd8ca71144e5f62a69eb09f322eef938f1597bb docs/evidence/timer-restart/board/tr-20-reopened-adopts.png
+DATA a2c14dbe49dfc069aaa1697a9e4dbd39fac7f4ba4da29228b8651c8683d091d6 docs/evidence/timer-restart/board/tr-21-reset.png
+DATA 01a84a243268886658f98dbee3a32f6bbb1bf6b015a4d9ce5a3c8301892ac850 docs/evidence/notification-actions/board/na-01-shade.png
+DATA c6d0d1c54541827f945726bdf375fcf4ddcaf94a26b91bafa08c9918c845714c docs/evidence/notification-actions/board/na-02-after-snooze.png
+DATA c6d0d1c54541827f945726bdf375fcf4ddcaf94a26b91bafa08c9918c845714c docs/evidence/notification-actions/board/na-03-after-swipe.png
+DATA a59a8f680c2e8f23837f7c51db888580f94439fafe4b7662d82d1c976edf0f83 docs/evidence/notification-actions/board/na-08-top.png
+DATA 0ada06ad166889c23312655338977a0c945debdb3d23075f25dbe56ddfb6ad2c docs/evidence/notification-actions/board/na-09-after-swipe.png
+DATA ec33352904f609ea9a2011bc9c778ebae84bee96bb71a0cb35a693a73ecf38dc docs/evidence/notification-actions/board/na-10-after-restart.png
+DATA 5cb895b8ed8376e0dc403566d5c7acdb5614b8032856a283565cfe76de99313a docs/evidence/notification-actions/board/na-11-after-open.png
+DATA ba9ca84370dcf3083e2e8a6f00d866b79fe640baef49a83e17fe160d7e1ff2cd docs/evidence/notification-actions/board/na-12-cleared.png
+DATA d83931bd84b2f22b006d9723d0bb3502da57addf5f67feeaaf56778ac6c9b7d2 docs/evidence/notification-actions/board/na-13-before-dismiss-all.png
+DATA 3af44cf361cc8fa9bc1aa1c648885cbf18c4fba13057b10e3def76862ed002db docs/evidence/notification-actions/board/na-14-after-dismiss-all.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4869,3 +4884,32 @@ Host renders of an app's notification actions in the shade (pending-timers-survi
 | `docs/evidence/notification-actions/host/shade-actions-200-1232x568.png` | 69585 | DATA | `047c2616339b278350d069d5e899e6a9911ba08af72119d5db7a1bd302b58ded` |
 | `docs/evidence/notification-actions/host/shade-actions-200-568x1232-scrolled.png` | 67812 | DATA | `9b59aaf70f5e2090ac2ee43d219eb2da44891d89f26f93bcc297034bcfbaba11` |
 | `docs/evidence/notification-actions/host/shade-actions-200-568x1232.png` | 67621 | DATA | `b73e5e22cdf135f25ecc0bb9a5fdec208a043c22c0a43abd25a4c46c59c195ab` |
+
+## Pending timer across a shell restart, board
+
+Injected-touch grim captures of a 2:00 Timer kept by k230-timer@.service across a shell restart (task 3.1)
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/timer-restart/board/tr-10-set-2min.png` | 8165 | DATA | `1c5681a1da7b97f9134b358d775789eeb682f4609f5fa92439165fe6615e8e66` |
+| `docs/evidence/timer-restart/board/tr-11-running.png` | 8004 | DATA | `e8d06358d50e99e6da66362e826c3111dd0e9227a40dd91ef1e961f027fa25b3` |
+| `docs/evidence/timer-restart/board/tr-12-shade-finished.png` | 47205 | DATA | `580d03b18dcde77746a0859bee41c1b466062bb3a0a8a8e0dfe5d59eda4f197b` |
+| `docs/evidence/timer-restart/board/tr-20-reopened-adopts.png` | 7970 | DATA | `9c7023203bc718725d99f2edddd8ca71144e5f62a69eb09f322eef938f1597bb` |
+| `docs/evidence/timer-restart/board/tr-21-reset.png` | 8165 | DATA | `a2c14dbe49dfc069aaa1697a9e4dbd39fac7f4ba4da29228b8651c8683d091d6` |
+
+## Notification actions and close reasons, board
+
+Injected-touch grim captures of probe notifications with actions in the landscape shade (task 3.2)
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/notification-actions/board/na-01-shade.png` | 60332 | DATA | `01a84a243268886658f98dbee3a32f6bbb1bf6b015a4d9ce5a3c8301892ac850` |
+| `docs/evidence/notification-actions/board/na-02-after-snooze.png` | 59060 | DATA | `c6d0d1c54541827f945726bdf375fcf4ddcaf94a26b91bafa08c9918c845714c` |
+| `docs/evidence/notification-actions/board/na-03-after-swipe.png` | 59060 | DATA | `c6d0d1c54541827f945726bdf375fcf4ddcaf94a26b91bafa08c9918c845714c` |
+| `docs/evidence/notification-actions/board/na-08-top.png` | 58377 | DATA | `a59a8f680c2e8f23837f7c51db888580f94439fafe4b7662d82d1c976edf0f83` |
+| `docs/evidence/notification-actions/board/na-09-after-swipe.png` | 59703 | DATA | `0ada06ad166889c23312655338977a0c945debdb3d23075f25dbe56ddfb6ad2c` |
+| `docs/evidence/notification-actions/board/na-10-after-restart.png` | 57720 | DATA | `ec33352904f609ea9a2011bc9c778ebae84bee96bb71a0cb35a693a73ecf38dc` |
+| `docs/evidence/notification-actions/board/na-11-after-open.png` | 60114 | DATA | `5cb895b8ed8376e0dc403566d5c7acdb5614b8032856a283565cfe76de99313a` |
+| `docs/evidence/notification-actions/board/na-12-cleared.png` | 41428 | DATA | `ba9ca84370dcf3083e2e8a6f00d866b79fe640baef49a83e17fe160d7e1ff2cd` |
+| `docs/evidence/notification-actions/board/na-13-before-dismiss-all.png` | 57605 | DATA | `d83931bd84b2f22b006d9723d0bb3502da57addf5f67feeaaf56778ac6c9b7d2` |
+| `docs/evidence/notification-actions/board/na-14-after-dismiss-all.png` | 40871 | DATA | `3af44cf361cc8fa9bc1aa1c648885cbf18c4fba13057b10e3def76862ed002db` |

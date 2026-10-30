@@ -1,0 +1,8 @@
+00:55:28.433Z capabilities body,actions
+00:55:28.446Z posted 1 'Probe dismiss' actions ['open', 'Open', 'snooze', 'Snooze']
+00:55:28.457Z posted 2 'Probe action' actions ['open', 'Open', 'snooze', 'Snooze']
+00:55:28.468Z posted 3 'Probe app close' actions ['open', 'Open']
+00:55:33.483Z app closed 3
+00:55:33.485Z signal NotificationClosed 3 3
+00:57:55.125Z signal ActionInvoked 2 snooze
+00:57:55.130Z signal NotificationClosed 2 2

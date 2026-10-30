@@ -1,0 +1,5 @@
+01:11:49.255Z capabilities body,actions
+01:11:49.267Z posted 3 'Dismiss all one' actions ['open', 'Open']
+01:11:49.278Z posted 4 'Dismiss all two' actions []
+01:12:00.373Z signal NotificationClosed 3 2
+01:12:00.378Z signal NotificationClosed 4 2
