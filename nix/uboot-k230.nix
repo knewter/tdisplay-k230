@@ -117,9 +117,10 @@ in
     # The shared portable engine and the stage-1 loop come straight from src/,
     # the same files the host tests build; the U-Boot glue and Kconfig/hook
     # patch are in nix/uboot-k230-life/.
-    cp ${../src/game_of_life.c} ${../src/game_of_life.h} \
-       ${../src/boot_life_stage1.c} ${../src/boot_life_stage1.h} \
-       ${./uboot-k230-life/k230_boot_life.c} board/canaan/common/logo/
+    for f in game_of_life.c game_of_life.h boot_life_stage1.c boot_life_stage1.h; do
+      cp ${../src}/$f board/canaan/common/logo/$f
+    done
+    cp ${./uboot-k230-life}/k230_boot_life.c board/canaan/common/logo/k230_boot_life.c
     patch -p1 < ${./uboot-k230-life/0006-k230-stage1-boot-life.patch}
   '' + lib.optionalString cpu0IdentityProbe ''
     # Experimental read-only CPU0 SPL diagnostic. Never included in the

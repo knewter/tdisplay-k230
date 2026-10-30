@@ -1,0 +1,18 @@
+# Stage-1 state dump, HOST run of the exact stage-1 loop (src/boot_life_stage1.c) over a fake framebuffer and record window.
+# Host evidence only: it says nothing about U-Boot's caches, the panel, timing or the real RAM window. date: 2026-10-30T13:21:24Z
+# command: cc -std=c11 -Wall -Wextra -Werror -I src tests/test_boot_life_stage1.c src/boot_life_stage1.c src/game_of_life.c -o /tmp/test-boot-life-stage1 && /tmp/test-boot-life-stage1
+stage-1 host run: instance 0x1badb002 seed 0x4b323330 frames 40 frame_ms 50
+result: generation 40, grid-hash e2d7e928, differential cells redrawn 90103
+callbacks: 83 flushes (41 framebuffer, 42 record), 40 delays totalling 2000 ms
+final frame hash 422fc6c5 (equals a full redraw of generation 40: yes)
+published record header (first 64 bytes of 5584):
+  0000: 4b 32 33 4c 01 00 00 00 d0 15 00 00 02 b0 ad 1b
+  0010: 28 00 00 00 30 33 32 4b 8e 00 34 01 04 01 00 00
+  0020: 28 00 00 00 66 8f 80 26 00 00 00 00 00 00 00 00
+  0030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+record fields: magic K23L abi 1 length 5584 instance 0x1badb002 generation 40 frame_generation 40 owner 1
+fallback check, version 2: bad-version
+fallback check, flipped cell bit: bad-checksum
+78 checks, 0 failures
+PASS
+exit: 0

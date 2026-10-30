@@ -62,6 +62,47 @@ porting Goodix input into U-Boot using the existing Linux driver as a reference,
 with separate evidence and no dependency on it. Wayland
 continuation is optional and must preserve the existing shell controls.
 
+## Implementation decisions (2026-10-30)
+
+**The record lives inside the existing splash reservation.** `0x102ac000`,
+8 KiB, after the 568x1232x4 scanout (ends `0x102ab600`) in the 4 MiB no-map
+`reserved-memory` node at `0x10000000` that the splash repair already added
+(`nix/boot-splash.nix`). No new node, no new RAM claim;
+`tools/check-boot-life-memory.py` checks the window against the DTB the board
+boots and the live U-Boot placement. The 40-byte header carries magic, ABI
+version, length, dimensions, generation, last-rendered generation, owner and an
+FNV-1a checksum over header and grid (`src/game_of_life.h`).
+
+**"Same boot" is a token, not a promise.** Stage 1 picks a nonzero instance
+token (low bits of the timer), publishes it in the record and, only if it
+published, in `/chosen/canaan,life-instance` through the same
+`ft_board_setup` hook that sets `canaan,stage1-splash`. Linux continues from
+the record only if the token matches and the checksum holds; a stale record
+from an earlier warm reboot, a version mismatch, or any damage falls back to
+the deterministic default and says why in the journal.
+
+**The U-Boot code is dormant until told.** `CONFIG_K230_BOOT_LIFE` is off in
+the default build (whose output path is unchanged). In the opt-in build the
+animation runs at boot only when the environment variable `boot_life` is `1`;
+the `k230_life` console command runs it by hand. A first install therefore
+boots exactly as before, and the animation is first exercised from the serial
+console where a hang is recoverable by reset.
+
+**Stage 1 redraws only changed cells.** Every framebuffer store in U-Boot is
+slow and cache-managed; `gol_render_xrgb_diff` paints only cells that changed
+and the loop flushes once per frame.
+
+**Linux continuation is the splash owner, off by default.** `k230-drm-splash
+--life` validates the record, draws the grid instead of the static logo, steps
+it, and takes touch from any direct multitouch device. `k230.bootLife.enable`
+turns it on and adds a root oneshot that copies the window out of `/dev/mem`
+(an mmap; a read() of a no-map range fails) for the unprivileged owner.
+
+**The Wayland continuation is a background-layer client.** `k230-life-wayland`
+is a layer-shell surface on the BACKGROUND layer with no exclusive zone and no
+keyboard interactivity. It opens no DRM device, cannot cover shell surfaces,
+and leaving it is `kill`.
+
 ## Risks / Trade-offs
 
 - [The static handoff remains physically wrong] → block implementation acceptance

@@ -529,6 +529,11 @@
         # Native asset conversion; the U-Boot and Linux owners share this image.
         inherit bootSplashImage;
         drm-splash = self.nixosConfigurations.k230.pkgs.callPackage ./nix/drm-splash { inherit bootSplashImage; };
+        # Optional Wayland continuation of the boot Game of Life (task 3.3 of
+        # the-boot-shows-a-computational-game-of-life); not part of any image.
+        k230-life-wayland = self.nixosConfigurations.k230.pkgs.callPackage ./nix/life-wayland {
+          wlroots_0_20 = self.nixosConfigurations.k230.pkgs.wlroots_0_20.override { enableXWayland = false; };
+        };
         kernel = self.nixosConfigurations.k230.config.boot.kernelPackages.kernel;
         kernel-rvv-trial = self.k230Kernel.kernel;
 

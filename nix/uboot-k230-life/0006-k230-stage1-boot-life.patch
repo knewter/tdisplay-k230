@@ -63,13 +63,16 @@
  EXTRA_CFLAGS += -I$(srctree)/arch/$(ARCH)/cpu/k230/
 --- a/board/canaan/common/logo/k230_logo.c
 +++ b/board/canaan/common/logo/k230_logo.c
-@@ -380,6 +380,10 @@
+@@ -380,6 +380,13 @@
          return -1;
  
      k230_display_logo_ready = 1;
 +#ifdef CONFIG_K230_BOOT_LIFE
-+    /* Opt-in; a failure leaves the lit logo exactly as the static path would. */
-+    k230_boot_life_run();
++    /* Dormant unless the environment says boot_life=1: a first install must boot exactly
++     * as before.  The k230_life command runs it by hand.  A failure leaves the lit logo
++     * as the static path would. */
++    if (env_get_yesno("boot_life") > 0)
++        k230_boot_life_run();
 +#endif
      return 0;
  }

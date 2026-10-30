@@ -19,6 +19,7 @@ struct life_opts {
 	const char *instance_path; /* /proc/device-tree/chosen/canaan,life-instance */
 	const char *report_path;   /* optional event log for evidence */
 	const char *input_dir;     /* /dev/input unless overridden (tests) */
+	const char *log_tag;       /* stderr prefix; default "k230-drm-splash" */
 	uint32_t seed;             /* deterministic fallback seed */
 	unsigned interval_ms;
 };

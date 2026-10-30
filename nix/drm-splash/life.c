@@ -29,7 +29,7 @@ void life_log(const struct life *l, const char *fmt, ...)
 	vsnprintf(line, sizeof line, fmt, ap);
 	va_end(ap);
 	clock_gettime(CLOCK_BOOTTIME, &ts);
-	fprintf(stderr, "k230-drm-splash: life: %s\n", line);
+	fprintf(stderr, "%s: life: %s\n", l->opts.log_tag ? l->opts.log_tag : "k230-drm-splash", line);
 	if (l->opts.report_path) {
 		FILE *f = fopen(l->opts.report_path, "a");
 
