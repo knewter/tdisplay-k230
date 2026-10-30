@@ -1,0 +1,58 @@
+# run at 2026-10-30T14:41:18Z boot_id 0b49504f-2d64-4acf-a62e-d95281ae4cc6 uptime 158.83
+# uname 7.3.0-rc5
+# booted-system /nix/store/49mnsl2si30m1l4fxdx2h114myv3anjf-nixos-system-nixos-26.11.20260919.20b1ddd
+# current-system /nix/store/49mnsl2si30m1l4fxdx2h114myv3anjf-nixos-system-nixos-26.11.20260919.20b1ddd
+# /boot dtb
+f3fe41f75a0de41895e5d9cfe0bdd28e0c1df1307abfe254058d7a2c3e0b2558  /boot/k230-tdisplay.dtb
+d6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642  /boot/Image
+# device present, no driver
+90800000.gpu
+ls: cannot access '/sys/bus/platform/devices/90800000.gpu/driver': No such file or directory
+ls: cannot access '/dev/vg_lite': No such file or directory
+# oops/BUG scan
+0
+## round 1
+insmod rc=0
+crw------- 1 root root 235, 0 Oct 30 09:41 /dev/vg_lite
+lrwxrwxrwx 1 root root 0 Oct 30 09:41 /sys/bus/platform/devices/90800000.gpu/driver -> ../../../../bus/platform/drivers/gc8000ul
+VG-Lite offscreen RGBX 2x blit-scale completed (boundary verified)
+probe-exit=0
+VG-Lite offscreen RGBX 2x blit-scale completed (boundary verified)
+probe-exit=0
+          display_gpu_gate           0       0        0        533333333   0          0     50000   
+             display_gpu_rate        0       0        0        533333333   0          0     50000   
+rmmod rc=0
+irq135 after rmmod: 0
+0
+## round 2
+insmod rc=0
+crw------- 1 root root 235, 0 Oct 30 09:41 /dev/vg_lite
+lrwxrwxrwx 1 root root 0 Oct 30 09:41 /sys/bus/platform/devices/90800000.gpu/driver -> ../../../../bus/platform/drivers/gc8000ul
+VG-Lite offscreen RGBX 2x blit-scale completed (boundary verified)
+probe-exit=0
+VG-Lite offscreen RGBX 2x blit-scale completed (boundary verified)
+probe-exit=0
+          display_gpu_gate           0       0        0        533333333   0          0     50000   
+             display_gpu_rate        0       0        0        533333333   0          0     50000   
+rmmod rc=0
+irq135 after rmmod: 0
+0
+# dmesg gpu lines
+[   13.028749] k230-powerdomain 91103000.power-controller: sync_state() pending due to 90800000.gpu
+[  119.719357] gc8000ul 90800000.gpu: VG-Lite GPU registered as /dev/vg_lite (major 235, irq 89)
+[  120.196133] gc8000ul 90800000.gpu: VG-Lite GPU registered as /dev/vg_lite (major 235, irq 89)
+[  162.494880] gc8000ul 90800000.gpu: VG-Lite GPU registered as /dev/vg_lite (major 235, irq 89)
+[  163.109547] gc8000ul 90800000.gpu: VG-Lite GPU registered as /dev/vg_lite (major 235, irq 89)
+# oops/BUG scan after
+0
+# regression observations (not touch)
+active
+active
+**** List of PLAYBACK Hardware Devices ****
+card 0: K230I2SINNO [K230_I2S_INNO], device 0: Audio 9140e000.inno_codec-0 [Audio 9140e000.inno_codec-0]
+  Subdevices: 1/1
+lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,
+wlan0            UP (link line trimmed: MAC removed)
+wlan1            DOWN (link line trimmed: MAC removed)
+by-path
+card0
