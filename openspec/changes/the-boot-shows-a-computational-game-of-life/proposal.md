@@ -1,9 +1,13 @@
-## Status (2026-09-28)
+## Status (2026-10-30)
 
-**KEEP, QUEUED** behind the current shell, theme, and power-key work, per the
-user's "stale as suggested" decision on `docs/closeout/stale-triage.md`. No
-task here is being actively picked up while that work is in flight; see the
-"Decisions" section of the triage doc.
+**ACTIVE.** The user un-queued this change on 2026-10-30 ("i do want the boot
+shows a game of life bit too"), lifting the 2026-09-28 "KEEP, QUEUED" status
+below. Host-provable tasks proceed first; stage-1 firmware is not written to
+any board without a separately reviewed install and recovery procedure.
+
+Previous status (2026-09-28), kept for the record: **KEEP, QUEUED** behind the
+shell, theme, and power-key work, per the user's "stale as suggested" decision
+on `docs/closeout/stale-triage.md`.
 
 ## Why
 

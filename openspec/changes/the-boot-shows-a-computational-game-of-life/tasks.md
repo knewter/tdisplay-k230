@@ -1,12 +1,13 @@
-**Queued by user decision (2026-09-28):** this whole change stays open but
-unstarted behind the current shell, theme, and power-key work — see
-`Status (2026-09-28)` in `proposal.md`. No task below is deferred
-individually; the entire change is sequenced after that work lands.
+**Un-queued by the user (2026-10-30):** "i do want the boot shows a game of
+life bit too" lifts the 2026-09-28 queue (see `Status (2026-10-30)` in
+`proposal.md`). Tasks are now being worked in order; hardware-only gates stay
+open until their named physical proof exists.
 
 ## 1. Prerequisite and engine
 
 - [ ] 1.1 Consume the separate static splash-to-Linux repair result as a prerequisite and record its before/after physical evidence; verify the prior wrapped/color-swapped first-modeset case is absent before enabling animation, without modifying that repair in this change.
-- [ ] 1.2 Implement the portable C Game of Life rules, deterministic seed, glider insertion, and versioned state/checksum ABI; verify reproducible frame hashes with `cc -std=c11 -Wall -Wextra -Werror -I src tests/test_game_of_life.c src/game_of_life.c -o /tmp/test-game-of-life && /tmp/test-game-of-life` and retain the test output under `docs/evidence/game-of-life/host-engine.txt`.
+- [x] 1.2 Implement the portable C Game of Life rules, deterministic seed, glider insertion, and versioned state/checksum ABI; verify reproducible frame hashes with `cc -std=c11 -Wall -Wextra -Werror -I src tests/test_game_of_life.c src/game_of_life.c -o /tmp/test-game-of-life && /tmp/test-game-of-life` and retain the test output under `docs/evidence/game-of-life/host-engine.txt`.
+  Done 2026-10-30 (host build/test only; no board, U-Boot or QEMU): `src/game_of_life.{h,c}` (142x308 torus, 4 px cells = 568x1232 scanout, B3/S23, xorshift32 default seed, glider insertion, differential and full renderers, 5 584-byte little-endian record with FNV-1a checksum and boot-instance token) and `tests/test_game_of_life.c` (362 checks, 0 failures). Golden grid/frame hashes at generations 0/1/10/100/500 were cross-checked against an independent numpy implementation. Output: `docs/evidence/game-of-life/host-engine.txt`.
 - [ ] 1.3 Define the reserved-RAM ownership and address from the compiled DTB and actual boot layout, including invalidation and fallback behavior; implement `tools/check-boot-life-memory.py` to decompile the DTB with `dtc`, read the reserved-memory node, collect U-Boot load/relocation addresses and kernel/initrd ranges, and reject overlapping intervals; verify its report in `docs/evidence/game-of-life/memory-map.txt`.
 
 ## 2. Stage handoff

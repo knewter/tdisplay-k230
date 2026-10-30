@@ -1,0 +1,14 @@
+# Host engine test (host build/test evidence only; no board, U-Boot or QEMU)
+# date: 2026-10-30T13:11:34Z  host: Linux x86_64  cc: cc (GCC) 16.2.1 20260810
+# command: cc -std=c11 -Wall -Wextra -Werror -I src tests/test_game_of_life.c src/game_of_life.c -o /tmp/test-game-of-life && /tmp/test-game-of-life
+# cross-check: grid hashes reproduced by an independent numpy implementation (same xorshift32 soup, torus B3/S23, FNV-1a over packed rows)
+engine: grid 142x308 cells, 4 px/cell, panel 568x1232, record 5584 bytes, abi 1
+seed 0x4b323330
+gen    0 pop  3640 grid-hash 1f4282cf frame-hash e2b0edc5
+gen    1 pop  4080 grid-hash 1fe9ba21 frame-hash 70718dc5
+gen   10 pop  2749 grid-hash 423d0509 frame-hash 1da5cec5
+gen  100 pop  1734 grid-hash bffecefe frame-hash 8ffbdbc5
+gen  500 pop  1416 grid-hash 4c333a18 frame-hash e21bf5c5
+362 checks, 0 failures
+PASS
+exit: 0
