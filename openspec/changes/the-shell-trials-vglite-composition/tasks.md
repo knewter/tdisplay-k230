@@ -49,3 +49,11 @@ parent/child scene palettes against forced Pixman without tolerance. The board
 records 182 GPU frames with no replays and successful normal-shell restoration.
 This resolves that observed color discrepancy; remaining format/scale/cache,
 normal-service, control and performance gates in groups 2–3 stay open.
+
+**Blocker recorded 2026-10-30:** the boot-default board system runs a mainline 7.3
+kernel with no VG-Lite driver, no `/dev/vg_lite` and no `gpu@90800000` device-tree
+node, so tasks 2.5, 3.2 and 3.3 (and the board parts of 2.1-2.4) cannot run until a
+mainline VG-Lite driver and DTB ship through `/boot`. Read-only observations, host
+renderer test re-run, the last (September, vendor-kernel, synthetic-scene) timing
+answer and the successor prerequisite are in
+`docs/evidence/vglite-mainline-blocker/README.md`. All of groups 2-3 stay open.
