@@ -1,0 +1,24 @@
+# Nix builds of the Game of Life pieces, 2026-10-30 (host build evidence only)
+# Source: branch worktree-agent-a01598cc868d1ff20 at 3e0da269 (cyclic back-port without schedule()).
+
+nix build --no-link --print-out-paths .#uboot-k230 --option max-jobs 1 --option cores 1
+  -> /nix/store/blay9yis41g5wr52kwwr46m8sfxdkl68-uboot-k230_canmv_v3_defconfig-riscv64-unknown-linux-gnu-2022.10
+  identical to master's output path: the default U-Boot is unchanged.
+
+nix build .#uboot-k230-boot-life --option max-jobs 1 --option cores 1   (opt-in, cyclic)
+  -> /nix/store/8pzjlrn9cg8rq1sqdd7m9qqqk5ja542l-uboot-k230_canmv_v3_defconfig-riscv64-unknown-linux-gnu-2022.10
+
+nix build .#stage1-boot-life --option max-jobs 1 --option cores 1
+  -> /nix/store/cm3vjg8xzxvgbfxj1hg62shmjzsfmwfn-k230-stage1-packaging-boot-life
+  fn_ug_u-boot.bin  389657 bytes (slot limit 1048576), K230 header, length field consistent
+  sha256 504be09530bf1cdbeaee00b4e042d842fcf3ee3ded026e28624631e22ff50a5e
+
+nix build .#drm-splash
+  -> /nix/store/5i71y94lb6633zhr1ald4sb67s5a90nh-k230-drm-splash-riscv64-unknown-linux-gnu-0.1
+nix build .#k230-life-wayland
+  -> /nix/store/23j386i2jnpl4dgi8q3iavlg08lyiwws-k230-life-wayland-riscv64-unknown-linux-gnu-0.1
+
+Failures found and fixed on the way (each by a nix build, not by assumption):
+  stdint/stddef unavailable under U-Boot's -nostdinc            -> src/boot_compat.h (4e3a73ab)
+  `schedule` is already a function-like macro in USB gadget code -> no schedule(); hook calls cyclic_run() (3e0da269)
+  `options` in nix/hardware.nix broke the plain config module   -> nix/boot-life-options.nix (053a2525)
