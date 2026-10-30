@@ -251,6 +251,12 @@
                   kernel = config.boot.kernelPackages.kernel;
                   extraPatches = [ ./nix/patches/mainline/rtl8189fs-mainline-v7.3-rc5.patch ];
                 })
+                # VG-Lite GPU driver: present on disk, never loaded unless the
+                # device-tree node exists and udev binds it.
+                (pkgs.callPackage ./nix/vglite-kernel-module.nix {
+                  kernel = config.boot.kernelPackages.kernel;
+                  inherit kernelMainlineSrc;
+                })
               ];
               boot.kernelModules = nixpkgs.lib.mkForce [ "8189fs" "uinput" ];
               k230.touchTrackpad.enable = true;
@@ -542,6 +548,14 @@
         k230-wifi-driver-mainline = pkgsCross.callPackage ./nix/k230-wifi-driver.nix {
           kernel = self.packages.${buildSystem}.kernelMainlineDrm;
           extraPatches = [ ./nix/patches/mainline/rtl8189fs-mainline-v7.3-rc5.patch ];
+        };
+
+        # The VG-Lite GPU driver (+ trial overlay helper) for the mainline kernel,
+        # out of tree against the same kernel the board boots; see
+        # openspec/changes/the-mainline-kernel-drives-the-vglite-gpu.
+        k230-vglite-module = pkgsCross.callPackage ./nix/vglite-kernel-module.nix {
+          kernel = self.packages.${buildSystem}.kernelMainlineDrm;
+          inherit kernelMainlineSrc;
         };
 
         # Optional source-built GPU diagnostic.  It is deliberately outside

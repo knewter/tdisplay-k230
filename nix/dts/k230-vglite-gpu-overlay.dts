@@ -1,0 +1,29 @@
+// SPDX-License-Identifier: GPL-2.0 OR MIT
+// Runtime overlay twin of the gpu@90800000 node in
+// k230-tdisplay-mainline-drm-common.dtsi, applied by vglite_overlay.ko for a
+// no-reboot trial. Keep the two in step.
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/clock/canaan,k230-clk.h>
+#include <dt-bindings/reset/canaan,k230-rst.h>
+#include <dt-bindings/soc/canaan,k230_pm_domains.h>
+
+/ {
+	fragment@0 {
+		target-path = "/soc";
+		__overlay__ {
+			gpu@90800000 {
+				compatible = "verisilicon,gc8000ul";
+				reg = <0x0 0x90800000 0x0 0x1000>;
+				interrupts = <135 IRQ_TYPE_LEVEL_HIGH>;
+				power-domains = <&sysctl_power K230_PM_DOMAIN_DISP>;
+				resets = <&rst RST_GPU>;
+				clocks = <&sysclk K230_DISPLAY_GPU_GATE>;
+				clock-names = "vglite";
+				status = "okay";
+			};
+		};
+	};
+};

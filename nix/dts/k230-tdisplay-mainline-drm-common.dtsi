@@ -43,6 +43,23 @@
 			reg = <0x0 0x91103000 0x0 0x1000>;
 			#power-domain-cells = <1>;
 		};
+		// 2D GPU (VeriSilicon GC8000UL, "VG-Lite"). Vendor k230.dtsi
+		// (7d4e1f444f461dbe3833bd99a4640e7b6c2cd529) gpu@90800000: same
+		// register window, PLIC IRQ 135 and DISP power domain; its V2P5D
+		// reset and "disp_gpu" clock map to mainline's RST_GPU and
+		// K230_DISPLAY_GPU_GATE. The out-of-tree vglite module binds this
+		// node; without the module it is inert.
+		// openspec/changes/the-mainline-kernel-drives-the-vglite-gpu.
+		gpu: gpu@90800000 {
+			compatible = "verisilicon,gc8000ul";
+			reg = <0x0 0x90800000 0x0 0x1000>;
+			interrupts = <135 IRQ_TYPE_LEVEL_HIGH>;
+			power-domains = <&sysctl_power K230_PM_DOMAIN_DISP>;
+			resets = <&rst RST_GPU>;
+			clocks = <&sysclk K230_DISPLAY_GPU_GATE>;
+			clock-names = "vglite";
+			status = "okay";
+		};
 		// Panel touch: vendor k230.dtsi's i2c3 controller node translated
 		// to the real mainline K230 clock provider IDs. Upstream's DW I2C
 		// platform driver accepts an unnamed functional clock and an

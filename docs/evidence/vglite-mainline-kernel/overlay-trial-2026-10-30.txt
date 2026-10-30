@@ -1,0 +1,27 @@
+# run at 2026-10-30T13:35:47Z boot_id da3b6221-c9e0-49d4-afa5-b6e4e0e308b3
+# uname 7.3.0-rc5  current-system /nix/store/49mnsl2si30m1l4fxdx2h114myv3anjf-nixos-system-nixos-26.11.20260919.20b1ddd
+# state before
+crw------- 1 root root 235, 0 Oct 30 08:35 /dev/vg_lite
+suspended
+# dmesg vglite lines
+[44427.773404] vglite_overlay: applied (id 1)
+# probe run 1
+VG-Lite offscreen RGBX 2x blit-scale completed (boundary verified)
+probe-exit=0
+# probe run 2
+VG-Lite offscreen RGBX 2x blit-scale completed (boundary verified)
+probe-exit=0
+# probe run 3
+VG-Lite offscreen RGBX 2x blit-scale completed (boundary verified)
+probe-exit=0
+# unload
+rmmod-overlay rc=0
+rmmod-driver rc=0
+ls: cannot access '/dev/vg_lite': No such file or directory
+# dmesg tail
+[44427.773404] vglite_overlay: applied (id 1)
+[44462.210351] gc8000ul 90800000.gpu: error -ENXIO: IRQ index 0 not found
+[44462.229210] vglite_overlay: removed
+active
+active
+/nix/store/49mnsl2si30m1l4fxdx2h114myv3anjf-nixos-system-nixos-26.11.20260919.20b1ddd
