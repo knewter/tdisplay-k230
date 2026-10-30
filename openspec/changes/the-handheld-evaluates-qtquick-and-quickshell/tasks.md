@@ -16,7 +16,7 @@ Proof: the two narrow build commands and host fixture check above. No normal-ima
 ## 2. Prepare comparable measurement and bounded recovery
 
 - [x] 2.1 Add the candidate/workload manifest and analyzer, freezing design ceilings and unchanged card budgets before any run; verify mismatched IDs, missing presentation samples, changed budgets, failed baseline and per-run aggregation with `python3 tools/qtquick-trial.py --self-test`.
-- [ ] 2.2 Add a deadline-controlled board runner for transient clients, scoped cleanup and independent restoration; verify launch failure, controller loss, focus capture and timeout paths with `python3 tests/test_qtquick_trial_recovery.py`. Document exact operator commands and required board lock.
+- [x] 2.2 Add a deadline-controlled board runner for transient clients, scoped cleanup and independent restoration; verify launch failure, controller loss, focus capture and timeout paths with `python3 tests/test_qtquick_trial_recovery.py`. Document exact operator commands and required board lock.
 - [ ] 2.3 Prepare the pinned Qt/baseline manifest with exact current system and compositor identities; verify `python3 tools/qtquick-trial.py prepare --qt PROBE_OUT --baseline BASELINE_OUT --output NEW_MANIFEST` rejects missing or mismatched artifacts and records workload/budget version.
 
 Proof: the named self-test, recovery tests and prepare command. Host recovery simulation is not physical restoration proof.
