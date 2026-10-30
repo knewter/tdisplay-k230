@@ -28,3 +28,19 @@ overlay (`of_overlay_fdt_apply`) so the driver can be probed without changing
 `/boot`. The mainline GPU node is in
 `nix/dts/k230-tdisplay-mainline-drm-common.dtsi`; its overlay twin is
 `nix/dts/k230-vglite-gpu-overlay.dts`.
+
+## Defects found by the first two board loads (fixed in the committed source)
+
+- Remove path called `platform_get_irq()` after the overlay removed the node
+  (`error -ENXIO: IRQ index 0 not found`), so `free_irq()` was skipped and the IRQ
+  action leaked past module unload. The IRQ number is now stored at probe.
+  IRQ is also freed before `iounmap()`.
+- `vg_lite_init()` called `vg_lite_exit()` on an error path before the two
+  `list_head`s were initialised (vendor order), which oopsed
+  (`vg_lite_hal_free_os_heap`, NULL deref) when `request_irq` failed against the
+  leaked action. The lists and wait queue are now initialised first;
+  `class_create()`/`device_create()` results are checked with `IS_ERR()`
+  (vendor tested for NULL); probe errors return real error codes.
+- Lesson: unload of the trial overlay must free every resource the driver took;
+  a leaked IRQ action keeps a pointer into freed module memory
+  (`/proc/interrupts` then shows garbage as the action name).

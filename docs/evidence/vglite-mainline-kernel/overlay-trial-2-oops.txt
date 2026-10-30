@@ -1,0 +1,27 @@
+# run at 2026-10-30T13:36:50Z boot_id da3b6221-c9e0-49d4-afa5-b6e4e0e308b3
+# uname 7.3.0-rc5 current-system /nix/store/49mnsl2si30m1l4fxdx2h114myv3anjf-nixos-system-nixos-26.11.20260919.20b1ddd
+# module /nix/store/riag82fh606f7w3fq0pfx1bg0vb520yq-k230-vglite-module-riscv64-unknown-linux-gnu-7.3-port/lib/modules/7.3.0-rc5/extra
+# clk before
+          display_gpu_gate           0       0        0        533333333   0          0     50000      N      
+             display_gpu_rate        0       0        0        533333333   0          0     50000      Y      
+insmod-driver rc=0
+insmod-overlay rc=139
+bash: line 7: 23070 Segmentation fault         insmod /nix/store/riag82fh606f7w3fq0pfx1bg0vb520yq-k230-vglite-module-riscv64-unknown-linux-gnu-7.3-port/lib/modules/7.3.0-rc5/extra/vglite_overlay.ko
+ls: cannot access '/dev/vg_lite': No such file or directory
+lrwxrwxrwx 1 root root 0 Oct 30 08:36 /sys/bus/platform/devices/90800000.gpu/driver -> ../../../../bus/platform/drivers/gc8000ul
+suspended
+# probe run 1
+vg_lite_init: VG-Lite error 6
+probe-exit=1
+# probe run 2
+vg_lite_init: VG-Lite error 6
+probe-exit=1
+# probe run 3
+vg_lite_init: VG-Lite error 6
+probe-exit=1
+# clk after
+          display_gpu_gate           0       0        0        533333333   0          0     50000      N      
+             display_gpu_rate        0       0        0        533333333   0          0     50000      Y      
+# unload
+rmmod-overlay rc=1
+rmmod: ERROR: Module vglite_overlay is in use

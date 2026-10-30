@@ -1,0 +1,38 @@
+[44524.328718] genirq: Flags mismatch irq 89. 00200004 (vg_lite_irq) vs. 00200004 (&device->int_queue)
+[44524.328740] gc8000ul 90800000.gpu: request_irq error
+[44524.328762] Unable to handle kernel access to user memory without uaccess routines at virtual address 0000000000000000
+[44524.328769] Current insmod pgtable: 4K pagesize, 39-bit VAs, pgdp=0x000000002ae24000
+[44524.328775] [0000000000000000] pgd=0000000000000000, p4d=0000000000000000, pud=0000000000000000
+[44524.328788] Oops [#1]
+[44524.372390] Modules linked in: vglite_overlay(O+) vglite(O) 8021q bq27xxx_battery_i2c bq25890_charger bq27xxx_battery gpio_pca953x tca8418_keypad matrix_keymap leds_gp
+[44524.394174] CPU: 0 UID: 0 PID: 23070 Comm: insmod Tainted: G           O        7.3.0-rc5 #1-NixOS PREEMPTLAZY 
+[44524.404312] Tainted: [O]=OOT_MODULE
+[44524.407817] Hardware name: LILYGO T-Display-K230 (mainline) (DT)
+[44524.413850] epc : vg_lite_hal_free_os_heap+0x2a/0x88 [vglite]
+[44524.419716]  ra : vg_lite_exit.isra.0+0x54/0x110 [vglite]
+[44524.425226] epc : ffffffff03ee6142 ra : ffffffff03ee6284 sp : ffffffc600b6b450
+[44524.432483]  gp : ffffffff828c11a8 tp : ffffffd6037faf40 t0 : ffffffff80025118
+[44524.439737]  t1 : ffffffff82919700 t2 : fffffff000000000 s0 : ffffffc600b6b470
+[44524.446992]  s1 : ffffffff03f6f210 a0 : 0000000000000000 a1 : ffffffd609ce93c0
+[44524.454248]  a2 : 0000000000000001 a3 : ffffffd6be8e3000 a4 : ffffffd609ce9440
+[44524.461503]  a5 : ffffffd609ce93c0 a6 : ffffffc5000e3680 a7 : ffffffd602c0f500
+[44524.468749]  s2 : ffffffff03f6f210 s3 : 0000000000000059 s4 : ffffffd609ce93c0
+[44524.476004]  s5 : ffffffd609ce93c0 s6 : ffffffd609ce93c0 s7 : fffffffffffff000
+[44524.483260]  s8 : ffffffff828db940 s9 : ffffffff827f3f18 s10: ffffffff8274f528
+[44524.490515]  s11: ffffffff80c9a140 t3 : 000000000000003c t4 : ffffffff81b3df48
+[44524.497770]  t5 : 0000000000000001 t6 : ffc0000000000000 ssp : 0000000000000000
+[44524.505111] status: 0000000200000120 badaddr: 0000000000000000 cause: 000000000000000d
+[44524.513066] [<ffffffff03ee6142>] vg_lite_hal_free_os_heap+0x2a/0x88 [vglite]
+[44524.520236] [<ffffffff03ee6284>] vg_lite_exit.isra.0+0x54/0x110 [vglite]
+[44524.527054] [<ffffffff03ee66c8>] vg_lite_init+0x388/0x448 [vglite]
+[44524.533348] [<ffffffff809c0696>] platform_probe+0x56/0x98
+[44524.538781] [<ffffffff809bcf5e>] really_probe+0x9e/0x3d0
+[44524.544122] [<ffffffff809bd318>] __driver_probe_device+0x88/0x190
+[44524.550246] [<ffffffff809bd50a>] driver_probe_device+0x3a/0xb8
+[44524.556109] [<ffffffff809bd616>] __device_attach_driver+0x8e/0x150
+[44524.562320] [<ffffffff809ba668>] bus_for_each_drv+0x70/0xd0
+[44524.567921] [<ffffffff809bda40>] __device_attach+0x90/0x1b8
+[44524.573522] [<ffffffff809bddc0>] device_initial_probe+0x50/0x60
+[44524.579473] [<ffffffff809bb9f2>] bus_probe_device+0x32/0x90
+[44524.585074] [<ffffffff809b87ce>] device_add+0x6b6/0x8b8
+  23098 D    klist_remove             rmmod vglite

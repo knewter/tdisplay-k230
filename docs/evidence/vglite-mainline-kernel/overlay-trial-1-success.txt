@@ -1,0 +1,26 @@
+# Transcribed from the tool output of the first overlay trial (2026-10-30, boot_id da3b6221-c9e0-49d4-afa5-b6e4e0e308b3,
+# kernel 7.3.0-rc5, board lock held). The original capture file was overwritten by the second trial; this is the text
+# that was printed, in order. Module store path of this first build:
+#   /nix/store/kpm8jygvs74rczw28afhi19xs3z3qv81-k230-vglite-module-riscv64-unknown-linux-gnu-7.3-port
+# (that build differs from later ones only by the later irq-storage / init-order fixes).
+
+## load (insmod vglite.ko, then insmod vglite_overlay.ko)
+insmod-driver rc=0
+insmod-overlay rc=0
+[44427.773404] vglite_overlay: applied (id 1)
+crw------- 1 root root 235, 0 Oct 30 08:35 /dev/vg_lite
+90800000.gpu
+/sys/bus/platform/devices/90800000.gpu/driver -> ../../../../bus/platform/drivers/gc8000ul
+runtime_status: suspended ; shell: active ; seatd: active
+
+## k230-vglite-probe (private RGBX 128x128 -> 256x256 blit-scale), 4 runs: one at 13:35:32Z (full pixel list ends
+## with the line below), three more in the evidence run at 13:35:47Z
+VG-Lite offscreen RGBX 2x blit-scale completed (boundary verified)
+probe-exit=0      (x4)
+display_gpu_gate / display_gpu_rate enable count 0 before and after
+
+## unload
+rmmod-overlay rc=0 ; rmmod-driver rc=0 ; /dev/vg_lite gone
+[44462.210351] gc8000ul 90800000.gpu: error -ENXIO: IRQ index 0 not found     <- bug: remove path called platform_get_irq() after the
+                                                                                node was gone, so free_irq() was skipped (IRQ leaked)
+[44462.229210] vglite_overlay: removed

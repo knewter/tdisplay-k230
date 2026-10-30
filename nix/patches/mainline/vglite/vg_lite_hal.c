@@ -659,6 +659,12 @@ static int vg_lite_exit(struct platform_device *pdev)
 {
 	/* Check for valid device. */
 	if (device) {
+		if (device->irq_enabled) {
+			/* Free the IRQ first: its handler reads the registers. */
+			free_irq(device->irq, device);
+			device->irq_enabled = 0;
+		}
+
 		if (device->gpu) {
 			/* Unmap the GPU registers. */
 			iounmap(device->gpu);
@@ -668,10 +674,6 @@ static int vg_lite_exit(struct platform_device *pdev)
 		if (device->pages)
 			/* Free the contiguous memory. */
 			__free_pages(device->pages, device->order);
-
-		if (device->irq_enabled)
-			/* Free the IRQ. */
-			free_irq(device->irq, device);
 
 		vg_lite_hal_free_os_heap();
 
@@ -735,6 +737,10 @@ static int vg_lite_init(struct platform_device *pdev)
 	device = kzalloc(sizeof(*device), GFP_KERNEL);
 	if (!device)
 		return -ENOMEM;
+	/* The error paths below call vg_lite_exit(), which walks these lists. */
+	INIT_LIST_HEAD(&device->dma_list_head);
+	INIT_LIST_HEAD(&device->mapped_list_head);
+	init_waitqueue_head(&device->int_queue);
 	get_device(&pdev->dev);
 	device->dev = &pdev->dev;
 	device->clk = devm_clk_get(&pdev->dev, "vglite");
@@ -769,14 +775,14 @@ static int vg_lite_init(struct platform_device *pdev)
 	if (irq_line < 0) {
 		dev_err(device->dev, "platform_get_irq error\n");
 		vg_lite_exit(pdev);
-		return -1;
+		return irq_line;
 	}
 	error = request_irq(irq_line /*GPU_IRQ*/, irq_handler, 0, "vg_lite_irq",
 			    device);
 	if (error) {
-		dev_err(device->dev, "request_irq error\n");
+		dev_err(device->dev, "request_irq error %d\n", error);
 		vg_lite_exit(pdev);
-		return -1;
+		return error;
 	}
 	device->irq = irq_line;
 	device->irq_enabled = 1;
@@ -784,36 +790,37 @@ static int vg_lite_init(struct platform_device *pdev)
 	/* Register device. */
 	device->major = register_chrdev(0, "vg_lite", &file_operations);
 	if (device->major < 0) {
-		dev_err(device->dev, "register_chrdev error\n");
+		error = device->major;
+		dev_err(device->dev, "register_chrdev error %d\n", error);
+		device->major = 0;
 		vg_lite_exit(pdev);
-		return -1;
+		return error;
 	}
 	device->registered = 1;
 
 	/* Create the graphics class. */
 	device->class = class_create("vg_lite_class");
-	if (!device->class) {
+	if (IS_ERR(device->class)) {
+		device->class = NULL;
 		dev_err(device->dev, "class_create error\n");
 		vg_lite_exit(pdev);
-		return -1;
+		return -ENOMEM;
 	}
 
 	/* Create the device. */
 	dev = device_create(device->class, NULL, MKDEV(device->major, 0), NULL,
 			    "vg_lite");
-	if (!dev) {
+	if (IS_ERR(dev)) {
 		dev_err(device->dev, "device_create error\n");
 		vg_lite_exit(pdev);
-		return -1;
+		return -ENOMEM;
 	}
 	device->created = 1;
 
-	INIT_LIST_HEAD(&device->dma_list_head);
-	INIT_LIST_HEAD(&device->mapped_list_head);
 	if (dma_set_mask_and_coherent(device->dev, DMA_BIT_MASK(32))) {
 		dev_err(device->dev, "dma_set_mask_and_coherent error\n");
 		vg_lite_exit(pdev);
-		return -1;
+		return -EIO;
 	}
 
 	dev_info(device->dev, "VG-Lite GPU registered as /dev/vg_lite (major %d, irq %d)\n",
