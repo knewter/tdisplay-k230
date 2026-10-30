@@ -42,6 +42,7 @@
       # Stage a: the modern U-Boot proper behind the unchanged vendor-derived
       # SPL, in the directory layout nix/stage1.nix's packaging reads.
       ubootK230ModernTrial = pkgsCross.callPackage ./nix/uboot-k230-modern.nix { inherit k230Sdk; variant = "tdisplay"; textBase = "0x4000000"; };
+      ubootK230ModernNoPmpLock = pkgsCross.callPackage ./nix/uboot-k230-modern.nix { inherit k230Sdk; variant = "tdisplay"; lockOtpPmp = false; };
       ubootK230ModernWithSpl = pkgs.runCommand "k230-modern-uboot-with-vendor-spl" { } ''
         mkdir -p $out/spl
         cp ${ubootK230Modern}/u-boot.bin $out/u-boot.bin
@@ -929,6 +930,8 @@
         # Stage a0: the same U-Boot linked at 0x4000000, for `ext4load` + `go`
         # from the running 2022.10 U-Boot. No card write of boot firmware.
         uboot-k230-modern-trial = ubootK230ModernTrial;
+        # Stage c companion: no PMP lock before an upstream OpenSBI.
+        uboot-k230-modern-no-pmp-lock = ubootK230ModernNoPmpLock;
         # The five stage-1 files with the modern U-Boot slot: fn_ug_u-boot.bin
         # is new, fn_u-boot-spl.bin / env.env / fw_jump* are the .#stage1 bytes.
         stage1-modern = pkgs.runCommand "k230-stage1-modern" { } ''

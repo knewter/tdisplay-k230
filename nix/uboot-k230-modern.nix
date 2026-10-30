@@ -25,6 +25,10 @@
   # be loaded beside the running 2022.10 U-Boot and entered with `go` without
   # touching the card. Never packaged into stage1-modern.
 , textBase ? null
+  # Stage c: an upstream OpenSBI cannot step around the two locked PMP entries
+  # (see CONFIG_K230_PMP_LOCK_OTP in the arch Kconfig), so the U-Boot that
+  # precedes it is built without the lock.
+, lockOtpPmp ? true
 }:
 
 let
@@ -45,6 +49,8 @@ in
   # default; this wins).
   extraConfig = lib.optionalString tdisplay ''
     CONFIG_K230_BARE_DISP_LOGO_FB_ADDR=${splash.framebufferAddress}
+  '' + lib.optionalString (!lockOtpPmp) ''
+    # CONFIG_K230_PMP_LOCK_OTP is not set
   '' + lib.optionalString (textBase != null) ''
     CONFIG_TEXT_BASE=${textBase}
   '';
