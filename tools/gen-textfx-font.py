@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Generate src/textfx_font.c from GNU Unifont's BDF (8x16 glyphs only).
+"""Generate textfx/textfx_font.c from GNU Unifont's BDF (8x16 glyphs only).
 
-  python3 -I tools/gen-textfx-font.py --bdf <unifont.bdf> --out src/textfx_font.c
+  python3 -I tools/gen-textfx-font.py --bdf <unifont.bdf> --out textfx/textfx_font.c
 
 The code points are the ones ttfx's 37 effects draw over the K230 banner plus
 printable ASCII (see docs/evidence/boot-text-effects/ttfx-research.md).

@@ -1,22 +1,30 @@
-# host tests for the k230-textfx player (file-backed mode), 2026-10-30T14:21:12Z
-# evidence class: host build/test only; the DRM path is not exercised
-# ttfx: cargo build of 14ed274 (x86-64)
-
+# host tests for the k230-textfx player incl. the linked no_std engine, 2026-10-30T15:44:48Z
+# evidence class: host build/test only; DRM path not exercised; std ttfx = Nix-built .#ttfx-host
+test_every_effect_matches_the_child_engine (__main__.LinkedEngineTests.test_every_effect_matches_the_child_engine) ... ok
+test_record_continuation_with_the_linked_engine (__main__.LinkedEngineTests.test_record_continuation_with_the_linked_engine) ... ok
+test_unknown_effect_is_an_error_not_a_crash (__main__.LinkedEngineTests.test_unknown_effect_is_an_error_not_a_crash) ... ok
 test_a_broken_child_is_an_error (__main__.PlayerTests.test_a_broken_child_is_an_error) ... ok
 test_a_failing_child_is_an_error (__main__.PlayerTests.test_a_failing_child_is_an_error) ... ok
+test_a_malformed_record_is_refused (__main__.PlayerTests.test_a_malformed_record_is_refused) ... ok
 test_argument_vector_matches_the_python_tool (__main__.PlayerTests.test_argument_vector_matches_the_python_tool) ... ok
 test_continuation_reaches_the_same_final_surface (__main__.PlayerTests.test_continuation_reaches_the_same_final_surface) ... ok
 test_pacing_follows_the_frame_rate (__main__.PlayerTests.test_pacing_follows_the_frame_rate) ... ok
+test_record_continues_a_run_with_a_listed_text (__main__.PlayerTests.test_record_continues_a_run_with_a_listed_text) ... ok
+test_record_from_another_engine_plays_from_frame_zero (__main__.PlayerTests.test_record_from_another_engine_plays_from_frame_zero) ... ok
+test_record_with_a_text_hash_that_does_not_match_is_not_continued (__main__.PlayerTests.test_record_with_a_text_hash_that_does_not_match_is_not_continued) ... ok
+test_record_with_an_environment_text_uses_the_given_file (__main__.PlayerTests.test_record_with_an_environment_text_uses_the_given_file) ... ok
 test_surface_hashes_match_independent_renderer (__main__.PlayerTests.test_surface_hashes_match_independent_renderer) ... ok
 test_wrong_hash_refuses_and_replays_from_the_start (__main__.PlayerTests.test_wrong_hash_refuses_and_replays_from_the_start) ... ok
 
 ----------------------------------------------------------------------
-Ran 7 tests in 3.976s
+Ran 15 tests in 32.808s
 
 OK
 
-## module is inert when off: daily system derivation, before and after this change
-before (44cc90c4) /nix/store/hlzchxmh4w6j4f6z7npjnw5v2xbhz327-nixos-system-nixos-26.11.20260919.20b1ddd.drv
-after  (working tree) /nix/store/hlzchxmh4w6j4f6z7npjnw5v2xbhz327-nixos-system-nixos-26.11.20260919.20b1ddd.drv
-attribute: nixosConfigurations.k230-mainline-drm-shell-landscape-hdmi.config.system.build.toplevel.drvPath
-k230.bootTextEffects.enable=true evaluates; ExecStart = /nix/store/h70j627vwzisdga074z9hb8q7zh5b2rz-k230-textfx-start
+## the module is inert in the daily system (nix eval, 2026-10-30)
+attribute set: nixosConfigurations.k230-mainline-drm-shell-landscape-hdmi.config
+  k230.bootTextEffects.enable = false; systemd.services has no k230-textfx unit.
+Note found on the way: nix/drm-splash/default.nix and nix/life-wayland/default.nix pass the whole src/ directory to the compiler
+(-I ${../../src}), so any file added under src/ changes the daily system derivation. The text-effects C sources therefore live
+in textfx/ (not src/); a closure diff of the daily toplevel against the previous commit then differs only in the k230-drm-splash
+unit chain, whose src path is the one that lost the text-effects files.

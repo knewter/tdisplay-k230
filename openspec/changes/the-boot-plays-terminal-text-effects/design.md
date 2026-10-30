@@ -124,11 +124,11 @@ beside the engine, so it needs no filesystem read.
 uses 385 932 bytes (`docs/evidence/game-of-life/stage1-install-recovery-proposal.md` on the
 Life branch). The engine costs 125 KB with one effect, 198 KB with an 8-effect subset and 520 KB
 with all 37 (`nostd-sizes.txt`); the font table, glue and fallback sequence add tens of KB.
-Firmware therefore carries a subset (the feature list is a build input; the default is the eight effects whose heap peaks under 4 MiB:
-`wipe middleout expand slide errorcorrect print decrypt scattered`), shares the slot with Life, and the install plan checks
+Firmware therefore carries a subset (the feature list is a build input; memory does not limit it, see D14; the current `subset`
+feature is `wipe middleout expand slide errorcorrect print decrypt scattered`), shares the slot with Life, and the install plan checks
 the margin before any write. The slot cannot grow without moving the saved environment.
 
-**D3. One glyph renderer, written once in portable C.** `src/textfx.{h,c}`:
+**D3. One glyph renderer, written once in portable C.** `textfx/textfx.{h,c}`:
 freestanding (no libc calls), a cell grid, the frame parser, `apply_frame` for sequences, and a
 blitter to a `bf_target` (XRGB8888) or an RG16 dumb buffer. The font is an 8x16 table
 generated from GNU Unifont's BDF (`pkgs.unifont`; dual licensed SIL OFL 1.1 or
@@ -143,19 +143,18 @@ drawing of the banner itself. Unknown or double-width code points
 draw a visible fallback box rather than disappearing. The same file builds into U-Boot
 and the Linux player so the two stages cannot disagree on a pixel.
 
-**D4. The live run is the same run, not a lookalike.** The Linux player starts the same
-engine with the same effect, text, canvas and seed (all in the record, D5), reads frames,
-discards those before the one the record names, and verifies that the FNV-1a hash of its own cell grid
-at that frame equals the hash in the record; on mismatch it logs, clears and plays from
-frame 0 (a visible restart is better than a continuation that is wrong). Two ways to run
-the engine in Linux are kept open. (a) The std `ttfx` child (`--parity-dump`, a hidden
-flag of its own parity harness; pinned revision and golden hashes guard it): proven
-byte-identical to the `no_std` engine in every host comparison so far, but it uses glibc's
-`pow`/`sin`, the firmware uses libm, and no sample has differed yet. (b) The same
-`k230_ttfx_boot` library behind a hosted C ABI: identical code in both stages, no
-child process, no dependency on the hidden flag. (b) is the recommendation once the
-hosted build exists; the hash check protects both. With no valid record the player plays
-from frame 0. Continuation improves on a safe default and is not a precondition.
+**D4. The live run is the same run, not a lookalike.** The Linux player runs the same engine as stage 1 with the
+same effect, text, canvas and seed (all in the record, D5): the `no_std` `k230_ttfx_boot` library built for
+riscv64-linux (`nix/ttfx-boot/hosted.nix`, std's allocator and panic handler) and linked into the player
+through the same C ABI (`ttfx_boot.h`). Decided 2026-10-30 (coordinator): there is no child process and no
+dependence on ttfx's hidden `--parity-dump` flag; the std `ttfx` stays as a test oracle (`--engine child`,
+`tests/test_textfx_player.py` compares the two frame for frame, and `tests/test_ttfx_nostd.py` compares the
+engine against it for every effect). The player discards frames before the one the record names and verifies
+that the FNV-1a hash of its own cell grid at that frame equals the hash in the record; on mismatch it logs,
+clears and plays from frame 0 (a visible restart is better than a continuation that is wrong). With no valid
+record the player plays from frame 0. Continuation improves on a safe default and is not a precondition.
+Because both stages run the same library with the same libm, the glibc-versus-libm question for `pow` does not
+arise between them.
 
 **D5. A record, not shared state.** The text-effects record is the common 40-byte prefix of
 the generic interface with source id 2 and a payload (little-endian) of: seed (u64), canvas
@@ -167,7 +166,7 @@ side cannot promise identical frames), the effect name (24 bytes, NUL padded), t
 (u32 FNV-1a of the text bytes, so Linux detects firmware and system disagreeing about the
 list). Exactly 60 bytes (`TFX_REC_PAYLOAD_BYTES`) in the 8 KiB window. Validation order is Life's: prefix, checksum,
 boot-instance token against `/chosen/canaan,life-instance`, then the source id picks the
-consumer. `src/textfx_record.{h,c}` encodes and decodes the payload and is tested on the
+consumer. `textfx/textfx_record.{h,c}` encodes and decodes the payload and is tested on the
 host; the prefix belongs to `boot_frame` and is added when that lands.
 
 **D6. Player lifecycle on Linux.** One program, `k230-textfx`, started from a
@@ -263,7 +262,7 @@ the effect to completion, then load (adds the animation's length to boot, a few 
 1 to 4 MiB and calls `ttfx_fw_next` plus a draw between chunks, so each frame costs
 one frame's compute, not a stall. The ext4 reads in the recorded boot took 1.8 s for the 27 MB initrd
 alone. Either way the engine is single-threaded and U-Boot's own work waits while a frame computes.
-The cost of a frame in soft float on the C908, measured as a Linux static executable with caches on, is under 3.1 ms for every effect on the 35x38 grid (`board-engine-bench.txt`), a tenth of a 30 fps frame period; inside U-Boot it is <!-- UNVERIFIED: not measured in U-Boot, whose data cache may be off (task 4.3). -->.
+The cost of a frame in soft float on the C908, measured as a Linux static executable with caches on, is under 3.1 ms for every effect on the 35x38 grid (`board-engine-bench.txt`), a tenth of a 30 fps frame period; inside U-Boot it is <!-- UNVERIFIED: not measured in U-Boot; the source says its caches are enabled (D14), so the Linux figures should be of the right order, and the first console run records the real period (task 4.3). -->.
 
 **D13. How the engine is built for U-Boot.** The patch is written to go upstream: default features
 keep the std CLI and its tests; `--no-default-features --features nostd` is the engine on `core` +
@@ -271,19 +270,46 @@ keep the std CLI and its tests; `--no-default-features --features nostd` is the 
 patch to the pinned source; `nix/ttfx-boot` builds the staticlib with the official `rust-std` for
 `riscv64imac-unknown-none-elf` (nixpkgs ships only `riscv64gc`, which is hard-float and would trap in
 U-Boot; the pinned U-Boot is `rv64imac`, `lp64`, with `mstatus.FS` never set). Position-independent
-(`-C relocation-model=pic`) because U-Boot relocates itself.
+(`-C relocation-model=pic`) because U-Boot relocates itself. The same crate builds hosted
+(`--features hosted`, `nix/ttfx-boot/hosted.nix`) for the Linux player (D4).
 
-**D14. Memory and stack.** The engine's peak heap is 1 to 4 MiB for most effects and up to 13 MiB for the largest
-(`nostd-feasibility.md`), against U-Boot's default 4 MiB pool. The library therefore allocates from an
-arena the host hands it (`ttfx_fw_init`), never from U-Boot's `malloc`. The arena is either carved from
-a larger `CONFIG_SYS_MALLOC_LEN` or a fixed free DRAM range during stage 1; the memory-map tool from the
-Life change decides which addresses are safe. The default effect subset is chosen so every member
-peaks under 4 MiB, so the first install can use the pool as it is. The engine also needs stack: run under
-`ulimit -s`, 17 effects on the board fail at 16 KiB and pass at 24 KiB (`board-engine-stack.txt`), so a
-callback running on a small U-Boot stack, or deep inside an MMC driver loop, is a hazard. The glue therefore runs
-each `ttfx_fw_next` on a private 64 KiB stack taken from the arena, switching `sp` in a few lines of assembly,
-and never calls the engine from a context that already holds U-Boot's malloc or console locks (U-Boot's own heap is
-not used, so a callback from inside an `udelay` in the MMC driver cannot corrupt it).
+**D14. Memory, stack and the data cache.**
+*Arena.* The engine allocates only from a fixed DRAM range, **`0x18000000..0x1a000000` (32 MiB)**, defined in
+`nix/textfx/arena.nix` and proved by `tools/check-boot-textfx-memory.py` against the DTB the board boots and
+the recorded boot layout (`docs/evidence/boot-text-effects/arena-memory-map.txt`, host check; the live U-Boot
+placement is the one recorded in `docs/evidence/stage1-memory-map.md`, not re-measured). It sits in the gap that
+memory map records as free throughout stage 1 and untouched by the kernel's placement
+(`0x15010000..0x1e000000`), clear of the kernel Image with its bss and a 16 MiB margin, the loaded initrd
+with 25 % growth, the OpenSBI image, the loadaddr and `force_dtb` scratch, the splash reservation
+(`0x10000000..0x10400000`), the CMA pool from `0x1e000000`, the relocated initrd and DTB, and U-Boot's
+relocation at the top of RAM. Linux has not started when stage 1 runs, so it cannot have handed the range
+out; stage 1 unregisters its step and stops using the arena before `bootm`. `CONFIG_SYS_MALLOC_LEN` is not
+raised and U-Boot's heap is not used. The tool rejects overlaps, an unaligned arena, a stack under 32 KiB and
+any effect whose peak heap exceeds (arena - stack) / 2 = 16 352 KiB.
+*Which effects fit.* Peak heap measured over the four texts of the list and five seeds
+(`nostd-heap-peaks.txt`): the largest is `rings` at 13 430 KiB, then `laseretch` 12 157, `binarypath` 12 052,
+`burn` 9 337, `beams` 8 552. All 37 are under the 16 352 KiB limit and the worst case uses 41 % of the
+arena (2.4x headroom), so the beams-class effects fit safely and are not excluded for memory. Which effects
+ship is therefore a **code-size** decision: the slot is 1 048 576 bytes and Life's current candidate is
+389 657 bytes (its `uboot-build.txt`), leaving 658 919; the engine is 520 KB with all 37 effects and 198 KB with the
+eight-effect set, plus the font, glue and fallback sequence (tens of KB). All 37 would leave about
+100 KB, a margin the install plan must check and I would not spend; the default per-boot list is chosen from the
+product choice (D9) within that budget.
+*Stack.* The engine needs 24 KiB of stack (17 effects fail at 16 KiB and pass at 24 KiB on the board,
+`board-engine-stack.txt`). The glue runs each `ttfx_fw_next` on a private 64 KiB stack carved from the top of the
+arena, switching `sp` in a few lines of assembly, and never calls the engine from a context that already holds
+U-Boot's malloc or console locks (the engine uses neither, so a callback from an `udelay` in the MMC driver
+cannot corrupt U-Boot's heap).
+*Data cache.* Read from the pinned source, not measured: `arch/riscv/cpu/start.S` of the overlay calls
+`icache_enable` and `dcache_enable` early in `_start`, and `arch/riscv/cpu/k230/cache.c` implements them by
+setting the T-Head `MHCR` enable bits (DE, WB, WA, RS, branch prediction) unless `SYS_ICACHE_OFF` or
+`SYS_DCACHE_OFF` is set; the K230 defconfig sets neither, and both default off-by-default in
+`arch/riscv/Kconfig`. So both caches are enabled for U-Boot proper, long before the logo hook runs, and the
+Linux timings (under 3.1 ms a frame, `board-engine-bench.txt`) are the right order of magnitude for the
+cyclic step budget. That U-Boot's caches are really on when the step runs is
+<!-- UNVERIFIED: no MHCR read at the K230# prompt; the stage 1 console run (task 4.2) prints the frame period it achieves. -->.
+A cache-off estimate was therefore not needed; if the first console run shows frame costs more than ten
+times higher, the step budget is re-derived from that run before anything is enabled by default.
 
 ## Rejected
 
@@ -327,9 +353,9 @@ not used, so a callback from inside an `udelay` in the MMC driver cannot corrupt
 - [Soft-float speed inside U-Boot is unmeasured] -> under Linux it is 0.2 to 3.1 ms a frame; the bench is
   repeated from the first stage 1 console run before any decision; if a frame costs more than the frame period, the glue steps the engine more than once per
   displayed frame or the default effect is chosen from the cheaper ones, and the replay fallback stays.
-- [libm differs from glibc in some last bit] -> 0 of 148 host and 0 of 37 firmware comparisons differed;
-  the cell-grid hash at the continuation frame catches it, and Linux then replays from frame 0. Running
-  the same library in Linux (D4, option b) removes the question.
+- [libm differs from glibc in some last bit] -> only against the std ttfx oracle: 0 of 148 host, 0 of 37 QEMU and
+  0 of 37 board comparisons differed. Stage 1 and the Linux player run the same library, so they agree by construction;
+  the cell-grid hash at the continuation frame still guards a mismatched build.
 - [Rust in stage 1 panics or runs out of memory] -> `panic = abort` calls a host hook that falls back to the
   replay sequence or the static logo; the arena is bounded; nothing the engine does can write outside the
   scanout (the glue owns the blits, not the engine).
@@ -361,12 +387,15 @@ the board boots; `openspec validate` and every host task above pass.
    boot device, fsync, read back 4 MiB with `iflag=direct`, and restore the
    original slot automatically if the readback is not backup-with-payload.
    SPL, environment, partition table and every `/boot` file are untouched.
-3. *First boots.* The animation is dormant unless `boot_anim` selects it, so
+3. *Before the first write.* `python3 tools/check-boot-textfx-memory.py` against the DTB and the boot file sizes of the board
+   at install time must print `RESULT: OK` (the arena of D14 clear of every load and relocation, every effect in the default list under the
+   margin), and the stage 1 image must be under the slot limit with the engine, font, glue and Life's code in it.
+4. *First boots.* The animation is dormant unless `boot_anim` selects it, so
    the first reboot must look like today's. Then `k230_textfx` at `K230#` (also with
    `tfx_effect`, `tfx_text` and `tfx_seed` set for that boot), transcript to
    `docs/evidence/boot-text-effects/`, then `boot`. The transcript shows the engine's frame count,
    the frame period it achieved, and whether the fallback ran.
-4. *Linux side.* Ship the player in the system closure with the option off,
+5. *Linux side.* Ship the player in the system closure with the option off,
    deploy with `nix copy` and `switch-to-configuration test` (runtime only).
    Enabling it at boot changes the closure that `init=` in
    `/boot/bootargs.txt` selects: edit `bootargs.txt` as the memory note on

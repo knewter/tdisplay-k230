@@ -1,4 +1,4 @@
-"""src/textfx.c against the Python reference (host).
+"""textfx/textfx.c against the Python reference (host).
 
 Run: TTFX=<host ttfx 14ed274> UNIFONT_BDF=<unifont.bdf> python3 -I tests/test_textfx.py
 (`nix build .#ttfx-host` and `nix build nixpkgs#unifont`; the BDF is
@@ -102,8 +102,8 @@ class CTextfxTests(unittest.TestCase):
         (d / "wipe.dump").write_bytes(dump)
         exe = d / "harness"
         subprocess.run(["cc", "-std=c11", "-Wall", "-Wextra", "-Werror", "-O2",
-                        "-I", str(ROOT / "src"), str(ROOT / "tests/textfx_harness.c"),
-                        str(ROOT / "src/textfx.c"), str(ROOT / "src/textfx_font.c"),
+                        "-I", str(ROOT / "textfx"), str(ROOT / "tests/textfx_harness.c"),
+                        str(ROOT / "textfx/textfx.c"), str(ROOT / "textfx/textfx_font.c"),
                         "-o", str(exe)], check=True)
         cls.check = [0, 1, 40, len(cls.frames) - 1]
         out = subprocess.run([str(exe), str(d / "wipe.tfxs"), str(d / "wipe.dump"), str(SCALE),

@@ -13,11 +13,13 @@ ttfx = { path = "ttfx", default-features = false, features = ["nostd"] }
 [features]
 default = ["all-effects"]
 all-effects = ["ttfx/all-effects"]
-# The allocator over a caller-supplied arena (ttfx_fw_init) and the panic hook:
-# for the freestanding riscv64imac staticlib only.
-# The C ABI over Run (ttfx_fw_new/next/free); a caller must supply the global allocator and panic handler (`fw` does).
+# The C ABI over Run (ttfx_fw_new/next/free); the caller supplies the global allocator and panic handler.
 capi = []
+# capi plus the allocator over a caller-supplied arena (ttfx_fw_init) and the panic hook:
+# for the freestanding riscv64imac staticlib only.
 fw = ["capi"]
+# Linked into a hosted C program (the Linux player): std provides the allocator and panic handler.
+hosted = ["capi"]
 # A firmware image carries a few effects. These eight each peak under 4 MiB of heap
 # (docs/evidence/boot-text-effects/nostd-feasibility.md); beams, burn, laseretch, rings and
 # binarypath need 8 to 13 MiB and are left out.

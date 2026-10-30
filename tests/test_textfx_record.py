@@ -1,4 +1,4 @@
-"""src/textfx_record.c: the source-id-2 payload and the per-boot selection (host)."""
+"""textfx/textfx_record.c: the source-id-2 payload and the per-boot selection (host)."""
 import importlib.util
 import subprocess
 import sys
@@ -33,8 +33,8 @@ class RecordTests(unittest.TestCase):
     def setUpClass(cls):
         cls.tmp = tempfile.TemporaryDirectory()
         cls.exe = Path(cls.tmp.name) / "h"
-        subprocess.run(["cc", "-std=c11", "-Wall", "-Wextra", "-Werror", "-O2", "-I", str(ROOT / "src"),
-                        str(ROOT / "tests/textfx_record_harness.c"), str(ROOT / "src/textfx_record.c"),
+        subprocess.run(["cc", "-std=c11", "-Wall", "-Wextra", "-Werror", "-O2", "-I", str(ROOT / "textfx"),
+                        str(ROOT / "tests/textfx_record_harness.c"), str(ROOT / "textfx/textfx_record.c"),
                         "-o", str(cls.exe)], check=True)
 
     @classmethod

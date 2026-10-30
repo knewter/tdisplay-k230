@@ -1,0 +1,40 @@
+# peak heap KiB per effect: maximum over the 4 texts of nix/textfx/texts.txt x seeds 1,2,3,7,11, canvas 35x38, 30 fps
+# counting global allocator, host x86-64 (pointer width equals riscv64); ttfx no_std engine of nix/ttfx-boot, example 'mem'
+# format: effect KiB
+rings 13430
+laseretch 12157
+binarypath 12052
+burn 9337
+beams 8552
+smoke 6269
+synthgrid 6243
+waves 4043
+thunderstorm 4042
+sweep 3862
+swarm 3308
+decrypt 3271
+colorshift 2703
+blackhole 2577
+vhstape 2561
+crumble 2554
+fireworks 2530
+bubbles 2355
+unstable 2075
+print 1844
+spray 1815
+bouncyballs 1788
+orbittingvolley 1687
+pour 1667
+overflow 1616
+rain 1612
+scattered 1591
+middleout 1566
+spotlights 1538
+slide 1521
+expand 1489
+matrix 1388
+errorcorrect 1291
+wipe 1188
+randomsequence 1101
+highlight 1098
+slice 1000

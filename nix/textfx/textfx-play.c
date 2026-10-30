@@ -3,7 +3,7 @@
  * the-boot-plays-terminal-text-effects).
  *
  * Runs `ttfx --parity-dump` as a child, reads its length-prefixed frames from a
- * pipe, parses each into a character-cell grid (src/textfx.c) and draws the
+ * pipe, parses each into a character-cell grid (textfx/textfx.c) and draws the
  * changed cells through the shared 8x16 glyph blitter, either into a file-backed
  * surface (--output-file, no DRM: used for host and board hash tests) or into
  * a KMS dumb buffer on the panel (--drm), using the splash owner's recipe: an
@@ -45,6 +45,11 @@
 #include "textfx.h"
 #include "textfx_record.h"
 
+#ifdef TEXTFX_ENGINE_LIB
+/* The same no_std ttfx engine that runs in U-Boot, linked in: no child process. */
+#include "ttfx_boot.h"
+#endif
+
 #define PANEL_W 568u
 #define PANEL_H 1232u
 #define MAX_FRAME_BYTES (256u * 1024u)
@@ -66,6 +71,7 @@ struct opts {
 	const char *card, *ready_file, *asset, *stats_file;
 	const char *record_payload, *texts;
 	uint32_t engine_id; /* 0 = do not compare with the record */
+	bool engine_lib;    /* frames from the linked engine rather than a ttfx child */
 	bool no_pace, print_command, idle;
 	long max_frames;
 	long hash_frames[MAX_HASH_FRAMES];
@@ -166,6 +172,9 @@ static unsigned build_argv(const struct opts *o, const char **argv, char *store,
 struct child {
 	pid_t pid;
 	int fd;
+#ifdef TEXTFX_ENGINE_LIB
+	struct ttfx_fw_handle *lib;
+#endif
 };
 
 static char text_buf[8192];
@@ -178,6 +187,19 @@ static int start_child(const struct opts *o, struct child *c)
 	int pipefd[2], banner[2];
 	pid_t pid;
 
+#ifdef TEXTFX_ENGINE_LIB
+	if (o->engine_lib) {
+		c->pid = -1;
+		c->fd = -1;
+		c->lib = ttfx_fw_new(o->effect, strlen(o->effect), text_buf, text_len, o->seed,
+				     (int)o->cols, (int)o->rows, (int)o->fps);
+		if (!c->lib) {
+			say("engine refused effect '%s' or the text", o->effect);
+			return -1;
+		}
+		return 0;
+	}
+#endif
 	build_argv(o, argv, store, sizeof store);
 	/* The text goes in through a pipe: at most 8 KiB, which a pipe holds without a reader. */
 	if (pipe2(banner, O_CLOEXEC)) { fail("pipe"); return -1; }
@@ -205,6 +227,12 @@ static int start_child(const struct opts *o, struct child *c)
 
 static void stop_child(struct child *c)
 {
+#ifdef TEXTFX_ENGINE_LIB
+	if (c->lib) {
+		ttfx_fw_free(c->lib);
+		c->lib = NULL;
+	}
+#endif
 	if (c->pid > 0) {
 		kill(c->pid, SIGKILL);
 		waitpid(c->pid, NULL, 0);
@@ -563,7 +591,11 @@ static int usage(const char *argv0)
 static int parse_opts(int argc, char **argv, struct opts *o)
 {
 	*o = (struct opts){ .cols = 35, .rows = 38, .fps = 30, .scale = 2, .skip = -1,
-			    .card = "/dev/dri/card0", .max_frames = -1 };
+			    .card = "/dev/dri/card0", .max_frames = -1,
+#ifdef TEXTFX_ENGINE_LIB
+			    .engine_lib = true,
+#endif
+			  };
 	for (int i = 1; i < argc; ++i) {
 		const char *a = argv[i];
 		const char *v = i + 1 < argc ? argv[i + 1] : NULL;
@@ -585,6 +617,17 @@ static int parse_opts(int argc, char **argv, struct opts *o)
 		else if (!strcmp(a, "--ready-file") && v) { o->ready_file = v; ++i; }
 		else if (!strcmp(a, "--asset") && v) { o->asset = v; ++i; }
 		else if (!strcmp(a, "--record-payload") && v) { o->record_payload = v; ++i; }
+		else if (!strcmp(a, "--engine") && v) {
+			if (!strcmp(v, "lib")) {
+#ifdef TEXTFX_ENGINE_LIB
+				o->engine_lib = true;
+#else
+				return -1; /* built without the linked engine */
+#endif
+			} else if (!strcmp(v, "child")) o->engine_lib = false;
+			else return -1;
+			++i;
+		}
 		else if (!strcmp(a, "--engine-id") && v) { o->engine_id = (uint32_t)strtoul(v, NULL, 0); ++i; }
 		else if (!strcmp(a, "--texts") && v) { o->texts = v; ++i; }
 		else if (!strcmp(a, "--stats-file") && v) { o->stats_file = v; ++i; }
@@ -602,7 +645,7 @@ static int parse_opts(int argc, char **argv, struct opts *o)
 			++i;
 		} else return -1;
 	}
-	if (!o->ttfx || !o->scale || !o->fps || (!o->record_payload && (!o->banner || !o->effect)))
+	if ((!o->ttfx && !o->engine_lib) || !o->scale || !o->fps || (!o->record_payload && (!o->banner || !o->effect)))
 		return -1;
 	if (o->cols * TFX_GLYPH_W * o->scale > PANEL_W || o->rows * TFX_GLYPH_H * o->scale > PANEL_H)
 		return -1;
@@ -719,7 +762,7 @@ int main(int argc, char **argv)
 {
 	struct opts o;
 	struct tfx_surface surf;
-	struct child child = { -1, -1 };
+	struct child child = { .pid = -1, .fd = -1 };
 	struct stats st = { 0 };
 	struct kms kms __attribute__((unused)) = { .fd = -1 };
 	long long t0 = 0, wall0 = now_ns();
@@ -736,6 +779,10 @@ int main(int argc, char **argv)
 		const char *av[40];
 		char store[256];
 
+		if (o.engine_lib) {
+			printf("lib %s %llu %u %u %u\n", o.effect, o.seed, o.cols, o.rows, o.fps);
+			return 0;
+		}
 		build_argv(&o, av, store, sizeof store);
 		for (unsigned i = 0; av[i]; i++)
 			printf("%s%s", i ? " " : "", av[i]);
@@ -791,12 +838,30 @@ restart:
 		goto out;
 	for (k = 0;; ++k) {
 		int r, n;
+		const uint8_t *fp = frame_buf;
 
 		if (handoff_requested || stopping)
 			break;
-		r = read_frame(child.fd, frame_buf, &flen);
+#ifdef TEXTFX_ENGINE_LIB
+		if (o.engine_lib) {
+			long n = ttfx_fw_next(child.lib, &fp);
+
+			if (n < 0) { r = -1; } else if (n == 0) { r = 0; } else { r = 1; flen = (size_t)n; }
+		} else
+#endif
+		{
+			r = read_frame(child.fd, frame_buf, &flen);
+			fp = frame_buf;
+		}
 		if (r == -2)
 			break;
+		if (r == 0 && o.engine_lib) {
+			if (!st.frames) {
+				say("the engine produced no frames");
+				goto out;
+			}
+			break;
+		}
 		if (r == 0) {
 			int status = 0;
 
@@ -813,7 +878,7 @@ restart:
 			say("malformed or truncated ttfx stream at frame %ld", k);
 			goto out;
 		}
-		n = tfx_parse_frame(&grid, frame_buf, flen, changed, TFX_MAX_CELLS);
+		n = tfx_parse_frame(&grid, fp, flen, changed, TFX_MAX_CELLS);
 		if (n < 0) {
 			say("frame %ld not understood", k);
 			goto out;

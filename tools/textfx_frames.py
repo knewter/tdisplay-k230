@@ -25,7 +25,7 @@ A frame lists the cells that differ from the previous frame (frame 0 differs
 from an all-blank grid).  Blank = code point 0x20 with colour 0; a space is
 always stored with colour 0.
 
-Cell-grid hash (also computed by src/textfx.c): FNV-1a 32 over, for every
+Cell-grid hash (also computed by textfx/textfx.c): FNV-1a 32 over, for every
 cell in index order, cp low byte, cp high byte, r, g, b.
 """
 

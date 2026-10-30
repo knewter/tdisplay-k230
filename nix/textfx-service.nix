@@ -10,7 +10,10 @@
 
 let
   cfg = config.k230.bootTextEffects;
-  player = pkgs.callPackage ./textfx { };
+  # The player links the same no_std engine as stage 1 (design D4); `child` spawns the std ttfx
+  # instead and is the test oracle, not the default.
+  hosted = pkgs.callPackage ./ttfx-boot/hosted.nix { };
+  player = pkgs.callPackage ./textfx { ttfxBootHosted = if cfg.engine == "lib" then hosted else null; };
   ttfx = pkgs.callPackage ./ttfx.nix { };
   banner = ./exhibition/K230.txt;
   # Continuation inputs, written by whatever reads the stage 1 record
@@ -22,7 +25,7 @@ let
       args="--skip $skip --expect-hash $hash"
     fi
     exec ${lib.getExe player} \
-      --ttfx ${ttfx}/bin/ttfx --banner ${cfg.banner} \
+      --engine ${cfg.engine} ${lib.optionalString (cfg.engine == "child") "--ttfx ${ttfx}/bin/ttfx"} --banner ${cfg.banner} \
       --effect ${cfg.effect} --seed ${toString cfg.seed} --fps ${toString cfg.fps} \
       --cols ${toString cfg.cols} --rows ${toString cfg.rows} --scale ${toString cfg.scale} \
       --drm --ready-file /run/k230-textfx/state --idle \
@@ -33,6 +36,7 @@ in
 {
   options.k230.bootTextEffects = {
     enable = lib.mkEnableOption "the live ttfx boot text effect (unit defined, started by hand)";
+    engine = lib.mkOption { type = lib.types.enum [ "lib" "child" ]; default = "lib"; description = "lib: the linked no_std engine; child: spawn the std ttfx (test oracle)."; };
     effect = lib.mkOption { type = lib.types.str; default = "wipe"; description = "ttfx effect name."; };
     seed = lib.mkOption { type = lib.types.ints.unsigned; default = 3; description = "ttfx seed; must match the stage 1 sequence."; };
     fps = lib.mkOption { type = lib.types.ints.positive; default = 30; };

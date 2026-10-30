@@ -12,6 +12,7 @@ The DRM path is not exercised here (board process test, tasks 3.2/3.3).
 import importlib.util
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -43,8 +44,8 @@ class PlayerTests(unittest.TestCase):
         cls.dir = Path(cls.tmp.name)
         cls.exe = cls.dir / "textfx-play"
         subprocess.run(["cc", "-std=c11", "-Wall", "-Wextra", "-Werror", "-O2", "-DTEXTFX_NO_DRM",
-                        "-I", str(ROOT / "src"), str(ROOT / "nix/textfx/textfx-play.c"),
-                        str(ROOT / "src/textfx.c"), str(ROOT / "src/textfx_font.c"), str(ROOT / "src/textfx_record.c"),
+                        "-I", str(ROOT / "textfx"), str(ROOT / "nix/textfx/textfx-play.c"),
+                        str(ROOT / "textfx/textfx.c"), str(ROOT / "textfx/textfx_font.c"), str(ROOT / "textfx/textfx_record.c"),
                         "-o", str(cls.exe)], check=True)
         _, cls.frames, _ = TF.build_sequence(TTFX, T.BANNER, "wipe", 3, COLS, ROWS, FPS, None, [])
         cls.glyphs = T.load_bdf(BDF)
@@ -191,6 +192,67 @@ class PlayerTests(unittest.TestCase):
     def test_a_failing_child_is_an_error(self):
         p, _ = self.run_player("--no-pace", effect="nosucheffect", check=False)
         self.assertNotEqual(p.returncode, 0)
+
+
+@unittest.skipUnless(TTFX and BDF and os.environ.get("TTFX_NOSTD_SRC"), "set TTFX_NOSTD_SRC")
+class LinkedEngineTests(unittest.TestCase):
+    """The player with the no_std engine linked in (no child) equals the std child, frame for frame."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = tempfile.TemporaryDirectory()
+        d = Path(cls.tmp.name)
+        work = d / "boot"
+        shutil.copytree(ROOT / "nix/ttfx-boot", work, ignore=shutil.ignore_patterns("ttfx", "target", "default.nix"))
+        (work / "ttfx").symlink_to(os.environ["TTFX_NOSTD_SRC"])
+        subprocess.run(["cargo", "rustc", "--release", "--lib", "--crate-type", "staticlib", "--no-default-features",
+                        "--features", "hosted,all-effects", "--target-dir", str(d / "t")], cwd=work, check=True,
+                       capture_output=True)
+        cls.exe = d / "play-lib"
+        subprocess.run(["cc", "-std=c11", "-Wall", "-Wextra", "-Werror", "-O2", "-DTEXTFX_NO_DRM", "-DTEXTFX_ENGINE_LIB",
+                        "-I", str(ROOT / "textfx"), "-I", str(ROOT / "nix/ttfx-boot"), str(ROOT / "nix/textfx/textfx-play.c"),
+                        str(ROOT / "textfx/textfx.c"), str(ROOT / "textfx/textfx_font.c"), str(ROOT / "textfx/textfx_record.c"),
+                        str(d / "t/release/libk230_ttfx_boot.a"), "-lgcc_s", "-lutil", "-lrt", "-lpthread", "-lm", "-ldl", "-lc",
+                        "-o", str(cls.exe)], check=True)
+        cls.banner = ROOT / "nix/exhibition/K230.txt"
+        cls.texts = ROOT / "nix/textfx/texts.txt"
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmp.cleanup()
+
+    def run_it(self, *a):
+        return subprocess.run([str(self.exe), *a], capture_output=True, text=True, timeout=300)
+
+    def test_every_effect_matches_the_child_engine(self):
+        for effect in (TF.EFFECTS if os.environ.get("FULL") == "1" else ["wipe", "beams", "decrypt", "matrix", "rings"]):
+            outs = []
+            for engine in ("lib", "child"):
+                out = Path(self.tmp.name) / f"{engine}.xrgb"
+                p = self.run_it("--engine", engine, "--ttfx", TTFX, "--effect", effect, "--seed", "3", "--banner", str(self.banner),
+                                "--output-file", str(out), "--no-pace")
+                self.assertEqual(p.returncode, 0, p.stderr)
+                outs.append((p.stdout.split("final ")[1].split(" cell")[0], out.read_bytes()))
+            self.assertEqual(outs[0], outs[1], effect)
+
+    def test_record_continuation_with_the_linked_engine(self):
+        text = [e for e in self.texts.read_bytes().split(b"%%\n") if e.strip()][2]
+        _, frames, _ = TF.build_sequence(TTFX, text, "middleout", 9, COLS, ROWS, FPS, None, [])
+        last = len(frames) - 1
+        pay = PlayerTests.payload(9, COLS, ROWS, FPS, 30, TF.grid_hash(frames[30]), 7, TF.fnv1a(text), 2, "middleout")
+        rec = Path(self.tmp.name) / "r.bin"
+        rec.write_bytes(pay)
+        p = self.run_it("--engine", "lib", "--record-payload", str(rec), "--texts", str(self.texts), "--engine-id", "7",
+                        "--output-file", str(Path(self.tmp.name) / "c.xrgb"), "--no-pace", "--hash-frames", str(last))
+        self.assertEqual(p.returncode, 0, p.stderr)
+        self.assertIn("continuing after frame 30", p.stderr)
+        self.assertIn("cell=0x%08x" % TF.grid_hash(frames[last]), p.stdout)
+
+    def test_unknown_effect_is_an_error_not_a_crash(self):
+        p = self.run_it("--engine", "lib", "--effect", "nosuchfx", "--seed", "1", "--banner", str(self.banner),
+                        "--output-file", str(Path(self.tmp.name) / "x.xrgb"), "--no-pace")
+        self.assertEqual(p.returncode, 1)
+        self.assertIn("engine refused", p.stderr)
 
 
 if __name__ == "__main__":

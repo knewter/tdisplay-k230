@@ -30,6 +30,6 @@ Ran 4 tests in 4.614s
 
 OK
 
-## regenerate src/textfx_font.c and compare
+## regenerate textfx/textfx_font.c and compare
 608 glyphs, 1 without an 8x16 glyph
 textfx_font.c is reproducible

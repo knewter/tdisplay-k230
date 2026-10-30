@@ -115,6 +115,27 @@ framebuffer, and write the same acknowledgement the splash owner writes.
 - **WHEN** the shell is released while the player holds the scanout
 - **THEN** the player acknowledges `master-dropped` and the shell opens DRM
 
+### Requirement: The stage 1 engine runs in a proven arena
+
+The stage 1 engine SHALL allocate only from a fixed DRAM range that a host check proves, against the
+device tree the board boots and the recorded boot layout, to overlap no kernel image, initrd, device tree,
+firmware, U-Boot relocation, splash reservation or other reserved node, and that is large enough for
+every effect in the default per-boot list with a stated margin. The range SHALL be abandoned before
+`bootm`.
+
+*Grounding (2026-10-30): `tools/check-boot-textfx-memory.py` against the DTB read from the board
+(`docs/evidence/boot-text-effects/arena-memory-map.txt`). A host check, not a U-Boot run.*
+
+#### Scenario: The shipped arena
+
+- **WHEN** the checker is run on the shipped arena, the board's device tree and the boot file sizes
+- **THEN** it reports OK and states the largest effect's peak against the margin limit
+
+#### Scenario: An arena that overlaps a load <!-- UNVERIFIED: the rejection is a host test; U-Boot behaviour on overlap is not exercised. -->
+
+- **WHEN** the arena is moved onto the initrd's load range, the splash reservation or the CMA pool
+- **THEN** the checker rejects it and names the overlapping interval
+
 ### Requirement: The animation is bounded in cost, memory and time
 
 The Linux player SHALL run at the lowest practical CPU priority, drop frames rather

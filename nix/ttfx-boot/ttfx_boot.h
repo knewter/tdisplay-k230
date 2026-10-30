@@ -19,7 +19,7 @@ struct ttfx_fw_handle *ttfx_fw_new(const char *effect, size_t effect_len,
 				   uint64_t seed, int cols, int rows, int fps);
 
 /* Next frame: its length (> 0) with *out set to ANSI text valid until the next
- * call (the format tfx_parse_frame in src/textfx.c reads); 0 when complete. */
+ * call (the format tfx_parse_frame in textfx/textfx.c reads); 0 when complete. */
 long ttfx_fw_next(struct ttfx_fw_handle *h, const uint8_t **out);
 uint32_t ttfx_fw_frames(const struct ttfx_fw_handle *h);
 void ttfx_fw_free(struct ttfx_fw_handle *h);

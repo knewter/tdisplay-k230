@@ -471,8 +471,12 @@
         # staticlib built from it for U-Boot (nix/ttfx-nostd, nix/ttfx-boot).
         ttfx-nostd-src = pkgs.callPackage ./nix/ttfx-nostd { };
         k230-ttfx-boot = pkgs.callPackage ./nix/ttfx-boot { };
+        k230-ttfx-boot-hosted = pkgsCross.callPackage ./nix/ttfx-boot/hosted.nix { };
         # Live ttfx player for the boot text effects (nix/textfx).
-        k230-textfx = pkgsCross.callPackage ./nix/textfx { };
+        # The player with the no_std engine linked in (design D4); `-child` is the
+        # variant that spawns a std ttfx instead.
+        k230-textfx = pkgsCross.callPackage ./nix/textfx { ttfxBootHosted = self.packages.${buildSystem}.k230-ttfx-boot-hosted; };
+        k230-textfx-child = pkgsCross.callPackage ./nix/textfx { };
         # Font source for tools/gen-textfx-font.py and tests/test_textfx.py
         # (share/fonts/unifont.bdf); the boot text-effects glyph table is
         # generated from it.

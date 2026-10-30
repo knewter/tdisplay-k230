@@ -1,0 +1,35 @@
+# stage 1 arena memory check, 2026-10-30T15:39:50Z
+# evidence class: host-side check of the DTB the board boots (read-only 'cat /boot/k230-tdisplay.dtb' over SSH under the board lock; 19308 bytes, sha256 prefix f3fe41f75a0de418) and the boot file sizes from 'ls -l /boot' on the same board
+# live U-Boot/bootm placement (relocaddr, LMB, relocated initrd and DTB) is from docs/evidence/stage1-memory-map.md 2.1/2.2, not re-measured here; no board write
+# command: python3 tools/check-boot-textfx-memory.py --dtb k230-tdisplay.dtb --size Image=42752512 --size initrd.uimg=27328407 --size fw_jump_add_uboot_head.bin=270808 --size bootargs.txt=198 --size dtb=19308 --heap-peaks docs/evidence/boot-text-effects/nostd-heap-peaks.txt
+
+ttfx stage 1 arena memory check (host-side; DTB decompiled with dtc)
+DTB: board.dtb
+/memory: 0x00000000..0x40000000
+reserved-memory framebuffer@10000000         0x10000000..0x10400000
+arena:        0x18000000..0x1a000000 (32 MiB); private engine stack 0x19ff0000..0x1a000000
+heap margin:  limit 16352 KiB per effect; worst measured rings 13430 KiB over 37 effects
+intervals checked against the arena:
+  stage-1 SPL/U-Boot/OpenSBI load region                         0x00000000..0x00400000  clear
+  OpenSBI fw_jump and its reservations                           0x00000000..0x00060000  clear
+  Linux CMA pool (observed on the vendor kernel)                 0x1e000000..0x3e12f000  clear
+  loadaddr / CONFIG_SYS_LOAD_ADDR                                0x0c000000..0x0c100000  clear
+  force_dtb probe scratch                                        0x15000000..0x15010000  clear
+  splash reservation                                             0x10000000..0x10400000  clear
+  bootargs.txt (ext4load 0x07000000, with growth margin)         0x07000000..0x070000c6  clear
+  fw_jump_add_uboot_head.bin (ext4load 0x08000000, with growth margin) 0x08000000..0x080421d8  clear
+  Image (ext4load 0x00200000, with growth margin)                0x00200000..0x03ac5a00  clear
+  dtb (ext4load 0x08400000, with growth margin)                  0x08400000..0x08404b6c  clear
+  initrd.uimg (ext4load 0x09000000, with growth margin)          0x09000000..0x0b093f7c  clear
+  U-Boot relocated code, heap, stack, LMB reservation            0x3fb37920..0x40000000  clear
+  initrd relocated by bootm                                      0x3e12f000..0x3fb36d4f  clear
+  dtb relocated by bootm (fdt_high 0xa100000)                    0x0a0eb000..0x0a100000  clear
+  DT reserved-memory framebuffer@10000000                        0x10000000..0x10400000  clear
+RESULT: OK (arena inside /memory, clear of every load, relocation, reservation and the CMA pool)
+exit: 0
+
+# rejection tests: python3 -I tests/test_check_boot_textfx_memory.py
+----------------------------------------------------------------------
+Ran 10 tests in 4.409s
+
+OK

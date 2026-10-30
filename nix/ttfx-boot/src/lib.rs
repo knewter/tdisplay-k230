@@ -4,7 +4,7 @@
 //! seed, so a boot can pick all three. Frames are the same ANSI text
 //! `ttfx --parity-dump` prints (SGR 0 and 38;2 only), which
 //! `textfx_parse_frame` in the boot renderer already understands.
-#![no_std]
+#![cfg_attr(not(feature = "hosted"), no_std)]
 extern crate alloc;
 
 use alloc::boxed::Box;
