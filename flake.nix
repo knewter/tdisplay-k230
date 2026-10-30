@@ -433,6 +433,8 @@
         inherit omawrite;
         # Opt-in Qt Quick software/Wayland evaluation client, never in the image.
         qtquick-software-probe = pkgsCross.callPackage ./nix/qtquick-software-probe/default.nix { };
+        # Opt-in wl_shm client with the same scene and gestures: the matched baseline.
+        qtquick-shm-baseline = pkgsCross.callPackage ./nix/qtquick-shm-baseline/default.nix { };
         # Standalone pinned helper package; no theme service enters the normal
         # image until generation/rollback and physical gates pass.
         omarchy-theme-tools = pkgsCross.callPackage ./nix/omarchy-theme-tools { };
