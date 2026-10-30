@@ -160,14 +160,16 @@ memory-map tool; I have not done that here.
 `cargo rustc --lib --crate-type staticlib --target riscv64imac-unknown-none-elf`,
 `-C relocation-model=pic` (U-Boot is a PIE and relocates itself), `panic = "abort"`. Linking
 `--gc-sections` with only a stub for `ttfx_fw_panic` resolved every symbol: no libc is needed,
-`memcpy`/`memset` come from `compiler_builtins`. Nixpkgs' rustc has no std for that target, so
-`nix/ttfx-boot/default.nix` adds the official `rust-std` tarball for the same rustc version
-(hash published beside it on static.rust-lang.org) to a sysroot, applies the ttfx patch with
-`applyPatches`, and vendors the three registry crates (`hashbrown`, `libm`, `unicode-width`) from a
-committed `Cargo.lock`. U-Boot would then add the `.a` to `PLATFORM_LIBS` and a C glue file
-calling the ABI, on the model of the Life change's `k230_boot_life.c`; that is a stage 1 edit and
-waits for the operator. The Nix derivation's build is queued behind the shared build lock
-and is recorded in the task list, not claimed here.
+`memcpy`/`memset` come from `compiler_builtins`. Nixpkgs' rustc has no std for that target, and the official `rust-std` tarball for the same version is refused by it
+("found crate `core` compiled by an incompatible version of rustc": the nixpkgs compiler reports `built from a source
+tarball`; that attempt failed in the sandbox and is why the derivation does not use it). `nix/ttfx-boot/default.nix` instead
+builds `core`, `alloc` and `compiler_builtins` from the matching rust-src with `-Zbuild-std` (the stable compiler under
+`RUSTC_BOOTSTRAP=1`), offline: cargo resolves the whole std workspace, so the vendor directory is the crate's own lock plus
+`library/Cargo.lock`, both through `importCargoLock`. It applies the ttfx patch with `applyPatches`.
+`nix build .#k230-ttfx-boot` succeeded (output and a QEMU parity run of the 8-effect subset in
+`nix-build-ttfx-boot.txt`). U-Boot would then add the `.a` to `PLATFORM_LIBS` and a C glue file
+calling the ABI, on the model of the Life change's `k230_boot_life.c`; that is a stage 1 edit and waits for the operator.
+The same crate builds hosted for riscv64-linux (`nix build .#k230-ttfx-boot-hosted`) and is linked into the Linux player.
 
 ## Parity
 

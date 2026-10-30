@@ -1,0 +1,14 @@
+# nix build .#k230-ttfx-boot (features fw,subset), 2026-10-30T16:09:13Z
+# store path: /nix/store/2m4b3nxvx9i9z466c8ccyhn96nj8mfkk-k230-ttfx-boot-0.1.0
+# libk230_ttfx_boot.a: 1739180 bytes, sha256 0847bb103f6a8572; header ttfx_boot.h
+# evidence class: laptop build; the archive linked with nix/ttfx-boot/bench/bench.c (riscv64 gcc, rv64imac lp64, soft-float) and run under qemu-riscv64-static
+# reference: FNV-1a of every frame byte of the std ttfx (.#ttfx-host), seed 3, 35x38, 30 fps, K230 banner
+OK  wipe frames=138 bytes=552473 fnv=0x5c54b47a
+OK  middleout frames=94 bytes=421921 fnv=0xcd9cab90
+OK  expand frames=50 bytes=208700 fnv=0xa6ee264d
+OK  slide frames=110 bytes=489119 fnv=0x5e65790a
+OK  errorcorrect frames=274 bytes=1530438 fnv=0x788bc9ca
+OK  print frames=308 bytes=1384401 fnv=0x919fa86a
+OK  decrypt frames=753 bytes=3708382 fnv=0xd2f76168
+OK  scattered frames=120 bytes=630337 fnv=0x6f385c52
+subset effects compared: 8, mismatches: 0
