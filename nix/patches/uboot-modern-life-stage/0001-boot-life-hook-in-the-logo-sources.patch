@@ -1,0 +1,28 @@
+--- a/board/canaan/common/logo/k230_logo.c
++++ b/board/canaan/common/logo/k230_logo.c
+@@ -380,6 +380,13 @@
+         return -1;
+ 
+     k230_display_logo_ready = 1;
++#ifdef CONFIG_K230_BOOT_LIFE
++    /* Dormant unless the environment says boot_life=1: a first install must boot exactly
++     * as before.  The k230_life command runs it by hand.  A failure leaves the lit logo
++     * as the static path would. */
++    if (env_get_yesno("boot_life") > 0)
++        k230_boot_life_run();
++#endif
+     return 0;
+ }
+ 
+--- a/board/canaan/common/logo/display_logo.h
++++ b/board/canaan/common/logo/display_logo.h
+@@ -544,4 +544,9 @@
+ int st7701_init(k_connector_info *info);
+ uint32_t dwc_dsi_enable(uint32_t enable);
+ void kd_vo_set_vtth_intr(bool status, uint32_t vpos);
++#ifdef CONFIG_K230_BOOT_LIFE
++int k230_boot_life_run(void);
++void k230_boot_life_stop(void);
++uint32_t k230_boot_life_instance(void);
++#endif
+ #endif

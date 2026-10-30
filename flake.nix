@@ -43,6 +43,8 @@
       # SPL, in the directory layout nix/stage1.nix's packaging reads.
       ubootK230ModernTrial = pkgsCross.callPackage ./nix/uboot-k230-modern.nix { inherit k230Sdk; variant = "tdisplay"; textBase = "0x4000000"; };
       ubootK230ModernNoPmpLock = pkgsCross.callPackage ./nix/uboot-k230-modern.nix { inherit k230Sdk; variant = "tdisplay"; lockOtpPmp = false; };
+      ubootK230ModernLife = ubootK230Modern.override { bootLife = true; };
+      ubootK230ModernLifeTrial = ubootK230Modern.override { bootLife = true; textBase = "0x4000000"; };
       ubootK230ModernWithSpl = pkgs.runCommand "k230-modern-uboot-with-vendor-spl" { } ''
         mkdir -p $out/spl
         cp ${ubootK230Modern}/u-boot.bin $out/u-boot.bin
@@ -931,14 +933,28 @@
         # from the running 2022.10 U-Boot. No card write of boot firmware.
         uboot-k230-modern-trial = ubootK230ModernTrial;
         # Stage c companion: no PMP lock before an upstream OpenSBI.
+        # Opt-in Game of Life on native cyclic; boot_life=1 in the env enables it.
+        uboot-k230-modern-life = ubootK230ModernLife;
+        uboot-k230-modern-life-trial = ubootK230ModernLifeTrial;
+        stage1-modern-life = pkgs.runCommand "k230-stage1-modern-life" { } ''
+          pk=${stage1.packagingOf { ubootDir = pkgs.runCommand "k230-modern-life-uboot-with-vendor-spl" { } ''
+            mkdir -p $out/spl
+            cp ${ubootK230ModernLife}/u-boot.bin $out/u-boot.bin
+            cp ${ubootK230}/spl/u-boot-spl.bin $out/spl/u-boot-spl.bin
+          ''; name = "k230-stage1-modern-life-packaging"; }}
+          mkdir -p $out
+          cp $pk/fn_u-boot-spl.bin $pk/fn_ug_u-boot.bin ${stage1.env}/env.env ${stage1.env}/tdisplay.env ${stage1.fwJump}/fw_jump.bin ${stage1.fwJump}/fw_jump_add_uboot_head.bin $out/
+          (cd $out && sha256sum fn_u-boot-spl.bin fn_ug_u-boot.bin env.env fw_jump.bin fw_jump_add_uboot_head.bin | tee SHA256SUMS)
+          sz=$(stat -c %s $out/fn_ug_u-boot.bin)
+          [ "$sz" -lt 1048576 ] || { echo "error: U-Boot slot overflow" >&2; exit 1; }
+        '';
         uboot-k230-modern-no-pmp-lock = ubootK230ModernNoPmpLock;
         # The five stage-1 files with the modern U-Boot slot: fn_ug_u-boot.bin
         # is new, fn_u-boot-spl.bin / env.env / fw_jump* are the .#stage1 bytes.
         stage1-modern = pkgs.runCommand "k230-stage1-modern" { } ''
           pk=${stage1.packagingOf { ubootDir = ubootK230ModernWithSpl; name = "k230-stage1-modern-packaging"; }}
           mkdir -p $out
-          cp $pk/fn_u-boot-spl.bin $pk/fn_ug_u-boot.bin ${stage1.env}/env.env ${stage1.env}/tdisplay.env \
-             ${stage1.fwJump}/fw_jump.bin ${stage1.fwJump}/fw_jump_add_uboot_head.bin $out/
+          cp $pk/fn_u-boot-spl.bin $pk/fn_ug_u-boot.bin ${stage1.env}/env.env ${stage1.env}/tdisplay.env ${stage1.fwJump}/fw_jump.bin ${stage1.fwJump}/fw_jump_add_uboot_head.bin $out/
           (cd $out && sha256sum fn_u-boot-spl.bin fn_ug_u-boot.bin env.env fw_jump.bin fw_jump_add_uboot_head.bin | tee SHA256SUMS)
           sz=$(stat -c %s $out/fn_ug_u-boot.bin)
           echo "fn_ug_u-boot.bin: $sz bytes (slot 1048576)"

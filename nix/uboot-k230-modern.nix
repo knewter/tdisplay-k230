@@ -29,6 +29,11 @@
   # (see CONFIG_K230_PMP_LOCK_OTP in the arch Kconfig), so the U-Boot that
   # precedes it is built without the lock.
 , lockOtpPmp ? true
+  # Opt-in stage-1 Game of Life (the-boot-shows-a-computational-game-of-life)
+  # on U-Boot's native cyclic framework; dormant unless the environment sets
+  # boot_life=1. The engine and the driver are the files src/ and
+  # nix/uboot-k230-life/ already carry for the 2022.10 build.
+, bootLife ? false
 }:
 
 let
@@ -49,6 +54,14 @@ in
   # default; this wins).
   extraConfig = lib.optionalString tdisplay ''
     CONFIG_K230_BARE_DISP_LOGO_FB_ADDR=${splash.framebufferAddress}
+  '' + lib.optionalString bootLife ''
+    CONFIG_K230_BOOT_LIFE=y
+    CONFIG_K230_BOOT_LIFE_RECORD_ADDR=${splash.lifeRecordAddress}
+    CONFIG_K230_BOOT_LIFE_WINDOW_BYTES=${splash.lifeRecordWindow}
+    CONFIG_K230_BOOT_LIFE_RESERVED_BYTES=${splash.framebufferSize}
+    # A full-frame draw takes longer than the 5 ms default, after which
+    # cyclic unregisters the callback.
+    CONFIG_CYCLIC_MAX_CPU_TIME_US=100000
   '' + lib.optionalString (!lockOtpPmp) ''
     # CONFIG_K230_PMP_LOCK_OTP is not set
   '' + lib.optionalString (textBase != null) ''
@@ -79,6 +92,13 @@ in
     chmod -R u+w $stage
     (cd $stage && patch -p1 < ${oldPatches}/0004-rm69a10-logo-port.patch \
                && patch -p1 < ${oldPatches}/0005-k230-stage1-splash-readiness.patch)
+  '' + lib.optionalString bootLife ''
+    (cd $stage && patch -p1 < ${./patches/uboot-modern-life-stage}/0001-boot-life-hook-in-the-logo-sources.patch)
+    for f in game_of_life.c game_of_life.h boot_life_stage1.c boot_life_stage1.h boot_frame.c boot_frame.h boot_compat.h; do
+      cp ${../src}/$f board/canaan/k230_canmv/life/$f
+    done
+    cp ${./uboot-k230-life}/k230_boot_life.c board/canaan/k230_canmv/life/k230_boot_life.c
+  '' + lib.optionalString tdisplay ''
     cp $stage/board/canaan/common/logo/*.c $stage/board/canaan/common/logo/*.h \
        board/canaan/k230_canmv/logo/
   '';

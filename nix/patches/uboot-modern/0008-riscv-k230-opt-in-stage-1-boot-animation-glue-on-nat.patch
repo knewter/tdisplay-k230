@@ -1,0 +1,134 @@
+From 2e85f7b1afefdd308010f3abfbf4d3ee5d7d2f6e Mon Sep 17 00:00:00 2001
+From: x <x@x>
+Date: Fri, 30 Oct 2026 11:27:42 -0500
+Subject: [PATCH] riscv: k230: opt-in stage-1 boot animation glue on native
+ cyclic
+
+Kconfig, Makefile and ft_board_setup glue; the frame engine and the
+animation driver are copied in at build time by the Nix derivation.
+---
+ board/canaan/k230_canmv/Kconfig       | 50 +++++++++++++++++++++++++++
+ board/canaan/k230_canmv/Makefile      |  1 +
+ board/canaan/k230_canmv/board.c       | 16 +++++++++
+ board/canaan/k230_canmv/life/Makefile |  8 +++++
+ 4 files changed, 75 insertions(+)
+ create mode 100644 board/canaan/k230_canmv/life/Makefile
+
+diff --git a/board/canaan/k230_canmv/Kconfig b/board/canaan/k230_canmv/Kconfig
+index 078feaa281..95dfea0035 100644
+--- a/board/canaan/k230_canmv/Kconfig
++++ b/board/canaan/k230_canmv/Kconfig
+@@ -49,6 +49,56 @@ config K230_BARE_DISP_LOGO_FB_ADDR
+ 	  Must match the reserved-memory node the kernel device tree
+ 	  declares (nix/boot-splash.nix is the single source).
+ 
++config K230_BOOT_LIFE
++	bool "Stage-1 Game of Life on the RM69A10 logo scanout"
++	depends on K230_BARE_DISP_LOGO_RM69A10 && CYCLIC
++	help
++	  After the logo is lit, advance a deterministic Game of Life on the
++	  same scanout from U-Boot's native cyclic hook and publish a
++	  versioned, checksummed state record for the next owner
++	  (openspec change the-boot-shows-a-computational-game-of-life).
++	  Dormant unless the environment sets boot_life=1.
++
++config K230_BOOT_LIFE_RECORD_ADDR
++	hex "Game of Life state record address"
++	depends on K230_BOOT_LIFE
++	default 0x0
++
++config K230_BOOT_LIFE_WINDOW_BYTES
++	hex "Game of Life record window size"
++	depends on K230_BOOT_LIFE
++	default 0x2000
++
++config K230_BOOT_LIFE_RESERVED_BYTES
++	hex "Size of the splash reservation that contains scanout and record"
++	depends on K230_BOOT_LIFE
++	default 0x400000
++
++config K230_BOOT_LIFE_SEED
++	hex "Deterministic default seed"
++	depends on K230_BOOT_LIFE
++	default 0x4b323330
++
++config K230_BOOT_LIFE_FRAMES
++	int "Generations in the blocking fallback"
++	depends on K230_BOOT_LIFE
++	default 40
++
++config K230_BOOT_LIFE_FRAME_MS
++	int "Delay between generations in milliseconds"
++	depends on K230_BOOT_LIFE
++	default 50
++
++config K230_BOOT_LIFE_CYCLIC
++	bool "Draw the animation from the cyclic hook instead of blocking boot"
++	depends on K230_BOOT_LIFE
++	default y
++
++config K230_BOOT_LIFE_CYCLIC_MAX_FRAMES
++	int "Frame budget of the cyclic animation"
++	depends on K230_BOOT_LIFE_CYCLIC
++	default 200
++
+ config BOARD_SPECIFIC_OPTIONS
+ 	def_bool y
+ 	select CANAAN_K230
+diff --git a/board/canaan/k230_canmv/Makefile b/board/canaan/k230_canmv/Makefile
+index 588b3c3ad4..7ca9c9fc00 100644
+--- a/board/canaan/k230_canmv/Makefile
++++ b/board/canaan/k230_canmv/Makefile
+@@ -8,3 +8,4 @@ ccflags-y += -I$(srctree)/board/canaan/k230_canmv/include
+ obj-y += board.o
+ obj-$(CONFIG_CMD_K230_SET_DTB) += k230_set_dtb.o
+ obj-$(CONFIG_K230_BARE_DISP_LOGO) += k230_gpio.o logo/
++obj-$(CONFIG_K230_BOOT_LIFE) += life/
+diff --git a/board/canaan/k230_canmv/board.c b/board/canaan/k230_canmv/board.c
+index 5b2cddadb6..7c955bf364 100644
+--- a/board/canaan/k230_canmv/board.c
++++ b/board/canaan/k230_canmv/board.c
+@@ -10,6 +10,10 @@
+ #ifdef CONFIG_K230_BARE_DISP_LOGO
+ int k230_display_logo_is_ready(void);
+ int k230_display_logo(void);
++#ifdef CONFIG_K230_BOOT_LIFE
++void k230_boot_life_stop(void);
++uint32_t k230_boot_life_instance(void);
++#endif
+ 
+ /*
+  * The vendor tree called last_stage_init() directly; in this U-Boot it is an
+@@ -35,6 +39,18 @@ int ft_board_setup(void *blob, struct bd_info *bd)
+ {
+ 	int chosen = fdt_path_offset(blob, "/chosen");
+ 
++#ifdef CONFIG_K230_BOOT_LIFE
++	/* Last U-Boot hook before the jump: freeze the record the kernel will
++	 * read, and give it the same-boot token (never carried across boots). */
++	k230_boot_life_stop();
++	if (chosen >= 0)
++		fdt_delprop(blob, chosen, "canaan,life-instance");
++	if (chosen >= 0 && k230_display_logo_is_ready() && k230_boot_life_instance())
++		if (fdt_setprop_u32(blob, chosen, "canaan,life-instance",
++				    k230_boot_life_instance()))
++			printf("cannot set Game of Life instance\n");
++#endif
++
+ 	if (!k230_display_logo_is_ready()) {
+ 		if (chosen >= 0)
+ 			fdt_delprop(blob, chosen, "canaan,stage1-splash");
+diff --git a/board/canaan/k230_canmv/life/Makefile b/board/canaan/k230_canmv/life/Makefile
+new file mode 100644
+index 0000000000..7139d3058c
+--- /dev/null
++++ b/board/canaan/k230_canmv/life/Makefile
+@@ -0,0 +1,8 @@
++# SPDX-License-Identifier: GPL-2.0+
++#
++# The C files here (game_of_life, boot_frame, boot_life_stage1, k230_boot_life)
++# are copied from this project's src/ and nix/uboot-k230-life/ by
++# nix/uboot-k230-modern.nix; the frame loop is the same source the 2022.10
++# stage 1 builds. The cyclic framework is U-Boot's own.
++ccflags-y += -I$(srctree)/board/canaan/k230_canmv/logo -D__UBOOT__
++obj-y += game_of_life.o boot_frame.o boot_life_stage1.o k230_boot_life.o
