@@ -56,6 +56,25 @@ console on the CH342 bridge (the console is **not** `/dev/ttyACM0` this week;
 the coordinator names the port), and the J3 data USB-C cabled directly to this
 host for `ums`.
 
+## 2a. Amendment 2026-10-30 (coordinator): J3 is not cabled to this host
+
+The operator has one USB lead and it is on the console, so **no `ums` proof is
+run this session** (a0 step 5 and the stage-a `ums` check are recorded as not
+run, with this reason) and recovery path 1 below is unavailable. Consequences:
+
+- The slot is written **from the running Linux over SSH** with
+  `K230_SLOT_SSH='ssh -F <cfg> k230' tools/write-uboot-slot.sh <image> ssh:/dev/mmcblk1`
+  (same one-window write, `O_DIRECT` read-back and preserved-region hashes;
+  board lock held). Nothing else changes in section 4.
+- Immediately before the write, take a **fresh backup of exactly what is in the
+  slot at that moment** (the Life work may have changed it) to the backup
+  directory, and use that file as the rollback image.
+- Rollback path 2 (at the new U-Boot prompt: `ext4load` the saved image from
+  `/boot`, then `mmc write`) is rehearsed during a0 from the 2022.10 prompt
+  **without writing**: load the 1 MiB rollback image to RAM, `mmc read` the
+  slot into a second RAM buffer, `cmp.b` them, and require "Total of ... bytes
+  were the same". The floor is the card reader, operator present.
+
 ## 3. Stage a0: run the modern U-Boot from RAM (no boot-firmware write)
 
 The trial binary is linked at `0x4000000` (`CONFIG_TEXT_BASE`), away from the
@@ -85,8 +104,16 @@ running 2022.10 image and from the stale copy at `0x0`.
    (DMA/cache coherency), `env print bootcmd`, and `run blinux` to the NixOS
    login. A lit panel at the prompt is the splash (task 2.5).
 5. `ums 0 mmc 1` from the trial U-Boot, J3 to the host: `usb-Linux_UMS_disk_0-0:0`
-   with `29f1:0230`; read the 2 MiB window back (`dd iflag=direct`) and compare
-   with `uboot-2MiB-1MiB.bin`.
+   with `29f1:0230` -- **NOT RUN this session (J3 not cabled; see 2a).** The
+   build still contains `ums` (the `help ums` line proves only that).
+5a. Rehearse rollback path 2 from the **2022.10** prompt, RAM only, no write:
+   ```
+   ext4load mmc 1:1 0x6000000 /fn_ug_u-boot.2022.10.bin
+   mmc dev 1
+   mmc read 0x7000000 0x1000 0x800
+   cmp.b 0x6000000 0x7000000 0x100000
+   ```
+   `cmp.b` must report the buffers equal. Do **not** run `mmc write`.
 6. Failure at any step: reset button or power cycle. The card is unchanged
    except for the two extra files on `/boot`, which are inert.
 

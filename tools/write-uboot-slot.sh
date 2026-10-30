@@ -5,6 +5,8 @@
 #
 #   ./tools/write-uboot-slot.sh <fn_ug_u-boot.bin> /dev/disk/by-id/usb-Linux_UMS_disk_0-0:0
 #   ./tools/write-uboot-slot.sh --check <image>            host-only: size/magic/padding report
+#   K230_SLOT_SSH='ssh -F <cfg> k230' ./tools/write-uboot-slot.sh <image> ssh:/dev/mmcblk1
+#                                                          the card in the RUNNING board, from Linux
 #   K230_SLOT_TEST_FILE=1 ./tools/write-uboot-slot.sh <image> <regular file>   host test only
 #
 # Layout (nix/stage1.nix `layout`, SDK genimage.cfg), byte offsets:
@@ -50,7 +52,27 @@ echo "image   : $IMG ($SIZE bytes, K230 magic ok)"
 echo "padded  : $WINDOW bytes, sha256 $SHA"
 [ "$CHECK_ONLY" = 1 ] && exit 0
 
-if [ "${K230_SLOT_TEST_FILE:-}" = 1 ]; then
+REMOTE=""
+if [ "${TARGET#ssh:}" != "$TARGET" ]; then
+  # The card in the running board (J3/ums is not always cabled): the same
+  # raw-window reads and the one write, run over SSH on /dev/mmcblk1. The
+  # caller holds the board lock.
+  [ -n "${K230_SLOT_SSH:-}" ] || die "set K230_SLOT_SSH to the ssh command prefix"
+  REAL="${TARGET#ssh:}"; REMOTE="$K230_SLOT_SSH"; DIRECT="iflag=direct"
+  if [ "${K230_SLOT_REMOTE_TEST:-}" = 1 ]; then
+    BYTES=0; DIRECT=""     # host test with a file standing in for the card
+  else
+    case "$REAL" in /dev/mmcblk[0-9]) ;; *) die "remote target must be a whole /dev/mmcblkN, got $REAL" ;; esac
+    BYTES=$($REMOTE "cat /sys/class/block/$(basename "$REAL")/size")
+    BYTES=$((BYTES * 512))
+    [ "$BYTES" -ge $((64 * 1024 * 1024)) ] || die "remote target is only $BYTES bytes"
+  fi
+  echo "target  : $REMOTE -> $REAL ($BYTES bytes)"
+  [ "${K230_SLOT_REMOTE_TEST:-}" = 1 ] || $REMOTE "lsblk -o NAME,SIZE,FSTYPE,MOUNTPOINT $REAL" | sed 's/^/          /'
+  printf 'Type the device name (e.g. mmcblk1) to confirm: '
+  read -r answer
+  [ "$answer" = "$(basename "$REAL")" ] || die "got '$answer' -- nothing written"
+elif [ "${K230_SLOT_TEST_FILE:-}" = 1 ]; then
   [ -f "$TARGET" ] || die "test target must be a regular file"
   REAL="$TARGET"; DIRECT=""
 else
@@ -75,7 +97,14 @@ else
 fi
 
 SUDO=sudo; [ -w "$REAL" ] && SUDO=""
-rd() { $SUDO dd if="$REAL" bs=4096 skip=$(($1 / 4096)) count=$(($2 / 4096)) $DIRECT status=none; }
+[ -n "$REMOTE" ] && SUDO=""
+rd() {
+  if [ -n "$REMOTE" ]; then
+    $REMOTE "dd if=$REAL bs=4096 skip=$(($1 / 4096)) count=$(($2 / 4096)) $DIRECT status=none"
+  else
+    $SUDO dd if="$REAL" bs=4096 skip=$(($1 / 4096)) count=$(($2 / 4096)) $DIRECT status=none
+  fi
+}
 
 # Regions that must not change: both SPL copies, the environment window, and
 # the first 64 KiB after the U-Boot window as a canary for overruns.
@@ -91,8 +120,12 @@ echo "preserved regions before:"; echo "$BEFORE" | sed 's/^/  /'
 echo "old slot sha256: $(rd $SLOT $WINDOW | sha256sum | cut -d' ' -f1)"
 
 echo "writing the U-Boot slot ($WINDOW bytes at byte offset $SLOT)..."
-$SUDO dd if="$PAD" of="$REAL" bs=1M seek=2 count=1 conv=notrunc,fsync oflag=sync status=none
-sync
+if [ -n "$REMOTE" ]; then
+  $REMOTE "dd of=$REAL bs=1M seek=2 count=1 conv=notrunc,fsync $([ "${K230_SLOT_REMOTE_TEST:-}" = 1 ] || echo oflag=direct) status=none; sync" < "$PAD"
+else
+  $SUDO dd if="$PAD" of="$REAL" bs=1M seek=2 count=1 conv=notrunc,fsync oflag=sync status=none
+  sync
+fi
 
 GOT=$(rd $SLOT $WINDOW | sha256sum | cut -d' ' -f1)
 echo "slot read back: $GOT"

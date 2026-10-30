@@ -18,7 +18,7 @@
 
 - [ ] 3.1 Read-only board check from the running 2022.10 console: `bdinfo`, `md` of `0x0`, caches state; record under `docs/evidence/modern-uboot/`; verify with the board console transcript (real board, read-only).
 - [ ] 3.2 Stage the modern binary on `/boot` and run it from the 2022.10 prompt; verify with a console transcript showing the modern banner, `mmc info`, `ext4ls mmc 1:1`, two `crc32` runs of a large `ext4load` agreeing, and a full `blinux` to login (real board, console).
-- [ ] 3.3 Run `ums 0 mmc 1` from the RAM-trial U-Boot and enumerate it on the host (J3 to the host directly); verify with `lsusb`/by-id listing and a read of the 2 MiB slot compared with the saved image (real board, console + host).
+- [ ] 3.3 (Not runnable this session: J3 is not cabled to the host, one USB lead is on the console; 2026-10-30 coordinator.) Run `ums 0 mmc 1` from the RAM-trial U-Boot and enumerate it on the host (J3 to the host directly); verify with `lsusb`/by-id listing and a read of the 2 MiB slot compared with the saved image (real board, console + host).
 
 ## 4. Install and recovery procedure (review gate)
 
