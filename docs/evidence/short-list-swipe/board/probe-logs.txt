@@ -1,0 +1,18 @@
+== sw1
+13:21:45.181Z capabilities body,actions
+13:21:45.194Z posted 1 'Only row' actions ['open', 'Open']
+13:21:56.109Z signal NotificationClosed 1 2
+13:22:21.458Z signal NotificationClosed 3 2
+13:22:25.409Z signal NotificationClosed 2 2
+13:23:44.112Z signal NotificationClosed 4 2
+== sw2
+13:22:08.331Z capabilities body,actions
+13:22:08.342Z posted 2 'Upper row' actions []
+13:22:08.354Z posted 3 'Lower row' actions ['open', 'Open', 'later', 'Later']
+13:22:21.459Z signal NotificationClosed 3 2
+13:22:25.407Z signal NotificationClosed 2 2
+13:23:44.111Z signal NotificationClosed 4 2
+== sw3
+13:22:45.016Z capabilities body,actions
+13:22:45.027Z posted 4 'Close check' actions []
+13:23:44.108Z signal NotificationClosed 4 2

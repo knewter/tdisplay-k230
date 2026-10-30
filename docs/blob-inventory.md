@@ -2491,6 +2491,14 @@ DATA 5cb895b8ed8376e0dc403566d5c7acdb5614b8032856a283565cfe76de99313a docs/evide
 DATA ba9ca84370dcf3083e2e8a6f00d866b79fe640baef49a83e17fe160d7e1ff2cd docs/evidence/notification-actions/board/na-12-cleared.png
 DATA d83931bd84b2f22b006d9723d0bb3502da57addf5f67feeaaf56778ac6c9b7d2 docs/evidence/notification-actions/board/na-13-before-dismiss-all.png
 DATA 3af44cf361cc8fa9bc1aa1c648885cbf18c4fba13057b10e3def76862ed002db docs/evidence/notification-actions/board/na-14-after-dismiss-all.png
+DATA 0221ead16b5cc8a983d5f16acd3b562538146efe854da36c9d794ed5e59c4467 docs/evidence/short-list-swipe/board/sl-01-one-row.png
+DATA 10f93025a98b6ccea451a2c5ccc453e0fbf8605d541699c8835117e29a387b54 docs/evidence/short-list-swipe/board/sl-02-one-row-after.png
+DATA ba94d8a78dfca0e6b1da94309a332ca7a0a942dac53bcd2e74dbdd69e0b7f2fc docs/evidence/short-list-swipe/board/sl-03-two-rows.png
+DATA 7eb9ca33e500b667c14ae9e77b2ee8351844dd9ecf9d7b930d32541f8aa69bd6 docs/evidence/short-list-swipe/board/sl-04-two-rows-after.png
+DATA b9c3298c5f20d739a412b393b1a1fd07aae3373f7730ac03ee868bee2128df08 docs/evidence/short-list-swipe/board/sl-05-both-gone.png
+DATA fff35ca8dc4db11c6da8c86358b2088ca8c66a18aaa42d90228b4cb8d586ad40 docs/evidence/short-list-swipe/board/sl-06-close-check.png
+DATA fff35ca8dc4db11c6da8c86358b2088ca8c66a18aaa42d90228b4cb8d586ad40 docs/evidence/short-list-swipe/board/sl-07-after-upward.png
+DATA 5f35234d742097f77e5be024f4e71a1f985dc9c02ee82e978b6ffa2827f24fd0 docs/evidence/short-list-swipe/board/sl-08-after-fast-upward.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4913,3 +4921,18 @@ Injected-touch grim captures of probe notifications with actions in the landscap
 | `docs/evidence/notification-actions/board/na-12-cleared.png` | 41428 | DATA | `ba9ca84370dcf3083e2e8a6f00d866b79fe640baef49a83e17fe160d7e1ff2cd` |
 | `docs/evidence/notification-actions/board/na-13-before-dismiss-all.png` | 57605 | DATA | `d83931bd84b2f22b006d9723d0bb3502da57addf5f67feeaaf56778ac6c9b7d2` |
 | `docs/evidence/notification-actions/board/na-14-after-dismiss-all.png` | 40871 | DATA | `3af44cf361cc8fa9bc1aa1c648885cbf18c4fba13057b10e3def76862ed002db` |
+
+## Short landscape list swipe-to-dismiss, board
+
+Injected-touch grim captures of sideways swipes dismissing rows of a one- and two-row landscape shade list
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/short-list-swipe/board/sl-01-one-row.png` | 49424 | DATA | `0221ead16b5cc8a983d5f16acd3b562538146efe854da36c9d794ed5e59c4467` |
+| `docs/evidence/short-list-swipe/board/sl-02-one-row-after.png` | 41407 | DATA | `10f93025a98b6ccea451a2c5ccc453e0fbf8605d541699c8835117e29a387b54` |
+| `docs/evidence/short-list-swipe/board/sl-03-two-rows.png` | 56963 | DATA | `ba94d8a78dfca0e6b1da94309a332ca7a0a942dac53bcd2e74dbdd69e0b7f2fc` |
+| `docs/evidence/short-list-swipe/board/sl-04-two-rows-after.png` | 47409 | DATA | `7eb9ca33e500b667c14ae9e77b2ee8351844dd9ecf9d7b930d32541f8aa69bd6` |
+| `docs/evidence/short-list-swipe/board/sl-05-both-gone.png` | 41359 | DATA | `b9c3298c5f20d739a412b393b1a1fd07aae3373f7730ac03ee868bee2128df08` |
+| `docs/evidence/short-list-swipe/board/sl-06-close-check.png` | 47935 | DATA | `fff35ca8dc4db11c6da8c86358b2088ca8c66a18aaa42d90228b4cb8d586ad40` |
+| `docs/evidence/short-list-swipe/board/sl-07-after-upward.png` | 47935 | DATA | `fff35ca8dc4db11c6da8c86358b2088ca8c66a18aaa42d90228b4cb8d586ad40` |
+| `docs/evidence/short-list-swipe/board/sl-08-after-fast-upward.png` | 6076 | DATA | `5f35234d742097f77e5be024f4e71a1f985dc9c02ee82e978b6ffa2827f24fd0` |
