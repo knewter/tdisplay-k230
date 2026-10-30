@@ -249,7 +249,12 @@ class Arm:
     def unit_cpu_us(self):
         text = self.s.read(f"/sys/fs/cgroup/system.slice/{self.unit}/cpu.stat", "")
         m = re.search(r"usage_usec (\d+)", text)
-        return int(m.group(1)) if m else None
+        if m:
+            return int(m.group(1))
+        # fall back to systemd's own accounting of the unit
+        rc, out = self.s.run(["systemctl", "show", "-p", "CPUUsageNSec", "--value", self.unit])
+        out = out.strip()
+        return int(out) // 1000 if rc == 0 and out.isdigit() else None
 
     def thermal(self):
         out = {}
