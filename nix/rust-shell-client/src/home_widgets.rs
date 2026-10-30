@@ -1101,13 +1101,26 @@ pub mod clock {
         pub weekday: i32, // 0 = Sunday, matching `tm_wday`
     }
 
+    extern "C" {
+        // POSIX; the libc crate does not bind it.
+        fn tzset();
+    }
+
+    /// Makes the C library re-read `/etc/localtime` (with `TZ` unset it
+    /// stats the file and reloads it only when it changed).
+    pub fn reread_zone() {
+        unsafe { tzset() };
+    }
+
     /// Reads the current local time via `libc::localtime_r`. `None` only if
     /// the C library itself reports failure (never expected on a real
     /// system; kept `Option` so a caller degrades to a placeholder rather
-    /// than panicking).
+    /// than panicking). `tzset` first: `localtime_r` alone never re-reads
+    /// `/etc/localtime`, which Settings can now change.
     pub fn now_local() -> Option<LocalTime> {
         let now = unsafe { libc::time(std::ptr::null_mut()) };
         let mut tm: libc::tm = unsafe { std::mem::zeroed() };
+        reread_zone();
         let result = unsafe { libc::localtime_r(&now, &mut tm) };
         if result.is_null() {
             return None;

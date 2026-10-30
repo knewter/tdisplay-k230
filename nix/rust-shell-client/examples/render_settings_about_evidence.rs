@@ -37,9 +37,9 @@ fn theme(step: f64) -> AppearanceSnapshot {
 }
 
 fn about() -> InfoPublic {
-    InfoPublic {
-        page: Page::About,
-        rows: vec![
+    InfoPublic::new(
+        Page::About,
+        vec![
             ("Device", "k230".into()),
             ("System", "ab12cd34 \u{b7} nixos-system-k230-26.05.20261026".into()),
             ("Kernel", "7.0.0-k230".into()),
@@ -47,20 +47,20 @@ fn about() -> InfoPublic {
             ("Storage", "14.2 GB free of 29.8 GB".into()),
             ("Shell", "0.1.0 \u{b7} ef56gh78".into()),
         ],
-    }
+    )
 }
 
 fn date_time() -> InfoPublic {
-    InfoPublic {
-        page: Page::DateTime,
-        rows: vec![
+    InfoPublic::new(
+        Page::DateTime,
+        vec![
             ("Date", "Monday, October 26 2026".into()),
             ("Time", "14:05:09".into()),
             ("Time zone", "America/Chicago (UTC-05:00)".into()),
             ("Network time", "Synchronized".into()),
             ("Clock format", "24-hour".into()),
         ],
-    }
+    )
 }
 
 fn main() {

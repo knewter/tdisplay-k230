@@ -43,16 +43,16 @@ fn theme(step: f64) -> AppearanceSnapshot {
 }
 
 fn date_time() -> InfoPublic {
-    InfoPublic {
-        page: Page::DateTime,
-        rows: vec![
+    InfoPublic::new(
+        Page::DateTime,
+        vec![
             ("Date", "Thursday, October 29 2026".into()),
             ("Time", "9:05:09 PM".into()),
             ("Time zone", "America/Chicago (UTC-05:00)".into()),
             ("Network time", "Synchronized".into()),
             (CLOCK_FORMAT_LABEL, "12-hour".into()),
         ],
-    }
+    )
 }
 
 fn home(path: PathBuf, theme: &AppearanceSnapshot, kind: WidgetKind, w: u32, h: u32) {

@@ -19,8 +19,19 @@
 {
   imports = [ "${modulesPath}/profiles/minimal.nix" ];
 
-  # Operator timezone, shared by the shell clock and ordinary applications.
-  time.timeZone = "America/Chicago";
+  # The zone is device state, not image configuration: Settings changes it
+  # through timedated (nix/time-settings.nix), and /etc/localtime survives
+  # reboots and switches. America/Chicago is only the first-boot default,
+  # written after etc activation when no link exists yet.
+  time.timeZone = null;
+  system.activationScripts.k230-default-timezone = {
+    deps = [ "etc" ];
+    text = ''
+      if [ ! -e /etc/localtime ] && [ ! -L /etc/localtime ]; then
+        ln -s /etc/zoneinfo/America/Chicago /etc/localtime
+      fi
+    '';
+  };
 
   # Built on x86_64, runs on the board. Cross-compilation is the default path;
   # see openspec/specs/image/cross-build.

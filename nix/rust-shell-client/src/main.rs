@@ -1706,6 +1706,54 @@ impl ShellClient {
         self.home_mark_dirty();
     }
 
+    fn info_action(&mut self, intent: device_info::Intent, page: &device_info::InfoPublic) {
+        use device_info::Intent;
+        let sources = InfoSources::system();
+        match intent {
+            Intent::Back => {
+                self.info_view.back(&sources);
+            }
+            Intent::ToggleClockFormat => return self.toggle_clock_format(),
+            Intent::ToggleNetworkTime => {
+                let off = std::path::Path::new(device_info::NETWORK_TIME_OFF).exists();
+                self.request_time(if off { "network-time on" } else { "network-time off" }.to_string());
+            }
+            Intent::OpenZones => self.info_view.open(InfoPage::Regions, &sources),
+            Intent::Choose(index) => {
+                if let Some(zone) = self.info_view.choose(index, &sources) {
+                    self.request_time(format!("zone {zone}"));
+                }
+            }
+            Intent::Turn(next) => {
+                if let (_, Some((_, pages))) = device_info::window(page, self.width, self.height) {
+                    self.info_view.turn(next, pages);
+                }
+            }
+        }
+        self.info_polled_at = Some(Instant::now());
+        self.info_dirty();
+    }
+
+    /// Asks the root helper (`nix/time-settings.nix`) for a zone or network
+    /// time change, off the UI thread: timedated can take a second on the
+    /// board. The open page re-reads `/etc/localtime` and the flag each
+    /// second, so the result shows without a reply path.
+    fn request_time(&self, request: String) {
+        self.log(&format!("time-request {request}"));
+        thread::spawn(move || {
+            let answer = (|| -> std::io::Result<String> {
+                let mut stream = UnixStream::connect("/run/k230-time.sock")?;
+                stream.set_read_timeout(Some(Duration::from_secs(25)))?;
+                stream.write_all(format!("{request}\n").as_bytes())?;
+                let mut answer = String::new();
+                stream.read_to_string(&mut answer)?;
+                Ok(answer.trim().to_string())
+            })()
+            .unwrap_or_else(|error| format!("error {error}"));
+            eprintln!("rust-shell time-request {request} -> {answer}");
+        });
+    }
+
     fn close_info_page(&mut self) {
         if self.info_view.page != InfoPage::Closed {
             self.info_view.close();
@@ -6209,8 +6257,7 @@ impl ShellClient {
                                 }
                             } else if let Some(page) = self.info_view.public() {
                                 match device_info::hit(&page, start, point, self.width, self.height) {
-                                    Some(device_info::Intent::Back) => self.close_info_page(),
-                                    Some(device_info::Intent::ToggleClockFormat) => self.toggle_clock_format(),
+                                    Some(intent) => self.info_action(intent, &page),
                                     None => {}
                                 }
                             } else if self.wifi_view.page != WifiPage::Closed {

@@ -147,6 +147,7 @@ jobs:
           python3 tests/test_notification_center.py
           python3 tests/test_notification_dbus.py
           python3 tests/test_term_apps.py
+          python3 tests/test_time_helper.py
           python3 tests/test_shell_gestures.py
           python3 tests/test_shell_routes.py
           python3 tests/test_card_shell_route.py

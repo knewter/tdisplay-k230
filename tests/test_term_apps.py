@@ -207,6 +207,22 @@ class ClockTests(unittest.TestCase):
         plain = apps.clock_frame(102, 23, at("21:05"), twelve=True).plain()
         self.assertIn("PM · Monday 26 October", plain)
 
+    def test_local_time_follows_a_zone_change_without_a_restart(self):
+        # Settings rewrites /etc/localtime while apps run; TZ stands in for it
+        # here, and both are only noticed through tzset.
+        saved = os.environ.get("TZ")
+        try:
+            os.environ["TZ"] = "UTC"
+            self.assertEqual(apps.local_time(0).tm_hour, 0)
+            os.environ["TZ"] = "Asia/Tokyo"
+            self.assertEqual(apps.local_time(0).tm_hour, 9)
+        finally:
+            if saved is None:
+                os.environ.pop("TZ", None)
+            else:
+                os.environ["TZ"] = saved
+            time.tzset()
+
     def test_the_preference_file(self):
         with tempfile.TemporaryDirectory() as d:
             self.assertFalse(apps.read_twelve_hour(d))

@@ -2439,6 +2439,26 @@ DATA 2486277ce5d309fc856b62a8b85999f3931fca8d9c1f5db945fda2dc82f98002 docs/evide
 DATA 9acd2bed1022d59ed6bbb18a3c963aaf7594da941c66dd0ad7058eaa804550ee docs/evidence/clock-format/board/shade-after-restart.png
 DATA 426ddb2f197b9b76c2cf0428720f11121af32d139ec9977a7fbe061156e429c0 docs/evidence/clock-format/board/shade-after-reboot.png
 DATA f23366a3fe42967983075726827e500dd3d267d27c79a078f0c890f49ebbd481 docs/evidence/clock-format/board/weather-12h.png
+DATA bad249ac1a72a51da8e54c44406387e1f5c7cce27bc76bcda60ac66d2c36afad docs/evidence/time-zone/host/areas-100-1232x568.png
+DATA 1fcc5cbebba96be09ec2eb3fe49f156663feef5dd5bd7336ffa5afca5855a4ce docs/evidence/time-zone/host/areas-100-568x1232.png
+DATA 545f18ebed5132d151103ec1bc7aaa91882fc734c443fc0a5fd605e7faa67c3f docs/evidence/time-zone/host/areas-200-1232x568.png
+DATA 800dd0a0b89897515d4109eaff95928839770422eb5e09f64806ab7d1892b3df docs/evidence/time-zone/host/areas-200-568x1232.png
+DATA c6153e1a49708e678d96ad31d5160b5b94666970528ae70ed3e4d6bb3a103a14 docs/evidence/time-zone/host/date-time-100-1232x568.png
+DATA aa541c6a578948c18e2cafaa11b35f1a628ff963954e854d0f810792956b0567 docs/evidence/time-zone/host/date-time-100-568x1232.png
+DATA 52b65e948701b087ca743f6badbaab333f91bf787fac636c09fc936dc45431a5 docs/evidence/time-zone/host/date-time-200-1232x568.png
+DATA 42e5ec730dd8fadf5ad738baeb3d73e252142f2dbeefda24b684d70ff79cb6c8 docs/evidence/time-zone/host/date-time-200-568x1232.png
+DATA 03ec6fffb9198ec34006ef51b3b5c60d17de3bda42c78f8d81a3313ae6f3f4cb docs/evidence/time-zone/host/date-time-network-off-100-1232x568.png
+DATA adcdb6546044fba42f9fe94cc07bd7ce0dfaa824aa94b08a1700ce7fb093cde5 docs/evidence/time-zone/host/date-time-network-off-100-568x1232.png
+DATA cdedcaecaa8f4dc7ebd99486d3d196110bf2bab018e551d251deeaf2375cb23e docs/evidence/time-zone/host/date-time-network-off-200-1232x568.png
+DATA d10e00173dabca7bf572b406a442a5211ebbe26111d256ab48c6405c0411345e docs/evidence/time-zone/host/date-time-network-off-200-568x1232.png
+DATA bff033edca3ac55f5d7008aeb199db2b8ce8747b3c39103989efcf8d7d5a9b07 docs/evidence/time-zone/host/europe-page-1-100-1232x568.png
+DATA 6f19b3d3131eee0993315faec085c9f9173f2782d5d5ab0ccc20f77948ed14f7 docs/evidence/time-zone/host/europe-page-1-100-568x1232.png
+DATA 6a91d06a83f5a0b218fce4d827632ce42366dd34058786c76e96b754d791c0dc docs/evidence/time-zone/host/europe-page-1-200-1232x568.png
+DATA 96f0f8596c229365c0b36c3a946cc14b2603763089e8d55d6bb5d63cb1d37dd4 docs/evidence/time-zone/host/europe-page-1-200-568x1232.png
+DATA 10e900c1a0e24918f70388aefc64135972ed062a0028ef6bfcf36ba2ebf582fb docs/evidence/time-zone/host/europe-page-2-100-1232x568.png
+DATA ad608683fb9e6c2f1bba69f87a1f162285f05961120611828b300b477f0240a6 docs/evidence/time-zone/host/europe-page-2-100-568x1232.png
+DATA 3dadd48d7000b418d72ec1c1692793ffe5ed849c2ac57df307666a2625a6826c docs/evidence/time-zone/host/europe-page-2-200-1232x568.png
+DATA 30cc3802ef27fbdf0e7c41d9fed8dd979df778cbc4d8d928bd7b31d6b0971b73 docs/evidence/time-zone/host/europe-page-2-200-568x1232.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4774,3 +4794,30 @@ Board captures of the 12-hour clock (settings-chooses-a-12-or-24-hour-clock task
 | `docs/evidence/clock-format/board/shade-after-restart.png` | 41514 | DATA | `9acd2bed1022d59ed6bbb18a3c963aaf7594da941c66dd0ad7058eaa804550ee` |
 | `docs/evidence/clock-format/board/shade-after-reboot.png` | 42618 | DATA | `426ddb2f197b9b76c2cf0428720f11121af32d139ec9977a7fbe061156e429c0` |
 | `docs/evidence/clock-format/board/weather-12h.png` | 16917 | DATA | `f23366a3fe42967983075726827e500dd3d267d27c79a078f0c890f49ebbd481` |
+
+## Time zone host renders
+
+Host renders of Settings' time zone chooser and network time switch (settings-sets-the-time-zone-and-network-time task 2.2); see docs/evidence/time-zone/host/README.md.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/time-zone/host/areas-100-1232x568.png` | 44009 | DATA | `bad249ac1a72a51da8e54c44406387e1f5c7cce27bc76bcda60ac66d2c36afad` |
+| `docs/evidence/time-zone/host/areas-100-568x1232.png` | 59438 | DATA | `1fcc5cbebba96be09ec2eb3fe49f156663feef5dd5bd7336ffa5afca5855a4ce` |
+| `docs/evidence/time-zone/host/areas-200-1232x568.png` | 49121 | DATA | `545f18ebed5132d151103ec1bc7aaa91882fc734c443fc0a5fd605e7faa67c3f` |
+| `docs/evidence/time-zone/host/areas-200-568x1232.png` | 74917 | DATA | `800dd0a0b89897515d4109eaff95928839770422eb5e09f64806ab7d1892b3df` |
+| `docs/evidence/time-zone/host/date-time-100-1232x568.png` | 44826 | DATA | `c6153e1a49708e678d96ad31d5160b5b94666970528ae70ed3e4d6bb3a103a14` |
+| `docs/evidence/time-zone/host/date-time-100-568x1232.png` | 51222 | DATA | `aa541c6a578948c18e2cafaa11b35f1a628ff963954e854d0f810792956b0567` |
+| `docs/evidence/time-zone/host/date-time-200-1232x568.png` | 59583 | DATA | `52b65e948701b087ca743f6badbaab333f91bf787fac636c09fc936dc45431a5` |
+| `docs/evidence/time-zone/host/date-time-200-568x1232.png` | 74101 | DATA | `42e5ec730dd8fadf5ad738baeb3d73e252142f2dbeefda24b684d70ff79cb6c8` |
+| `docs/evidence/time-zone/host/date-time-network-off-100-1232x568.png` | 43490 | DATA | `03ec6fffb9198ec34006ef51b3b5c60d17de3bda42c78f8d81a3313ae6f3f4cb` |
+| `docs/evidence/time-zone/host/date-time-network-off-100-568x1232.png` | 48261 | DATA | `adcdb6546044fba42f9fe94cc07bd7ce0dfaa824aa94b08a1700ce7fb093cde5` |
+| `docs/evidence/time-zone/host/date-time-network-off-200-1232x568.png` | 56629 | DATA | `cdedcaecaa8f4dc7ebd99486d3d196110bf2bab018e551d251deeaf2375cb23e` |
+| `docs/evidence/time-zone/host/date-time-network-off-200-568x1232.png` | 68837 | DATA | `d10e00173dabca7bf572b406a442a5211ebbe26111d256ab48c6405c0411345e` |
+| `docs/evidence/time-zone/host/europe-page-1-100-1232x568.png` | 59213 | DATA | `bff033edca3ac55f5d7008aeb199db2b8ce8747b3c39103989efcf8d7d5a9b07` |
+| `docs/evidence/time-zone/host/europe-page-1-100-568x1232.png` | 70643 | DATA | `6f19b3d3131eee0993315faec085c9f9173f2782d5d5ab0ccc20f77948ed14f7` |
+| `docs/evidence/time-zone/host/europe-page-1-200-1232x568.png` | 72173 | DATA | `6a91d06a83f5a0b218fce4d827632ce42366dd34058786c76e96b754d791c0dc` |
+| `docs/evidence/time-zone/host/europe-page-1-200-568x1232.png` | 86864 | DATA | `96f0f8596c229365c0b36c3a946cc14b2603763089e8d55d6bb5d63cb1d37dd4` |
+| `docs/evidence/time-zone/host/europe-page-2-100-1232x568.png` | 55995 | DATA | `10e900c1a0e24918f70388aefc64135972ed062a0028ef6bfcf36ba2ebf582fb` |
+| `docs/evidence/time-zone/host/europe-page-2-100-568x1232.png` | 63971 | DATA | `ad608683fb9e6c2f1bba69f87a1f162285f05961120611828b300b477f0240a6` |
+| `docs/evidence/time-zone/host/europe-page-2-200-1232x568.png` | 70077 | DATA | `3dadd48d7000b418d72ec1c1692793ffe5ed849c2ac57df307666a2625a6826c` |
+| `docs/evidence/time-zone/host/europe-page-2-200-568x1232.png` | 87542 | DATA | `30cc3802ef27fbdf0e7c41d9fed8dd979df778cbc4d8d928bd7b31d6b0971b73` |

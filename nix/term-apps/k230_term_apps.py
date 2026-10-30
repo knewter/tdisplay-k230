@@ -255,6 +255,13 @@ def read_twelve_hour(prefs_dir=PREFS_DIR):
         return False
 
 
+def local_time(when=None):
+    """`time.localtime` after re-reading /etc/localtime: Settings changes the
+    zone while apps run, and `localtime_r` alone never notices."""
+    time.tzset()
+    return time.localtime(when)
+
+
 def clock_digits(tm, twelve=False):
     """`21:05`, or `9:05` on a 12-hour clock (midnight and noon are 12)."""
     if not twelve:
@@ -660,7 +667,7 @@ def fetch_snapshot(now=None, timeout=8):
             body = response.read().decode("utf-8", "replace")
     except Exception:
         return None
-    return parse_wttr_j1(body, time.localtime(now).tm_hour, now)
+    return parse_wttr_j1(body, local_time(now).tm_hour, now)
 
 
 def wind_text(snapshot):
@@ -719,9 +726,9 @@ def weather_frame(cols, rows, snapshot, offline, now, fetching=False):
     status = ""
     stamp = snapshot.get("fetched_unix_secs", 0)
     if offline:
-        status = "Offline — showing data from " + clock_text(time.localtime(stamp), read_twelve_hour())
+        status = "Offline — showing data from " + clock_text(local_time(stamp), read_twelve_hour())
     elif stamp:
-        status = "Updated " + clock_text(time.localtime(stamp), read_twelve_hour())
+        status = "Updated " + clock_text(local_time(stamp), read_twelve_hour())
     f.put_centred(buttons[0].y0 - 1, status, DIM)
     for b in buttons:
         draw_button(f, b, ACCENT)
@@ -821,7 +828,7 @@ def run_clock(sess):
     while True:
         cols, rows = sess.size()
         now = time.time()
-        sess.draw(clock_frame(cols, rows, time.localtime(now), twelve=read_twelve_hour()))
+        sess.draw(clock_frame(cols, rows, local_time(now), twelve=read_twelve_hour()))
         if any(ev[0] == "quit" for ev in sess.wait(next_second_delay(now))):
             return
 
@@ -895,7 +902,7 @@ def render_once(app, args, size):
     cols, rows = (int(p) for p in size.lower().split("x"))
     now = time.time()
     if app == "clock":
-        frame = clock_frame(cols, rows, time.localtime(now), twelve=read_twelve_hour())
+        frame = clock_frame(cols, rows, local_time(now), twelve=read_twelve_hour())
     elif app == "timer":
         frame = timer_frame(cols, rows, timer_new(timer_seconds(args)), time.monotonic())
     else:

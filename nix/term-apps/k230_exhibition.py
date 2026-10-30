@@ -329,7 +329,7 @@ class Exhibition:
     """The loop, with the clock, the machine's state and ttfx injectable."""
 
     def __init__(self, sess, cfg, clock=time.time, charger=charger_online,
-                 display=display_on, play=None, end=None, localtime=time.localtime,
+                 display=display_on, play=None, end=None, localtime=apps.local_time,
                  count=notification_count):
         self.sess = sess
         self.cfg = cfg
@@ -504,7 +504,7 @@ def main(argv=None):
     if args.render_once:
         cols, rows = (int(p) for p in args.render_once.lower().split("x"))
         now = time.time()
-        print(clock_layout(cols, rows, time.localtime(now), int(now // 60),
+        print(clock_layout(cols, rows, apps.local_time(now), int(now // 60),
                            twelve=apps.read_twelve_hour(args.prefs_dir)).plain())
         return 0
     if not sys.stdin.isatty():

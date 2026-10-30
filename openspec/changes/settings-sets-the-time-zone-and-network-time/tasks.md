@@ -11,12 +11,22 @@
 
 ## 2. Host
 
-- [ ] 2.1 Implement the Nix change and the privileged path chosen in 1.1.
+- [x] 2.1 Implement the Nix change and the privileged path chosen in 1.1.
   Proof (host build):
   `nix build .#nixosConfigurations.k230-mainline-drm-shell-landscape-hdmi.config.system.build.toplevel`.
-- [ ] 2.2 Add the zone list and the network-time switch to the Date & time
+  *Host build, 2026-10-30: `sqd58h8c…`. `time.timeZone = null` with a
+  first-boot America/Chicago link (`nix/k230.nix`); `k230-time.socket` and
+  `k230-time@.service` (`nix/time-settings.nix`) run
+  `tools/k230_time_helper.py`, and `python3 tests/test_time_helper.py`
+  passed (11). Running clocks re-read the zone through `tzset`
+  (`home_widgets::clock::reread_zone`, `k230_term_apps.local_time`).*
+- [x] 2.2 Add the zone list and the network-time switch to the Date & time
   page. Proof (host): `cargo test --offline --lib` in `nix/rust-shell-client`,
   and renders at 100% and 200% under `docs/evidence/time-zone/host/`.
+  *Host, 2026-10-30: `cargo test --offline` passed (687 lib tests and every
+  integration test), including the chooser's area/zone/back walk, paging at
+  every text step, and floor-sized targets. `python3 tests/test_term_apps.py`
+  passed (40). There are 20 renders with a README.*
 
 ## 3. Board (hardware-only)
 

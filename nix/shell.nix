@@ -1089,6 +1089,10 @@ let
   '';
 in
 {
+  # Settings' Date & time page changes the zone and network time through
+  # this module's root helper (settings-sets-the-time-zone-and-network-time).
+  imports = [ ./time-settings.nix ];
+
   options.k230.shell = {
     enable = lib.mkEnableOption "the sway shell on the panel";
 

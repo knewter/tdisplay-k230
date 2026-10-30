@@ -2094,30 +2094,46 @@ fn paint_info(
     width: f64,
     height: f64,
 ) {
-    let lay = crate::device_info::layout_for(width as u32, height as u32, view.rows.len());
+    use crate::device_info::Page as InfoPage;
+    let lay = crate::device_info::page_layout(view, width as u32, height as u32);
+    let (shown, pager) = crate::device_info::window(view, width as u32, height as u32);
     let _ = cr.save();
     if !lay.wide {
         cr.scale(width / 568.0, height / 1232.0);
     }
     let style = visual_style(theme, "controls");
     let (bx, by, bw, bs) = lay.back_text;
-    text(cr, "\u{2039} Settings", bx, by, bw, bs, style.accent);
+    text(cr, view.page.back_label(), bx, by, bw, bs, style.accent);
     let (tx, ty, tw, ts) = lay.title;
-    heading(cr, view.page.title(), tx, ty, tw, ts, style.text);
-    let switch = crate::device_info::clock_format_switch(view, &lay).map(|(pill, _)| pill);
-    let last = lay.cards.len().saturating_sub(1);
-    for (i, ((label, value), (x, y, w, h))) in view.rows.iter().zip(&lay.cards).enumerate() {
-        service_card(cr, theme, "controls", *x, *y, *w, *h, false);
-        let text_w = match switch {
-            Some((px, ..)) if i == last => px - x - 30.0,
-            _ => w - 36.0,
+    let title = match (view.page, view.region.as_deref()) {
+        (InfoPage::Zones, Some(region)) => region,
+        _ => view.page.title(),
+    };
+    heading(cr, title, tx, ty, tw, ts, style.text);
+    let switches = crate::device_info::switches(view, &lay);
+    for (slot, ((label, value), &(x, y, w, h))) in view.rows[shown.clone()].iter().zip(&lay.cards).enumerate() {
+        service_card(cr, theme, "controls", x, y, w, h, false);
+        let text_w = match switches.iter().find(|s| s.0 == slot) {
+            Some((_, (px, ..), _)) => px - x - 30.0,
+            None => w - 36.0,
         };
         themed_role_fit(cr, theme, "caption", label, x + 18.0, y + lay.label_dy, text_w, TYPE_CAPTION, style.muted, pango::Weight::Normal);
         themed_role_fit(cr, theme, "body", value, x + 18.0, y + lay.value_dy, text_w, TYPE_BODY, style.text, pango::Weight::Normal);
     }
-    if let Some((px, py, pw, ph)) = switch {
-        // The same pill as the Cellular and Location switches; on means 12-hour.
-        let on = view.rows.last().is_some_and(|r| r.1 == "12-hour");
+    if let (Some((index, pages)), Some(&(x, y, w, h))) = (pager, lay.cards.get(shown.len())) {
+        // Previous on the left half, Next on the right; an end is muted.
+        service_card(cr, theme, "controls", x, y, w, h, false);
+        let count = format!("{} of {pages}", index + 1);
+        themed_role_fit(cr, theme, "caption", &count, x + 18.0, y + lay.label_dy, w - 36.0, TYPE_CAPTION, style.muted, pango::Weight::Normal);
+        let previous = if index == 0 { style.muted } else { style.accent };
+        let next = if index + 1 == pages { style.muted } else { style.accent };
+        let body = theme_font_size(theme, "body", TYPE_BODY, TYPE_BODY, TYPE_BODY * 1.25);
+        let next_w = (text_advance_resolved(cr, "Next \u{203a}", body, pango::Weight::Normal) + 8.0).min(w / 2.0 - 18.0);
+        themed_role_fit(cr, theme, "body", "\u{2039} Previous", x + 18.0, y + lay.value_dy, w - 48.0 - next_w, TYPE_BODY, previous, pango::Weight::Normal);
+        themed_role_fit(cr, theme, "body", "Next \u{203a}", x + w - 18.0 - next_w, y + lay.value_dy, next_w, TYPE_BODY, next, pango::Weight::Normal);
+    }
+    for (_, (px, py, pw, ph), on) in switches {
+        // The same pill as the Cellular and Location switches.
         rounded(cr, px, py, pw, ph, ph / 2.0);
         if on { color(cr, style.accent, 1.0) } else { color(cr, style.muted, 0.35) }
         let _ = cr.fill();
