@@ -1475,6 +1475,11 @@ in
       # while dimmed let the next session dim the dimmed value again (37 to
       # 9, board 2026-10-28). This one lives until reboot.
       "d /run/k230-idle 0700 shell shell -"
+    ] ++ lib.optionals cfg.coherentShell [
+      # A closed Timer card's pending countdown (k230-timer@.service below)
+      # records itself here, outside shell.service's RuntimeDirectory, so a
+      # reopened card can still find it after a shell restart.
+      "d /run/k230-timer-state 0700 shell shell -"
     ];
     users.users.shell = {
       isNormalUser = true;
@@ -1590,6 +1595,56 @@ in
         RestartSec = 1;
         UMask = "0077";
         NoNewPrivileges = true;
+      };
+    };
+
+    # The Timer's countdown after its card is closed. The card used to leave
+    # a helper in shell-ui.service's cgroup, which `systemctl restart shell`
+    # ends (docs/evidence/timer-restart/board/design-check.md). One instance
+    # per pending timer is started by systemd instead, in its own cgroup under
+    # system.slice, as the shell user (which has no user manager). Nothing is
+    # resident while no timer is pending. The broker's trusted map keys on
+    # the interpreter and script, so these posts still read as "Timer".
+    systemd.sockets.k230-timer = lib.mkIf cfg.coherentShell {
+      description = "Pending Timer countdown endpoint";
+      wantedBy = [ "sockets.target" ];
+      socketConfig = {
+        ListenStream = "/run/k230-timer.sock";
+        SocketUser = "root";
+        SocketGroup = "shell";
+        SocketMode = "0660";
+        Accept = true;
+        RemoveOnStop = true;
+      };
+    };
+    systemd.services."k230-timer@" = lib.mkIf cfg.coherentShell {
+      description = "Pending Timer countdown";
+      environment = {
+        K230_TIMER_STATE_DIR = "/run/k230-timer-state";
+        K230_NOTIFICATION_SOCKET = "/run/shell-notifications/events.sock";
+      };
+      serviceConfig = {
+        ExecStart = "${pkgs.python3}/bin/python3 ${termApps}/lib/k230-term-apps/k230_term_apps.py timerd-serve";
+        User = "shell";
+        Group = "shell";
+        StandardInput = "socket";
+        StandardOutput = "journal";
+        StandardError = "journal";
+        NoNewPrivileges = true;
+        CapabilityBoundingSet = "";
+        ProtectSystem = "strict";
+        ReadWritePaths = [ "/run/k230-timer-state" ];
+        ProtectHome = true;
+        PrivateTmp = true;
+        PrivateDevices = true;
+        ProtectKernelTunables = true;
+        ProtectKernelModules = true;
+        ProtectControlGroups = true;
+        RestrictNamespaces = true;
+        RestrictAddressFamilies = [ "AF_UNIX" ];
+        SystemCallFilter = [ "~@debug" ];
+        MemoryMax = "32M";
+        UMask = "0077";
       };
     };
 

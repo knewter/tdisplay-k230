@@ -289,8 +289,8 @@ class WeatherTests(unittest.TestCase):
         self.assertEqual(apps.hit_test(buttons, buttons[0].x0, buttons[0].y0), "refresh")
 
 
-class TimerAlertTests(unittest.TestCase):
-    """Expiry reaches the broker, and survives a closed card (host only)."""
+class TimerHelpers(unittest.TestCase):
+    """A fake broker, and a fake timer socket that starts instances."""
 
     def serve(self, directory):
         import socket
@@ -314,6 +314,66 @@ class TimerAlertTests(unittest.TestCase):
         threading.Thread(target=loop, daemon=True).start()
         self.addCleanup(listener.close)
         return path, received
+
+    def wait_gone(self, pid, timeout=5):
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            try:
+                os.kill(pid, 0)
+            except ProcessLookupError:
+                return True
+            except PermissionError:
+                return False
+            try:
+                os.waitpid(pid, os.WNOHANG)  # reap it when it is our child
+            except ChildProcessError:
+                pass
+            time.sleep(0.02)
+        return False
+
+    def use_broker(self, sock):
+        old = os.environ.get("K230_NOTIFICATION_SOCKET")
+        os.environ["K230_NOTIFICATION_SOCKET"] = sock
+        self.addCleanup(lambda: os.environ.pop("K230_NOTIFICATION_SOCKET", None) if old is None
+                        else os.environ.__setitem__("K230_NOTIFICATION_SOCKET", old))
+
+    def fake_timer_socket(self, directory, state_dir):
+        """Stand in for k230-timer.socket: for each connection start a
+        `timerd-serve` instance in its own session and process group, with the
+        connection as stdin, as systemd does with Accept=yes. Returns (path,
+        instances); each instance is a Popen that is not a child of the card's
+        process group."""
+        import socket
+        import subprocess
+        import sys
+        import threading
+        path = os.path.join(directory, "k230-timer.sock")
+        listener = socket.socket(socket.AF_UNIX)
+        listener.bind(path)
+        listener.listen(4)
+        instances = []
+        env = dict(os.environ, K230_TIMER_STATE_DIR=state_dir)
+
+        def loop():
+            while True:
+                try:
+                    conn, _ = listener.accept()
+                except OSError:
+                    return
+                instances.append(subprocess.Popen(
+                    [sys.executable, str(MODULE), "timerd-serve"], stdin=conn,
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                    start_new_session=True, env=env))
+                conn.close()
+
+        threading.Thread(target=loop, daemon=True).start()
+        self.addCleanup(listener.close)
+        self.addCleanup(lambda: [p.kill() or p.wait() for p in instances if p.poll() is None])
+        return path, instances
+
+
+class TimerAlertTests(TimerHelpers):
+    """Expiry reaches the broker, and survives a closed card (host only)."""
 
     def test_expiry_request_is_important_and_unredacted(self):
         request = apps.timer_expiry_request(300)
@@ -348,14 +408,11 @@ class TimerAlertTests(unittest.TestCase):
             state_path = os.path.join(directory, "k230-timer.json")
             now = time.monotonic()
             state = apps.TimerState(5, 5, True, now + 0.4, False)
-            old = os.environ.get("K230_NOTIFICATION_SOCKET")
-            os.environ["K230_NOTIFICATION_SOCKET"] = sock
-            self.addCleanup(lambda: os.environ.pop("K230_NOTIFICATION_SOCKET", None) if old is None
-                            else os.environ.__setitem__("K230_NOTIFICATION_SOCKET", old))
-            child = apps.timer_detach(state, state_path)
-            self.assertIsNotNone(child)
+            self.use_broker(sock)
+            pid = apps.timer_detach(state, state_path, os.path.join(directory, "absent.sock"))
+            self.assertIsNotNone(pid)
             self.assertEqual(apps.timer_pending(state_path)["initial"], 5)
-            child.wait(timeout=5)
+            self.assertTrue(self.wait_gone(pid))
             self.assertEqual([r["summary"] for r in received], ["Timer finished"])
             self.assertFalse(os.path.exists(state_path))
 
@@ -363,12 +420,13 @@ class TimerAlertTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             state_path = os.path.join(directory, "k230-timer.json")
             now = time.monotonic()
-            child = apps.timer_detach(apps.TimerState(120, 120, True, now + 60, False), state_path)
-            self.addCleanup(child.wait)
+            pid = apps.timer_detach(apps.TimerState(120, 120, True, now + 60, False), state_path,
+                                    os.path.join(directory, "absent.sock"))
+            self.addCleanup(self.wait_gone, pid)
             adopted = apps.timer_adopt(state_path, now + 10)
             self.assertTrue(adopted.running)
             self.assertEqual((adopted.initial, apps.timer_remaining(adopted, now + 10)), (120, 50))
-            child.wait(timeout=5)  # stopped by the adopter, so it never alerts
+            self.assertTrue(self.wait_gone(pid))  # stopped by the adopter, so it never alerts
             self.assertFalse(os.path.exists(state_path))
             self.assertIsNone(apps.timer_adopt(state_path, now))
 
@@ -377,6 +435,93 @@ class TimerAlertTests(unittest.TestCase):
             state_path = os.path.join(directory, "k230-timer.json")
             self.assertIsNone(apps.timer_detach(apps.timer_new(30), state_path))
             self.assertFalse(os.path.exists(state_path))
+
+
+class TimerSurvivesShellRestartTests(TimerHelpers):
+    """The waiting part is a socket-activated instance, not a child of the
+    shell or its card (pending-timers-survive-restarts task 2.1, host only)."""
+
+    def test_stopping_the_cards_process_group_does_not_stop_the_timer(self):
+        import signal
+        import subprocess
+        import sys
+        with tempfile.TemporaryDirectory() as directory:
+            broker, received = self.serve(directory)
+            state_dir = os.path.join(directory, "state")
+            os.mkdir(state_dir)
+            self.use_broker(broker)
+            timer_sock, instances = self.fake_timer_socket(directory, state_dir)
+            state_path = os.path.join(state_dir, "k230-timer.json")
+            # The "card" is its own process group (the shell's session): it
+            # hands the countdown over the socket, then the group is killed
+            # the way `systemctl restart shell` kills a cgroup.
+            card = subprocess.Popen(
+                [sys.executable, "-c",
+                 "import importlib.util,sys,time\n"
+                 f"s=importlib.util.spec_from_file_location('m',{str(MODULE)!r});m=importlib.util.module_from_spec(s);s.loader.exec_module(m)\n"
+                 "st=m.TimerState(5,5,True,time.monotonic()+0.8,False)\n"
+                 f"pid=m.timer_detach(st,{state_path!r},{timer_sock!r})\n"
+                 "print(pid,flush=True);time.sleep(60)\n"],
+                stdout=subprocess.PIPE, start_new_session=True, text=True,
+                env=dict(os.environ, K230_NOTIFICATION_SOCKET=broker))
+            instance_pid = int(card.stdout.readline())
+            self.assertEqual(len(instances), 1)
+            self.assertEqual(instance_pid, instances[0].pid)
+            self.assertNotEqual(os.getpgid(instance_pid), os.getpgid(card.pid))
+            self.assertEqual(apps.timer_pending(state_path)["initial"], 5)
+            os.killpg(card.pid, signal.SIGKILL)
+            card.wait(timeout=5)
+            card.stdout.close()
+            self.assertIsNone(instances[0].poll())  # still waiting
+            instances[0].wait(timeout=5)
+            self.assertEqual(instances[0].returncode, 0)
+            self.assertEqual([r["summary"] for r in received], ["Timer finished"])
+            self.assertEqual(received[0]["body"], "00:05 elapsed")
+            self.assertFalse(os.path.exists(state_path))
+
+    def test_adopting_ends_the_instance_without_an_alert(self):
+        with tempfile.TemporaryDirectory() as directory:
+            broker, received = self.serve(directory)
+            state_dir = os.path.join(directory, "state")
+            os.mkdir(state_dir)
+            self.use_broker(broker)
+            timer_sock, instances = self.fake_timer_socket(directory, state_dir)
+            state_path = os.path.join(state_dir, "k230-timer.json")
+            now = time.monotonic()
+            pid = apps.timer_detach(apps.TimerState(120, 120, True, now + 60, False), state_path, timer_sock)
+            self.assertEqual(pid, instances[0].pid)
+            adopted = apps.timer_adopt(state_path, time.monotonic())
+            self.assertTrue(adopted.running)
+            # The deadline the instance recorded is the card's, to a few ms.
+            self.assertAlmostEqual(adopted.deadline, now + 60, delta=0.5)
+            instances[0].wait(timeout=5)
+            self.assertEqual(received, [])
+            self.assertFalse(os.path.exists(state_path))
+
+    def test_a_paused_card_hands_nothing_to_the_socket(self):
+        with tempfile.TemporaryDirectory() as directory:
+            state_dir = os.path.join(directory, "state")
+            os.mkdir(state_dir)
+            timer_sock, instances = self.fake_timer_socket(directory, state_dir)
+            paused = apps.timer_pause(apps.timer_start(apps.timer_new(60), time.monotonic()), time.monotonic())
+            self.assertIsNone(apps.timer_detach(paused, os.path.join(state_dir, "k230-timer.json"), timer_sock))
+            reset = apps.timer_reset(paused)
+            self.assertIsNone(apps.timer_detach(reset, os.path.join(state_dir, "k230-timer.json"), timer_sock))
+            time.sleep(0.1)
+            self.assertEqual(instances, [])
+
+    def test_a_bad_request_is_refused_without_a_record(self):
+        import socket
+        with tempfile.TemporaryDirectory() as directory:
+            path = os.path.join(directory, "k230-timer.json")
+            for raw in (b"not json\n", b'{"left":-1,"initial":5}\n', b'{"left":5}\n', b""):
+                a, b = socket.socketpair()
+                a.sendall(raw)
+                a.shutdown(socket.SHUT_WR)
+                self.assertIsNone(apps.serve_timer_request(b, path))
+                a.close()
+                b.close()
+            self.assertEqual(os.listdir(directory), [])
 
 
 if __name__ == "__main__":

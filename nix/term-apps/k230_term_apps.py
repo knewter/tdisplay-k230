@@ -10,7 +10,8 @@ terminal and network code is a thin shell around them.
     k230_term_apps.py clock
     k230_term_apps.py timer [seconds]
     k230_term_apps.py weather
-    k230_term_apps.py timerd DEADLINE INITIAL STATE   (internal: outlives a closed Timer card)
+    k230_term_apps.py timerd DEADLINE INITIAL STATE   (internal: fallback helper without the timer socket)
+    k230_term_apps.py timerd-serve                    (internal: k230-timer@.service, request on stdin)
     k230_term_apps.py APP ... --render-once WIDTHxHEIGHT   (debug: one frame)
 """
 import json
@@ -403,8 +404,17 @@ def notify_broker(request, path=None):
         return False
 
 
+TIMER_STATE_DIR = "/run/k230-timer-state"  # outlives shell.service's RuntimeDirectory (nix/shell.nix)
+
+
+def timer_socket():
+    return os.environ.get("K230_TIMER_SOCKET", "/run/k230-timer.sock")
+
+
 def timer_state_path():
-    base = os.environ.get("K230_TIMER_STATE_DIR") or os.environ.get("XDG_RUNTIME_DIR") or "/tmp"
+    base = os.environ.get("K230_TIMER_STATE_DIR")
+    if not base:
+        base = TIMER_STATE_DIR if os.path.isdir(TIMER_STATE_DIR) else os.environ.get("XDG_RUNTIME_DIR") or "/tmp"
     return os.path.join(base, "k230-timer.json")
 
 
@@ -442,10 +452,67 @@ def timer_adopt(path, now):
     return TimerState(record["initial"], math.ceil(left), True, record["deadline"], False)
 
 
-def timer_detach(state, path):
-    """Leave a helper that posts the expiry after this card is gone."""
+def timer_detach_socket(state, sock_path, now):
+    """Hand the countdown to a k230-timer@.service instance, which systemd
+    starts outside the shell's cgroups so a shell restart cannot reach it.
+    The request carries seconds left, not a clock reading; the instance adds
+    its own CLOCK_MONOTONIC (system-wide, so it agrees with this process).
+    Returns the instance's pid once it has recorded itself, else None."""
+    request = {"left": max(0.0, state.deadline - now), "initial": state.initial}
+    try:
+        with socket.socket(socket.AF_UNIX) as conn:
+            conn.settimeout(3)
+            conn.connect(sock_path)
+            conn.sendall(json.dumps(request, separators=(",", ":")).encode() + b"\n")
+            reply = b""
+            while b"\n" not in reply and len(reply) < 4096:
+                chunk = conn.recv(256)
+                if not chunk:
+                    break
+                reply += chunk
+        return int(json.loads(reply.split(b"\n", 1)[0])["pid"])
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
+
+def serve_timer_request(conn, path, clock=time.monotonic):
+    """The k230-timer@.service entry: read one request from the accepted
+    connection, record this process for the card to adopt, acknowledge, and
+    return (deadline, initial). None when the request is unusable."""
+    try:
+        conn.settimeout(3)
+        raw = b""
+        while b"\n" not in raw and len(raw) < 4096:
+            chunk = conn.recv(512)
+            if not chunk:
+                break
+            raw += chunk
+        request = json.loads(raw.split(b"\n", 1)[0])
+        left, initial = float(request["left"]), int(request["initial"])
+        if not 0 <= left <= MAX_SECONDS + 60 or not 0 <= initial <= MAX_SECONDS:
+            return None
+        deadline = clock() + left
+        tmp = f"{path}.{os.getpid()}"
+        with open(tmp, "w") as handle:
+            json.dump({"pid": os.getpid(), "deadline": deadline, "initial": initial}, handle)
+        os.replace(tmp, path)
+        conn.sendall(json.dumps({"pid": os.getpid()}).encode() + b"\n")
+        return deadline, initial
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
+
+def timer_detach(state, path, sock_path=None):
+    """Leave something that posts the expiry after this card is gone: a socket
+    activated instance when the timer socket answers, else (host runs, or the
+    unit missing) a detached helper of this process. Returns its pid or None."""
     if not state.running:
         return None
+    sock_path = sock_path or timer_socket()
+    if os.path.exists(sock_path):
+        pid = timer_detach_socket(state, sock_path, time.monotonic())
+        if pid is not None:
+            return pid
     try:
         child = subprocess.Popen(
             [sys.executable, os.path.abspath(__file__), "timerd", repr(state.deadline), str(state.initial), path],
@@ -455,7 +522,7 @@ def timer_detach(state, path):
         with open(tmp, "w") as handle:
             json.dump({"pid": child.pid, "deadline": state.deadline, "initial": state.initial}, handle)
         os.replace(tmp, path)
-        return child
+        return child.pid
     except OSError:
         return None
 
@@ -930,6 +997,15 @@ def main(argv):
         except IndexError:
             print("--render-once needs WIDTHxHEIGHT", file=sys.stderr)
             return 2
+    if args and args[0] == "timerd-serve" and len(args) == 1:
+        # k230-timer@.service: the accepted connection is stdin.
+        path = timer_state_path()
+        with socket.socket(fileno=os.dup(0)) as conn:
+            served = serve_timer_request(conn, path)
+        if served is None:
+            return 2
+        run_timerd(served[0], served[1], path)
+        return 0
     if args and args[0] == "timerd" and len(args) == 4:
         try:
             run_timerd(float(args[1]), int(args[2]), args[3])
