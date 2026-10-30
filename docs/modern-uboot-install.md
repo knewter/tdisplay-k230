@@ -84,8 +84,15 @@ running 2022.10 image and from the stale copy at `0x0`.
    `.#uboot-k230-modern-trial` to `/boot/u-boot-modern-trial.bin`, copy the
    rollback image to `/boot/fn_ug_u-boot.2022.10.bin`, `sync`. Record
    `sha256sum` of both on the board and the host.
-2. `reboot`; interrupt autoboot at the `K230# ` prompt (the 1 s `bootdelay`;
-   `tools/ums-session.py`'s key-hammering loop is the pattern). Drain console
+2. `reboot`; interrupt autoboot at the `K230# ` prompt (the 1 s `bootdelay`).
+   **Send nothing until the `U-Boot 2022.10` banner has been read from the
+   console, then send one key** (a Life-agent U-Boot hung 2026-10-30 in a
+   `Could not initialize timer (err -19)` loop before the banner after a
+   script sent `\r` every 50 ms from reset; input during pre-relocation init
+   is the suspected cause). `tools/ums-session.py` (a key every 100 ms from
+   `reboot`) must not be used for a0 as written; the driver for a0 waits for
+   the banner first, then sends a single Ctrl-C-free `\r` and checks for the
+   prompt, retrying once per 300 ms only after the banner. Drain console
    replies until 0.5 s of quiet after every command (memory note
    `k230-uboot-console-quirks`: every reply is echoed twice).
 3. At `K230# `:
