@@ -1,10 +1,11 @@
-{ stdenv, cmake, qt6Packages }:
+{ stdenv, cmake, qt6Packages, buildPackages }:
 
 stdenv.mkDerivation {
   pname = "qtquick-software-probe";
   version = "0.1";
   src = ./.;
-  nativeBuildInputs = [ cmake qt6Packages.wrapQtAppsHook ];
+  # Host-side Qt tools (QmlTools, ShaderTools) are needed by the target CMake packages.
+  nativeBuildInputs = [ cmake qt6Packages.wrapQtAppsHook buildPackages.qt6Packages.qtdeclarative buildPackages.qt6Packages.qtshadertools ];
   buildInputs = with qt6Packages; [ qtbase qtdeclarative qtwayland ];
   # The wrapper fixes the renderer: software scene graph on the Wayland QPA,
   # scene-graph info logging, and no inherited RHI backend forcing.
