@@ -27,6 +27,7 @@ static int failures, checks;
 #define GUARD 64u
 
 struct ctr {
+	size_t fb_bytes;
 	unsigned flushes, fb_flushes, rec_flushes, delays, delay_ms_total;
 	const void *fb, *rec;
 };
@@ -37,8 +38,9 @@ static void flush(void *ctx, const void *p, size_t n)
 
 	(void)n;
 	c->flushes++;
-	if (p == c->fb)
-		c->fb_flushes++;
+	if ((const char *)p >= (const char *)c->fb &&
+	    (const char *)p < (const char *)c->fb + (size_t)GOL_PANEL_W * 4u * GOL_PANEL_H)
+		c->fb_flushes++, c->fb_bytes += n;
 	if (p == c->rec)
 		c->rec_flushes++;
 }
@@ -99,6 +101,9 @@ int main(void)
 	       cfg.boot_instance, cfg.seed, cfg.frames, cfg.frame_ms);
 	printf("result: generation %u, grid-hash %08x, differential cells redrawn %u\n",
 	       r.generation, r.grid_hash, r.cells_redrawn);
+	printf("flushed framebuffer bytes: %zu of %zu if every frame were flushed whole\n", c.fb_bytes,
+	       (size_t)41 * GOL_PANEL_W * 4u * GOL_PANEL_H);
+	CHECK(c.fb_bytes < (size_t)41 * GOL_PANEL_W * 4u * GOL_PANEL_H);
 	printf("callbacks: %u flushes (%u framebuffer, %u record), %u delays totalling %u ms\n",
 	       c.flushes, c.fb_flushes, c.rec_flushes, c.delays, c.delay_ms_total);
 	CHECK(r.generation == 40 && r.instance == 0x1badb002u);
@@ -152,6 +157,46 @@ int main(void)
 		printf("fallback check, flipped cell bit: %s\n",
 		       gol_status_name(gol_record_decode(&dec, bad, sizeof bad, cfg.boot_instance)));
 		CHECK(gol_record_decode(&dec, bad, sizeof bad, cfg.boot_instance) == GOL_BAD_CHECKSUM);
+	}
+
+	/* Incremental (cyclic) form: the record is valid and consistent after every frame,
+	 * and stopping at any point leaves a resumable state. */
+	{
+		struct bf_source isrc = { 0 };
+		struct bf_session sess;
+		struct bf_ops bops = { &c, flush, delay_ms };
+		struct bf_cfg bc;
+		struct gol_state mid;
+		unsigned k, delays_before = c.delays;
+
+		/* Reuse the Life producer through its public entry by running 0 frames first. */
+		(void)isrc;
+		memset(mem, 0xee, sizeof mem);
+		cfg.frames = 0;
+		CHECK(boot_life_stage1_run(&cfg, &ops, &r) == 0 && r.generation == 0);
+		bc.target.fb = fb;
+		bc.target.stride_bytes = stride;
+		bc.target.width = GOL_PANEL_W;
+		bc.target.height = GOL_PANEL_H;
+		bc.record = window;
+		bc.record_window = WINDOW;
+		bc.boot_instance = 0x77u;
+		bc.seed = cfg.seed;
+		bc.frames = 5;
+		bc.frame_ms = 50;
+		CHECK(bf_begin(&sess, &bc, &bops, &boot_life_source) == 0);
+		CHECK(gol_record_decode(&mid, window, WINDOW, 0x77u) == GOL_OK && mid.generation == 0);
+		for (k = 1; k <= 5; k++) {
+			int more = bf_advance(&sess);
+
+			CHECK(more == (k < 5 ? 1 : 0));
+			CHECK(gol_record_decode(&mid, window, WINDOW, 0x77u) == GOL_OK && mid.generation == k &&
+			      mid.frame_generation == k);
+		}
+		CHECK(bf_advance(&sess) == 0); /* frames used up: no further drawing */
+		CHECK(gol_record_decode(&mid, window, WINDOW, 0x77u) == GOL_OK && mid.generation == 5);
+		CHECK(c.delays == delays_before); /* bf_advance never sleeps */
+		printf("incremental session: 5 frames, record valid after each, no sleeps in bf_advance\n");
 	}
 
 	printf("%d checks, %d failures\n%s\n", checks, failures, failures ? "FAIL" : "PASS");

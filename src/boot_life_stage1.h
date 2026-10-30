@@ -42,6 +42,8 @@ struct boot_life_result {
 	unsigned cells_redrawn;    /* differential redraw total, frames 1.. */
 };
 
+extern struct bf_source boot_life_source;
+
 /* Returns 0 on success, -1 if the configuration is unusable (nothing drawn). */
 int boot_life_stage1_run(const struct boot_life_cfg *cfg, const struct boot_life_ops *ops,
 			 struct boot_life_result *out);

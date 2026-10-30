@@ -119,6 +119,20 @@ the reserved window, the dormant-by-env gate, the memory checker and the
 install procedure are reused as they are. Names already pushed
 (`life`, `canaan,life-instance`) were not renamed.
 
+**Stage 1 animates from a cyclic callback, with the blocking loop as fallback
+(user decision 2026-10-30).** The vendor-derived U-Boot is 2022.10 and has no
+`CONFIG_CYCLIC`/`schedule()`; a minimal API-compatible back-port
+(`nix/uboot-k230-life/cyclic.h`, `k230_cyclic.c`) routes `WATCHDOG_RESET()` to
+`schedule()` (opt-in build only, never in SPL). `lib/time.c`'s `udelay()` calls
+it, and the SD read loop calls `udelay(10)`, so the callback runs throughout
+the roughly 3 s of kernel/initrd reads and the bootdelay without adding a
+sleep. The frame is drawn by `bf_advance()` (incremental form of the shared
+loop); the hook stops in `ft_board_setup()` so the record Linux reads is the
+final frame. The generation at handoff therefore varies with load speed.
+Findings, call-site survey and the unmeasured costs are in
+`docs/evidence/game-of-life/uboot-cyclic.md`; `CONFIG_K230_BOOT_LIFE_CYCLIC=n`
+or `k230_life block` gives the blocking loop.
+
 ## Risks / Trade-offs
 
 - [The static handoff remains physically wrong] → block implementation acceptance

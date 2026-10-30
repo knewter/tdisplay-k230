@@ -121,6 +121,8 @@ in
       cp ${../src}/$f board/canaan/common/logo/$f
     done
     cp ${./uboot-k230-life}/k230_boot_life.c board/canaan/common/logo/k230_boot_life.c
+    cp ${./uboot-k230-life}/k230_cyclic.c board/canaan/common/logo/k230_cyclic.c
+    cp ${./uboot-k230-life}/cyclic.h include/cyclic.h
     patch -p1 < ${./uboot-k230-life/0006-k230-stage1-boot-life.patch}
   '' + lib.optionalString cpu0IdentityProbe ''
     # Experimental read-only CPU0 SPL diagnostic. Never included in the

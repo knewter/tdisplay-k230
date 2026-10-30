@@ -1,6 +1,6 @@
 --- a/arch/riscv/cpu/k230/Kconfig
 +++ b/arch/riscv/cpu/k230/Kconfig
-@@ -70,6 +70,50 @@
+@@ -70,6 +70,66 @@
  	  Physical address reserved for the RM69A10 XRGB8888 scanout.
  	  The project Nix fragment supplies the nonzero board address.
  
@@ -48,16 +48,33 @@
 +	depends on K230_BOOT_LIFE
 +	default 50
 +
++config K230_BOOT_LIFE_CYCLIC
++	bool "Draw the animation from the cyclic hook instead of blocking boot"
++	depends on K230_BOOT_LIFE
++	default y
++	help
++	  Registers a callback with a minimal back-port of the 2023.01 cyclic
++	  framework (include/cyclic.h).  WATCHDOG_RESET() then runs due callbacks
++	  from lib/time.c's udelay(), so the animation advances while the SD
++	  reads and image checks proceed.  Off: the animation runs in a blocking
++	  loop with sleeps.
++
++config K230_BOOT_LIFE_CYCLIC_MAX_FRAMES
++	int "Frame budget of the cyclic animation"
++	depends on K230_BOOT_LIFE_CYCLIC
++	default 200
++
  config K230_HDMI_LCD_I2C_BUS
  	int "k230 hdmi lcd i2c bus"
  	default 3
 --- a/board/canaan/common/logo/Makefile
 +++ b/board/canaan/common/logo/Makefile
-@@ -25,6 +25,7 @@
+@@ -25,6 +25,8 @@
  
  
  obj-$(CONFIG_K230_BARE_DISP_LOGO) += k230_logo.o st7701.o  display_logo.o
 +obj-$(CONFIG_K230_BOOT_LIFE) += game_of_life.o boot_frame.o boot_life_stage1.o k230_boot_life.o
++obj-$(CONFIG_K230_BOOT_LIFE_CYCLIC) += k230_cyclic.o
  
  
  EXTRA_CFLAGS += -I$(srctree)/arch/$(ARCH)/cpu/k230/
@@ -79,18 +96,19 @@
  
 --- a/board/canaan/common/logo/display_logo.h
 +++ b/board/canaan/common/logo/display_logo.h
-@@ -544,4 +544,8 @@
+@@ -544,4 +544,9 @@
  int st7701_init(k_connector_info *info);
  uint32_t dwc_dsi_enable(uint32_t enable);
  void kd_vo_set_vtth_intr(bool status, uint32_t vpos);
 +#ifdef CONFIG_K230_BOOT_LIFE
 +int k230_boot_life_run(void);
++void k230_boot_life_stop(void);
 +uint32_t k230_boot_life_instance(void);
 +#endif
  #endif
 --- a/board/canaan/common/k230_board_common.c
 +++ b/board/canaan/common/k230_board_common.c
-@@ -608,6 +608,22 @@
+@@ -608,6 +608,24 @@
              printf("cannot set stage-1 splash flag: %d\n", ret);
      }
  #endif
@@ -100,6 +118,8 @@
 +    {
 +        int chosen = fdt_path_offset(blob, "/chosen");
 +
++        /* Last U-Boot hook before the jump: freeze the record the kernel will read. */
++        k230_boot_life_stop();
 +        if (chosen >= 0)
 +            fdt_delprop(blob, chosen, "canaan,life-instance");
 +        if (chosen >= 0 && k230_display_logo_is_ready() && k230_boot_life_instance()) {
@@ -113,3 +133,17 @@
      return 0;
  }
  
+--- a/include/watchdog.h
++++ b/include/watchdog.h
+@@ -90,4 +90,11 @@
+ #if defined(CONFIG_MPC85xx) && !defined(__ASSEMBLY__)
+ 	void init_85xx_watchdog(void);
+ #endif
++#if defined(CONFIG_K230_BOOT_LIFE_CYCLIC) && !defined(CONFIG_SPL_BUILD) && !defined(__ASSEMBLY__)
++/* Run due cyclic callbacks wherever the tree already calls WATCHDOG_RESET(),
++ * notably udelay() in lib/time.c, which every SD poll loop uses. */
++#include <cyclic.h>
++#undef WATCHDOG_RESET
++#define WATCHDOG_RESET() schedule()
++#endif
+ #endif /* _WATCHDOG_H_ */

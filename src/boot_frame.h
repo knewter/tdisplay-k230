@@ -36,6 +36,9 @@ struct bf_target {
 	void *fb;
 	size_t stride_bytes;
 	unsigned width, height; /* pixels, XRGB8888 */
+	/* Output of step(): the byte range of the framebuffer it changed
+	 * (offset from fb). dirty_len == 0 means "assume the whole frame". */
+	size_t dirty_off, dirty_len;
 };
 
 struct bf_source {
@@ -45,7 +48,7 @@ struct bf_source {
 	/* Draw frame 0 (resuming nothing). Returns 0 or -1 (nothing drawn). */
 	int (*start)(void *ctx, const struct bf_target *t, uint32_t seed);
 	/* Advance and draw one frame. Returns 0 or -1 (stop the loop). */
-	int (*step)(void *ctx, const struct bf_target *t);
+	int (*step)(void *ctx, struct bf_target *t);
 	/* Write the complete record to out (max bytes) for the given boot
 	 * instance; return its length or -1.  Reports the frame counter. */
 	long (*publish)(void *ctx, uint8_t *out, size_t max, uint32_t instance, uint32_t *frame);
@@ -72,7 +75,25 @@ struct bf_result {
 	uint32_t instance;
 };
 
-/* 0 on success; -1 if the configuration is unusable (nothing written). */
+/* Incremental form, for a cyclic callback that must not block boot.
+ * bf_begin() invalidates the record window, draws frame 0 and publishes it.
+ * Each bf_advance() then draws and publishes exactly one more frame:
+ * returns 1 while more frames remain within cfg->frames, 0 once they are
+ * used up, -1 on a publish failure.  cfg, ops and src must outlive the session.
+ * cfg->frame_ms is NOT slept here; pacing is the caller's job. */
+struct bf_session {
+	const struct bf_cfg *cfg;
+	const struct bf_ops *ops;
+	struct bf_source *src;
+	uint32_t frame;
+	unsigned done;
+};
+int bf_begin(struct bf_session *s, const struct bf_cfg *cfg, const struct bf_ops *ops,
+	     struct bf_source *src);
+int bf_advance(struct bf_session *s);
+
+/* Blocking form: bf_begin plus cfg->frames x (sleep frame_ms, bf_advance).
+ * 0 on success; -1 if the configuration is unusable (nothing written). */
 int bf_run(const struct bf_cfg *cfg, const struct bf_ops *ops, struct bf_source *src,
 	   struct bf_result *out);
 
