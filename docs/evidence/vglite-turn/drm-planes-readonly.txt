@@ -1,0 +1,50 @@
+# 2026-10-30T16:27:02Z boot 0b49504f-2d64-4acf-a62e-d95281ae4cc6 /nix/store/49mnsl2si30m1l4fxdx2h114myv3anjf-nixos-system-nixos-26.11.20260919.20b1ddd
+/run/current-system/sw/bin/modetest
+card0
+card0-DSI-1
+card0-HDMI-A-1
+version
+1
+plane[35]: plane-0
+	fb=0
+	crtc-pos=0x0+0+0
+	src-pos=0.000000x0.000000+0.000000+0.000000
+	rotation=1
+plane[37]: plane-1
+	fb=60
+		format=RG16 little-endian (0x36314752)
+	crtc-pos=568x1232+0+0
+	src-pos=568.000000x1232.000000+0.000000+0.000000
+	rotation=1
+plane[39]: plane-2
+	fb=0
+	crtc-pos=64x64+292+562
+	src-pos=64.000000x64.000000+0.000000+0.000000
+	rotation=1
+plane[41]: plane-3
+	fb=0
+	crtc-pos=0x0+0+0
+	src-pos=0.000000x0.000000+0.000000+0.000000
+	rotation=1
+plane[43]: plane-4
+	fb=0
+	crtc-pos=0x0+0+0
+	src-pos=0.000000x0.000000+0.000000+0.000000
+	rotation=1
+plane[45]: plane-5
+	fb=0
+	crtc-pos=0x0+0+0
+	src-pos=0.000000x0.000000+0.000000+0.000000
+	rotation=1
+plane[47]: plane-6
+	fb=0
+	crtc-pos=0x0+0+0
+	src-pos=0.000000x0.000000+0.000000+0.000000
+	rotation=1
+crtc[50]: canaan_crtc
+	active=1
+	self_refresh_active=0
+	mode_changed=0
+	active_changed=0
+	mode: "568x1232": 52 49500 568 668 708 748 1232 1236 1252 1268 0x48 0x0
+	output_format=RGB

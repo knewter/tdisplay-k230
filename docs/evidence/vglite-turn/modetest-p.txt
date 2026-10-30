@@ -1,0 +1,188 @@
+failed to open device 'canaan' with busid '(null)': No such file or directory
+trying to open device '/dev/dri/card0'... done
+opened device `Canaan K230 DRM driver` on driver `canaan-drm` (version 1.0.0 at 0)
+CRTCs:
+id	fb	pos	size
+50	60	(0,0)	(568x1232)
+  #0 568x1232 52.19 568 668 708 748 1232 1236 1252 1268 49500 flags: ; type: preferred, driver
+  props:
+	25 VRR_ENABLED:
+		flags: range
+		values: 0 1
+		value: 0
+	29 GAMMA_LUT:
+		flags: blob
+		blobs:
+
+		value:
+	30 GAMMA_LUT_SIZE:
+		flags: immutable range
+		values: 0 4294967295
+		value: 256
+
+Planes:
+id	crtc	fb	CRTC x,y	x,y	gamma size	possible crtcs
+35	0	0	0,0		0,0	0       	0x00000001
+  formats: NV12 NV21 NV16 NV61
+  props:
+	9 type:
+		flags: immutable enum
+		enums: Overlay=0 Primary=1 Cursor=2
+		value: 0
+	32 IN_FORMATS:
+		flags: immutable blob
+		blobs:
+
+		value:
+			01000000000000000400000018000000
+			01000000280000004e5631324e563231
+			4e5631364e5636310f00000000000000
+			00000000000000000000000000000000
+		in_formats blob decoded:
+			 NV12:  LINEAR(0x0)
+			 NV21:  LINEAR(0x0)
+			 NV16:  LINEAR(0x0)
+			 NV61:  LINEAR(0x0)
+37	50	60	0,0		0,0	0       	0x00000001
+  formats: AR24 AR12 AR15 RG24 RG16 BG24
+  props:
+	9 type:
+		flags: immutable enum
+		enums: Overlay=0 Primary=1 Cursor=2
+		value: 1
+	32 IN_FORMATS:
+		flags: immutable blob
+		blobs:
+
+		value:
+			01000000000000000600000018000000
+			01000000300000004152323441523132
+			41523135524732345247313642473234
+			3f000000000000000000000000000000
+			0000000000000000
+		in_formats blob decoded:
+			 AR24:  LINEAR(0x0)
+			 AR12:  LINEAR(0x0)
+			 AR15:  LINEAR(0x0)
+			 RG24:  LINEAR(0x0)
+			 RG16:  LINEAR(0x0)
+			 BG24:  LINEAR(0x0)
+39	0	0	0,0		0,0	0       	0x00000001
+  formats: AR24 AR12 AR15 RG24 RG16 BG24
+  props:
+	9 type:
+		flags: immutable enum
+		enums: Overlay=0 Primary=1 Cursor=2
+		value: 2
+	32 IN_FORMATS:
+		flags: immutable blob
+		blobs:
+
+		value:
+			01000000000000000600000018000000
+			01000000300000004152323441523132
+			41523135524732345247313642473234
+			3f000000000000000000000000000000
+			0000000000000000
+		in_formats blob decoded:
+			 AR24:  LINEAR(0x0)
+			 AR12:  LINEAR(0x0)
+			 AR15:  LINEAR(0x0)
+			 RG24:  LINEAR(0x0)
+			 RG16:  LINEAR(0x0)
+			 BG24:  LINEAR(0x0)
+41	0	0	0,0		0,0	0       	0x00000001
+  formats: AR24 AR12 AR15 RG24 RG16 BG24
+  props:
+	9 type:
+		flags: immutable enum
+		enums: Overlay=0 Primary=1 Cursor=2
+		value: 0
+	32 IN_FORMATS:
+		flags: immutable blob
+		blobs:
+
+		value:
+			01000000000000000600000018000000
+			01000000300000004152323441523132
+			41523135524732345247313642473234
+			3f000000000000000000000000000000
+			0000000000000000
+		in_formats blob decoded:
+			 AR24:  LINEAR(0x0)
+			 AR12:  LINEAR(0x0)
+			 AR15:  LINEAR(0x0)
+			 RG24:  LINEAR(0x0)
+			 RG16:  LINEAR(0x0)
+			 BG24:  LINEAR(0x0)
+43	0	0	0,0		0,0	0       	0x00000001
+  formats: AR24 AR12 AR15 RG24 RG16 BG24
+  props:
+	9 type:
+		flags: immutable enum
+		enums: Overlay=0 Primary=1 Cursor=2
+		value: 0
+	32 IN_FORMATS:
+		flags: immutable blob
+		blobs:
+
+		value:
+			01000000000000000600000018000000
+			01000000300000004152323441523132
+			41523135524732345247313642473234
+			3f000000000000000000000000000000
+			0000000000000000
+		in_formats blob decoded:
+			 AR24:  LINEAR(0x0)
+			 AR12:  LINEAR(0x0)
+			 AR15:  LINEAR(0x0)
+			 RG24:  LINEAR(0x0)
+			 RG16:  LINEAR(0x0)
+			 BG24:  LINEAR(0x0)
+45	0	0	0,0		0,0	0       	0x00000001
+  formats: NV12 NV21 NV16 NV61
+  props:
+	9 type:
+		flags: immutable enum
+		enums: Overlay=0 Primary=1 Cursor=2
+		value: 0
+	32 IN_FORMATS:
+		flags: immutable blob
+		blobs:
+
+		value:
+			01000000000000000400000018000000
+			01000000280000004e5631324e563231
+			4e5631364e5636310f00000000000000
+			00000000000000000000000000000000
+		in_formats blob decoded:
+			 NV12:  LINEAR(0x0)
+			 NV21:  LINEAR(0x0)
+			 NV16:  LINEAR(0x0)
+			 NV61:  LINEAR(0x0)
+47	0	0	0,0		0,0	0       	0x00000001
+  formats: NV12 NV21 NV16 NV61
+  props:
+	9 type:
+		flags: immutable enum
+		enums: Overlay=0 Primary=1 Cursor=2
+		value: 0
+	32 IN_FORMATS:
+		flags: immutable blob
+		blobs:
+
+		value:
+			01000000000000000400000018000000
+			01000000280000004e5631324e563231
+			4e5631364e5636310f00000000000000
+			00000000000000000000000000000000
+		in_formats blob decoded:
+			 NV12:  LINEAR(0x0)
+			 NV21:  LINEAR(0x0)
+			 NV16:  LINEAR(0x0)
+			 NV61:  LINEAR(0x0)
+	49 rotation:
+		flags: bitmask
+		values: rotate-0=0x1 rotate-90=0x2 rotate-270=0x8 reflect-x=0x10 reflect-y=0x20
+		value: 1
+

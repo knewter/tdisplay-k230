@@ -18,6 +18,7 @@
 #define _GNU_SOURCE
 #include "quarter-turn.h"
 #include "vg_lite.h"
+#include "thead.h"
 #include <fcntl.h>
 #include <inttypes.h>
 #include <stdint.h>
@@ -147,6 +148,12 @@ int main(int argc, char **argv) {
   }
   if (!getenv("BENCH_NOCLEAR"))
     memset(dumb, 0, size);
+  if (getenv("BENCH_PREFILL_CLEAN")) {
+    /* Hazard experiment: write back and drop the CPU's lines of the destination
+     * before the GPU writes it. */
+    thead_csi_dcache_clean_invalid_range(dumb, size);
+    puts("TURN_BENCH_NOTE explicit clean+invalidate of destination before GPU turn");
+  }
   if ((!getenv("BENCH_NOCLEAR") && vg(vg_lite_clear(&dst, NULL, 0), "clear dst")) ||
       vg(vg_lite_blit(&dst, &src, &m, VG_LITE_BLEND_NONE, 0, VG_LITE_FILTER_POINT), "warmup blit") ||
       vg(vg_lite_finish(), "warmup finish"))

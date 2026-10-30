@@ -48,16 +48,23 @@ per frame (journal rotation timing, 3.4-4.0 ms, is larger than the profile
 share implies; the two are different samples, so quote the range).
 
 The shell client (`k230-shell-rust`), same capture, 2,121 ms
-(`categories-drawer-client-and-sway.txt`; render median 6.3 ms/frame):
+(`categories-drawer-client-and-sway.txt`; render median 6.3 ms/frame). Self time
+by leaf frame (**corrected 2026-10-30**: the first version of this table matched
+ancestor frames and labelled pixman work under cairo fill calls as "path fills";
+the committed script now buckets only the leaf):
 
 | Category | Share of client |
 | --- | ---: |
-| Path / rect / gradient fills | 43.8% |
+| Pixman OVER composite of ARGB layers (`rvv_composite_over_8888_8888`: the cached grid surface over the sheet, and layer paints) | 34.4% |
+| Other user code (unattributed) | 21.8% |
 | Kernel | 16.8% |
-| Other user code | 14.5% |
-| Buffer copy / memset | 12.8% |
-| Text / glyphs | 10.9% |
-| Image / icon blits (pixman combine/fetch) | 1.2% |
+| Buffer copy (`_wordcopy_fwd_aligned`, memcpy: the full-frame copy to the shm buffer) | 12.6% |
+| Opaque blit (`rvv_blt`) | 6.2% |
+| Text / glyphs | 5.2% |
+| Solid fills (`rvv_fill`) | 3.1% |
+
+So the client's "fill share" is mostly image-layer OVER blits and a buffer copy,
+not rounded-rect or gradient rasterisation; solid fills are 3%.
 
 Full-scene rebuild: before the cached-scene fix every scroll frame rebuilt the
 scene, 33.8 ms thread CPU (`drawer-scroll/README.md`); after it the client
@@ -91,10 +98,10 @@ free to run other tasks on this one-core board while the GPU works).
 | Rank | Use | CPU saved / frame | Overhead | Net | Why / blockers |
 | ---: | --- | ---: | --- | ---: | --- |
 | 1 | **Rotate the finished frame into scanout** (source: compositor's own RGB565 scratch, 1.4 MB; destination: padded scanout dumb buffer) | 3.4-4.0 ms measured (~30-35% of sway's repaint) | clean 1.4 MB source (UNVERIFIED); 0.1 ms submit; ~2 ms wall wait | **~3 ms, UNVERIFIED** | No client copy at all: both buffers are compositor-owned and can be contiguous. Removes the scanout-write stall that bound the RVV attempt. Padded 64-byte-aligned destination and BGR565 format are already proven (`vglite-scene-board/padded`). Narrow patch at the existing `K230_PIXMAN_OUTPUT_TURN` site (`nix/patches/wlroots-k230-output-turn.patch`) rather than a new renderer. Needs the kernel driver and the access broker. |
-| 2 | **Shell client renders into a contiguous (DRM dumb/CMA) buffer shared with sway** | up to ~2.8 ms fills + 0.8 ms buffer copy of a 6.3 ms client frame if fills/gradients move to VG-Lite (hardware linear gradient/rect fill; SDK build has `RADIAL_GRADIENT 0`) | per-frame sync with sway; client rewrite; clean/flush per frame | **~2-3 ms, UNVERIFIED, high effort** | Only shell clients, not GTK/foot apps. Also unlocks rank 4 for the same surfaces. Needs dmabuf sharing with fences; do after rank 1. |
+| 2 | **Shell client renders into a contiguous (DRM dumb/CMA) buffer shared with sway** | about 2.2 ms OVER layer blits + 0.8 ms buffer copy of a 6.3 ms client frame if those move to VG-Lite (SDK build has `RADIAL_GRADIENT 0`); solid and gradient fills are small | per-frame sync with sway; client rewrite; clean/flush per frame | **~2-3 ms, UNVERIFIED, high effort** | Only shell clients, not GTK/foot apps. Also unlocks rank 4 for the same surfaces. Needs dmabuf sharing with fences; do after rank 1. |
 | 3 | **ARGB-over-RGB565 composition of those contiguous client surfaces** | OVER is 28-40% of sway: ~2.1 ms drawer, ~3 ms keyboard | needs sources in contiguous memory (rank 2), premultiplied SRC_OVER onto RGB565 (verified opaque; alpha blend on board UNVERIFIED) | **~2-3 ms, depends on 2** | Largest single sway bucket but impossible for `wl_shm` clients without the copy that sank September. |
 | 4 | Overview / transition transforms (scale, rotate of card surfaces) | not profiled here: UNVERIFIED | none known if surfaces are contiguous | unknown | Needs its own CPU profile of the overview open/close before any claim. Compositor app scaling for tiny UI was rejected earlier, so only transition-time transforms are in scope. |
-| 5 | Text/glyph rasterisation | ~0.7 ms (10.9% of a 6.3 ms client frame) | glyph path rendering needs tessellation buffer (renderer initialises with `(0,0)`) | small | Poor return; cache glyph runs on the CPU instead. |
+| 5 | Text/glyph rasterisation | ~0.3 ms (5.2% of a 6.3 ms client frame) | glyph path rendering needs tessellation buffer (renderer initialises with `(0,0)`) | small | Poor return; cache glyph runs on the CPU instead. |
 | - | Full-scene rebuild | n/a | n/a | n/a | An algorithmic cost already fixed by caching and band damage, not a GPU job. |
 | - | YUV conversion for video wallpaper | n/a | n/a | **blocked** | The pinned SDK build sets `gcFEATURE_VG_YUV_INPUT 0` and `gcFEATURE_VG_YUV_OUTPUT 0` in `vg_lite_options.h`, so this core build is not configured for YUV sources. A runtime `vg_lite_query_feature` on the board could still overrule this; UNVERIFIED. |
 
