@@ -13,8 +13,7 @@
 #ifndef GAME_OF_LIFE_H
 #define GAME_OF_LIFE_H
 
-#include <stddef.h>
-#include <stdint.h>
+#include "boot_compat.h"
 
 #define GOL_CELL_PX 4u
 #define GOL_W 142u

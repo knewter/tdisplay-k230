@@ -28,8 +28,7 @@
 #ifndef BOOT_FRAME_H
 #define BOOT_FRAME_H
 
-#include <stddef.h>
-#include <stdint.h>
+#include "boot_compat.h"
 
 #define BF_SOURCE_LIFE 1u
 
