@@ -460,6 +460,13 @@
         power-keyd = pkgsCross.callPackage ./nix/power-keyd.nix { };
         # Text-effect renderer the idle exhibition pipes its K230 banner into.
         ttfx = pkgsCross.callPackage ./nix/ttfx.nix { };
+        # Same revision built for the build host: the boot text-effects tools
+        # and tests (tools/textfx_frames.py) run it to generate frames.
+        ttfx-host = pkgs.callPackage ./nix/ttfx.nix { };
+        # Font source for tools/gen-textfx-font.py and tests/test_textfx.py
+        # (share/fonts/unifont.bdf); the boot text-effects glyph table is
+        # generated from it.
+        unifont-bdf = pkgs.unifont;
         # nRF9151 modem service and control client (nix/modem.nix).
         k230-modem = pkgsCross.callPackage ./nix/k230-modem { };
         # Bounded diagnostic sampler, outside the normal image closure.

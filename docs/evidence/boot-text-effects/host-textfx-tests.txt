@@ -1,0 +1,35 @@
+# host tests for the boot text effects, 2026-10-30T14:04:59Z
+# evidence class: host build/test only (no board, QEMU or camera)
+# ttfx: cargo build --release of the v0.5.1 checkout (14ed274), x86-64; Unifont 17.0.04 BDF sha256 f2b2952312fa189f8963c85eb50fda14606a6df5d8dbe9e01651138eb2cecea9
+# cc: cc (GCC) 16.2.1 20260810
+
+## python3 -I tests/test_textfx_frames.py
+test_every_effect_parses (__main__.PinnedTtfxTests.test_every_effect_parses) ... ok
+test_golden (__main__.PinnedTtfxTests.test_golden) ... ok
+test_same_seed_same_bytes_other_seed_differs (__main__.PinnedTtfxTests.test_same_seed_same_bytes_other_seed_differs) ... ok
+test_sequence_decodes_to_the_same_frames (__main__.PinnedTtfxTests.test_sequence_decodes_to_the_same_frames) ... ok
+test_fnv1a_vectors (__main__.SyntheticTests.test_fnv1a_vectors) ... ok
+test_rejects_unknown_sgr_and_wide_and_ragged (__main__.SyntheticTests.test_rejects_unknown_sgr_and_wide_and_ragged) ... ok
+test_roundtrip_and_checksum (__main__.SyntheticTests.test_roundtrip_and_checksum) ... ok
+test_split_and_parse (__main__.SyntheticTests.test_split_and_parse) ... ok
+test_truncated_dump (__main__.SyntheticTests.test_truncated_dump) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 2.959s
+
+OK
+
+## python3 -I tests/test_textfx.py
+test_cell_hashes_match_python (__main__.CTextfxTests.test_cell_hashes_match_python) ... ok
+test_last_frame_is_not_blank (__main__.CTextfxTests.test_last_frame_is_not_blank) ... ok
+test_paths_agree_on_every_frame (__main__.CTextfxTests.test_paths_agree_on_every_frame) ... ok
+test_pixels_match_independent_renderer (__main__.CTextfxTests.test_pixels_match_independent_renderer) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 4.614s
+
+OK
+
+## regenerate src/textfx_font.c and compare
+608 glyphs, 1 without an 8x16 glyph
+textfx_font.c is reproducible
