@@ -30,11 +30,11 @@ def nix_closure(path):
     """(closure_bytes, closure_paths, nar_bytes) from `nix path-info -rsS`."""
     out = subprocess.run(["nix", "path-info", "-rsS", path], text=True, capture_output=True, check=True).stdout
     rows = [line.split() for line in out.splitlines() if line.strip()]
-    sizes = [(r[0], int(r[1]), int(r[2])) for r in rows]
-    if not sizes:
-        raise qa.ManifestError(f"{path}: empty closure")
-    nar = next((s[1] for s in sizes if s[0] == path), 0)
-    return sum(s[2] for s in sizes), len(sizes), nar
+    root = next((r for r in rows if r[0] == path), None)
+    if root is None:
+        raise qa.ManifestError(f"{path}: not in `nix path-info` output")
+    # columns: path, narSize, closureSize (with -s); the root's closureSize is the unique closure
+    return int(root[2]), len(rows), int(root[1])
 
 
 def artifact_record(name, out_path, closure=nix_closure):
@@ -59,7 +59,9 @@ def board_identity():
     lines = subprocess.run(SSH + [script], text=True, capture_output=True, check=True, timeout=60).stdout.splitlines()
     if len(lines) < 4:
         raise qa.ManifestError("board identity incomplete")
-    return {"toplevel": lines[0], "compositor": lines[1], "pixman": lines[2], "boot_default_init": lines[-1]}
+    import re as _re
+    root = _re.match(r"/nix/store/[^/]+", lines[1])
+    return {"toplevel": lines[0], "compositor": root.group(0) if root else lines[1], "pixman": lines[2], "boot_default_init": lines[-1]}
 
 
 def prepare(args, closure=nix_closure, identity=board_identity):

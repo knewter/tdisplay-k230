@@ -1,0 +1,80 @@
+{
+  "artifacts": {
+    "baseline": {
+      "binary": "bin/qtquick-shm-baseline",
+      "closure_bytes": 34327840,
+      "closure_paths": 5,
+      "nar_bytes": 92376,
+      "store_path": "/nix/store/y4qh2n92b7ailf2bw7129b9xynxzbz3h-qtquick-shm-baseline-riscv64-unknown-linux-gnu-0.1"
+    },
+    "qt": {
+      "binary": "bin/qtquick-software-probe",
+      "closure_bytes": 1681872192,
+      "closure_paths": 326,
+      "nar_bytes": 53352,
+      "store_path": "/nix/store/j2dd2anwbp2hpfmvm4w6kpsa0qn37zq8-qtquick-software-probe-riscv64-unknown-linux-gnu-0.1"
+    }
+  },
+  "budget_version": "qtq-budgets-1",
+  "card_budgets": {
+    "frame_update_cpu_ms": {
+      "max": 33.334,
+      "p95": 16.667
+    },
+    "incremental_session_memory_bytes": {
+      "max": 67108864
+    },
+    "motion_to_present_ms": {
+      "max": 133.334,
+      "p95": 66.667
+    },
+    "motion_to_submit_ms": {
+      "max": 100.0,
+      "p95": 50.0
+    },
+    "release_to_final_submit_ms": {
+      "max": 200.0
+    },
+    "release_to_present_ms": {
+      "max": 266.667
+    },
+    "tracking_present_interval_ms": {
+      "max": 100.0,
+      "p95": 33.334
+    }
+  },
+  "ceilings": {
+    "idle_client_cpu_pct": 2.0,
+    "incremental_memory_mib": 128,
+    "regression_report_pct": 10.0,
+    "startup_ms": 5000
+  },
+  "created_utc": "2026-10-30T16:02:32Z",
+  "hash": "3820d48b32bf53817c768479d5edebc16d3a037026b2a613fd8c0dd3fde3de0e",
+  "schema": "qtquick-trial-manifest/1",
+  "source": {
+    "budget_version": "qtq-budgets-1",
+    "revision": "0254802c09f15f1558bcacea3f0d5d49c765e5c5",
+    "workload_id": "qtq-workload-1"
+  },
+  "system": {
+    "boot_default_init": "init=/nix/store/49mnsl2si30m1l4fxdx2h114myv3anjf-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+    "compositor": "/nix/store/dffv13gk9f21m9k1zf8gdchfd2zwlw4b-sway-unwrapped-riscv64-unknown-linux-gnu-1.12",
+    "pixman": "/nix/store/sn5is273nqmzzy2zx07dc5va8bar82nd-pixman-riscv64-unknown-linux-gnu-0.46.4/lib/libpixman-1.so.0.46.4",
+    "toplevel": "/nix/store/49mnsl2si30m1l4fxdx2h114myv3anjf-nixos-system-nixos-26.11.20260919.20b1ddd"
+  },
+  "workload": {
+    "active_s": 30,
+    "boundary": "client_commit",
+    "id": "qtq-workload-1",
+    "idle_s": 30,
+    "min_interactions": 24,
+    "order": "ABBA-style alternation: pair 1 qt then baseline, pair 2 baseline then qt, pair 3 qt then baseline",
+    "pairs": 3,
+    "scale": 1,
+    "viewport": [
+      1232,
+      568
+    ]
+  }
+}
