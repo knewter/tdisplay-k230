@@ -1,10 +1,13 @@
 ## 1. Design check (board, read-only)
 
-- [ ] 1.1 Settle the privileged path and persistence. Record on the board
+- [x] 1.1 Settle the privileged path and persistence. Record on the board
   whether `timedatectl` and polkit are present, what `/etc/localtime` points
   at, and whether `timedatectl set-timezone` fails with the current
   configuration. Then update design.md's Decisions. Proof (board, read-only):
   the console transcript under `docs/evidence/time-zone/board/`.
+  *Board, read-only, 2026-10-30, on `p393r76c…`: no polkit, and the link is
+  managed. `set-timezone` run as `shell` is denied. The decision is a
+  socket-activated root helper with two commands (design.md).*
 
 ## 2. Host
 

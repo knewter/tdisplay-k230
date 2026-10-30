@@ -1,10 +1,14 @@
 ## 1. Design
 
-- [ ] 1.1 Choose how the Timer helper survives a shell restart, or how its
+- [x] 1.1 Choose how the Timer helper survives a shell restart, or how its
   loss is reported, and record the decision and the rejected routes in
   design.md. Check on the board, read-only, which cgroup the helper lands in
   today (`/proc/<pid>/cgroup`). Proof (board, read-only): the transcript
   under `docs/evidence/timer-restart/board/`.
+  *Board, read-only console plus injected touch, 2026-10-30, on `p393r76c…`:
+  the helper ran in `shell-ui.service`'s cgroup and died with
+  `systemctl restart shell`. The decision is a socket-activated
+  `k230-timer@.service` running as `shell` (design.md).*
 
 ## 2. Host
 

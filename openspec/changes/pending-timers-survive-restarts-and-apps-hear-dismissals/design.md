@@ -2,7 +2,10 @@
 
 The layers are userspace and Nix. The Timer's detached helper
 (`k230_term_apps.py timerd`) starts in a new session but stays in
-`shell.service`'s cgroup, so systemd kills it when the shell stops. The shell
+`shell-ui.service`'s cgroup (Sway's unit). That unit is `PartOf=` and
+`BindsTo=` `shell.service`, so restarting the shell kills the helper; on
+2026-10-30 a waiting helper was gone 5 s after `systemctl restart shell`
+(`docs/evidence/timer-restart/board/design-check.md`). The shell
 user has no `systemd --user` instance. The adaptor (`tools/notification_dbus.py`)
 sends `NotificationClosed` only for `CloseNotification` calls (reason 3). The
 broker (`tools/notification_center.py`) records dismissals, but not who made
@@ -17,13 +20,18 @@ dismissals and actions.
 
 ## Decisions
 
-Open for task 1.1. The current leaning:
+Settled by task 1.1 (`docs/evidence/timer-restart/board/design-check.md`).
 
-- **Timer: survive, not just report.** Run the helper in its own transient
-  scope or service outside `shell.service`, for example through a small
-  system unit template started over a narrow path. Fall back to reporting
-  ("A timer was stopped when the shell restarted") if no unprivileged route
-  exists.
+- **Timer: survive, not just report.** A system socket unit,
+  `k230-timer.socket` (`/run/k230-timer.sock`, owner root, group `shell`,
+  mode 0660, `Accept=yes`), starts one `k230-timer@.service` instance per
+  pending timer, with `User=shell`. The instance is in its own cgroup under
+  `system.slice`, outside `shell.service` and `shell-ui.service`, so a shell
+  restart does not reach it. The Timer card sends the deadline over the
+  connection instead of forking a helper. Taking the timer back (adopt),
+  pausing and resetting end that instance. The broker's trusted map names
+  the new unit, so its "Timer finished" keeps the Timer's identity. Nothing
+  is resident while no timer is pending.
 - **Dismissals: the broker records the cause** (expired, dismissed by the
   person, or closed by the app), and the adaptor maps them to the
   specification's reasons 1, 2 and 3.
@@ -35,6 +43,11 @@ Rejected:
 
 - **A resident timer daemon.** Rejected before in
   `apps-and-timers-can-alert-the-user` for its always-on memory cost.
+- **`systemd-run --user` or a user manager.** The `shell` user has none.
+- **A sudo rule for `systemd-run`.** It would give the shell user a way to
+  start arbitrary units.
+- **Only reporting the loss.** That is the fallback, not needed: the
+  socket unit needs no new privilege.
 - **`CLOCK_BOOTTIME`.** It is not needed while the image does not suspend.
 
 ## Risks / Trade-offs

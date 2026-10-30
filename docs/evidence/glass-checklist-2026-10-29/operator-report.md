@@ -140,3 +140,16 @@ switched, archive it". Over SSH at 23:54:32Z,
 `/var/lib/k230-shell-prefs/clock-format` read `24-hour`, written at
 23:54:03Z, and `/run/current-system` was `p393r76c…`. The operator's switch
 from 12-hour back to 24-hour on glass is that write. This closes task 3.2.
+
+## Glass steps replaced by injected checks (2026-10-30)
+
+For `settings-sets-the-time-zone-and-network-time` (task 3.2) and
+`pending-timers-survive-restarts-and-apps-hear-dismissals` (task 3.3), the
+operator, verbatim, at about 00:05Z on 2026-10-30: "land them just test
+yourself you don't need my fingers on the glass just do virtual events and
+watch screenshots or whatever".
+
+So for those two changes, the glass task is closed by injected touch on the
+installed build, read from native `grim` captures and logs. Each task records
+the evidence class it actually obtained: board, injected. No operator reading
+on glass is claimed for either change.
