@@ -234,6 +234,34 @@ console and `ums` loops call, so the animation continues at the prompt as
 the back-port's design intends. Wiring it in is that change's task once it
 lands on `master`; this change does not build `boot_frame.*`.
 
+Pre-relocation safety of the cyclic hook (2026-10-30, source reading of
+v2026.10 and of this tree's patches; the 2022.10 hang it answers is in
+`docs/evidence/game-of-life/uboot-cyclic.md`: a `WATCHDOG_RESET` to
+`cyclic_run` hook read an uncleared `.bss` list head before relocation and
+called `get_ticks()` with no timer, and warm reboots keep DRAM contents).
+Findings:
+
+- Upstream keeps the list head in `gd->cyclic_list`, not `.bss`. `gd` is
+  zeroed by `board_init_f_alloc_reserve`/`board_init_f_init_reserve`, so a
+  warm reboot starts with an empty list. `cyclic_run()` returns on
+  `hlist_empty()` *before* it calls `get_timer_us()` (the source comment says
+  exactly this), `schedule()` calls it only `if (gd)`, and nothing registers a
+  callback before the timer exists. `udelay()` calls `schedule()` on every
+  chunk (`lib/time.c`), the same call site as the 2022.10 hook.
+- This change adds no `schedule()`, `WATCHDOG_RESET()` or `cyclic_run()`
+  hook and does not touch `include/watchdog.h`. Registration happens in the
+  `EVT_LAST_STAGE_INIT` event after relocation, the environment and storage
+  are up. The glue's statics (`life_cyclic_active`, the call counters,
+  `k230_display_logo_ready`) are read only from that event, from `ft_board_setup`
+  and from the `k230_life` command, all post-relocation, after U-Boot has
+  cleared `.bss`. The board code that runs earlier (`harts_early_init`,
+  `enable_caches`) reads no global state.
+- Recursion is guarded (`GD_FLG_CYCLIC_RUNNING`), so a callback that itself
+  `udelay`s cannot re-enter.
+- Not proven on the board: the first a0 trial is the test, including a warm
+  reboot of the Life variant. The interrupt rule (no input before the banner)
+  stays in force regardless.
+
 Stage c findings: v1.9's `fw_jump.S` has a second knob the 1.4 build did not
 need: `FW_JUMP_FDT_OFFSET` (default `0x2200000`, set in
 `platform/generic/objects.mk`) makes `fw_next_arg1` return
