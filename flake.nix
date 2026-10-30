@@ -467,6 +467,10 @@
         # Same revision built for the build host: the boot text-effects tools
         # and tests (tools/textfx_frames.py) run it to generate frames.
         ttfx-host = pkgs.callPackage ./nix/ttfx.nix { };
+        # ttfx with the no_std engine patch, and the freestanding riscv64imac
+        # staticlib built from it for U-Boot (nix/ttfx-nostd, nix/ttfx-boot).
+        ttfx-nostd-src = pkgs.callPackage ./nix/ttfx-nostd { };
+        k230-ttfx-boot = pkgs.callPackage ./nix/ttfx-boot { };
         # Live ttfx player for the boot text effects (nix/textfx).
         k230-textfx = pkgsCross.callPackage ./nix/textfx { };
         # Font source for tools/gen-textfx-font.py and tests/test_textfx.py

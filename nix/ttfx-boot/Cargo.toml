@@ -1,0 +1,39 @@
+[package]
+name = "k230-ttfx-boot"
+version = "0.1.0"
+edition = "2021"
+description = "ttfx as a boot frame source: the no_std engine behind a small API and a C ABI for U-Boot"
+license = "MIT"
+
+# `ttfx/` is the patched upstream source (nix/ttfx-nostd): nix builds put it
+# there, and tests/test_ttfx_nostd.py links it in for host runs.
+[dependencies]
+ttfx = { path = "ttfx", default-features = false, features = ["nostd"] }
+
+[features]
+default = ["all-effects"]
+all-effects = ["ttfx/all-effects"]
+# The allocator over a caller-supplied arena (ttfx_fw_init) and the panic hook:
+# for the freestanding riscv64imac staticlib only.
+# The C ABI over Run (ttfx_fw_new/next/free); a caller must supply the global allocator and panic handler (`fw` does).
+capi = []
+fw = ["capi"]
+# A firmware image carries a few effects. These eight each peak under 4 MiB of heap
+# (docs/evidence/boot-text-effects/nostd-feasibility.md); beams, burn, laseretch, rings and
+# binarypath need 8 to 13 MiB and are left out.
+subset = ["ttfx/effect-wipe", "ttfx/effect-middleout", "ttfx/effect-expand", "ttfx/effect-slide",
+          "ttfx/effect-errorcorrect", "ttfx/effect-print", "ttfx/effect-decrypt", "ttfx/effect-scattered"]
+
+# rlib only: the freestanding staticlib is built with `cargo rustc --crate-type staticlib`
+# (it needs the `fw` feature for the allocator and panic handler).
+[lib]
+crate-type = ["rlib"]
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+debug = false
+[profile.dev]
+panic = "abort"

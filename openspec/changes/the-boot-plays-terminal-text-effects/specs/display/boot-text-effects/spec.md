@@ -1,64 +1,93 @@
 ## Purpose
 
-Plays a terminal text effect from the Omarchy `ttfx` family as the boot
-animation: pre-rendered at the stage 1 splash, continued live in early Linux,
-and handed to the shell without a dark frame.
+Plays a terminal text effect from the Omarchy `ttfx` family as the boot animation:
+executed by stage 1 on the stage 1 splash, with the effect and text chosen per boot;
+continued live in early Linux; and handed to the shell without a dark frame.
 
 ## ADDED Requirements
 
-### Requirement: Text-effect frames are generated deterministically on the host
+### Requirement: The no_std engine produces the same frames as ttfx
 
-The build SHALL produce the stage 1 animation by running the pinned `ttfx`
-with a fixed seed, effect and arguments over a committed text, and SHALL store
-the result as a versioned cell sequence. Running the generator twice with the
-same inputs SHALL produce identical per-frame and whole-sequence hashes, and a
-different seed SHALL not.
+The engine stage 1 executes SHALL be ttfx's own animation engine built for
+`core` + `alloc` from a patch against the pinned ttfx revision, and for the same
+effect, text, seed and canvas it SHALL produce the same frames as the std ttfx,
+byte for byte, including as the riscv64imac soft-float object code linked for
+stage 1. The std ttfx SHALL remain buildable with its own tests passing from the same patched source.
 
-*Grounding (2026-10-30): host measurement of `ttfx` 0.5.1 `--seed N --parity-dump`
-over `nix/exhibition/K230.txt` repeated with identical SHA-256; see
-`docs/evidence/boot-text-effects/ttfx-research.md`.*
+*Grounding (2026-10-30): host and QEMU user-mode measurements in
+`docs/evidence/boot-text-effects/nostd-parity-full.txt` (148 of 148 host streams, 37 of 37
+firmware streams identical) and `nostd-feasibility.md`. These are host and QEMU claims, not
+U-Boot or board claims.*
 
-#### Scenario: Rebuilding the sequence
+#### Scenario: Comparing engines
 
-- **WHEN** the generator is run twice with the same ttfx revision, seed and arguments
-- **THEN** both sequence files have the same SHA-256
+- **WHEN** an effect is run by the no_std engine and by `ttfx --parity-dump` with the same seed, text and canvas
+- **THEN** the two frame streams have the same SHA-256
 
-#### Scenario: A changed ttfx output format
+#### Scenario: A ttfx bump changes frames
 
-- **WHEN** a ttfx revision changes its dump format or frames
-- **THEN** the host test fails on its golden hashes instead of shipping a different animation
+- **WHEN** the pinned ttfx revision changes its frames or its dump format
+- **THEN** the host tests fail on their golden hashes instead of shipping a different animation
 
-### Requirement: Stage 1 plays the pre-rendered sequence
+### Requirement: Stage 1 executes an effect chosen per boot
 
-Stage 1 SHALL, only when the text-effects source is selected, draw the
-sequence's frames onto the scanout it already owns using a freestanding glyph
-renderer, then publish a record identifying source 2, the last frame drawn and
-a hash of that frame's cells. With the source not selected, the boot SHALL be
-identical to the boot without this feature. Stage 1 remains vendored-derived
-firmware built from pinned source; this requirement is on the source-built
-U-Boot, not on the system.
+Stage 1 SHALL, only when the text-effects source is selected, run the engine for an
+effect, text and seed chosen for that boot and draw its frames onto the scanout it
+already owns using a freestanding glyph renderer, then publish a record identifying
+source 2, the effect, text, seed, canvas, the last frame drawn and a hash of that
+frame's cells. The choice SHALL come from, in order, U-Boot environment overrides that
+are never saved, a build-time list indexed by a seed, and a default; the seed SHALL
+be derived from the timer, any readable clock and the environment value. With the
+source not selected, the boot SHALL be identical to the boot without this feature.
+Stage 1 remains vendored-derived firmware built from pinned source; this requirement
+is on the source-built U-Boot, not on the system.
 
 #### Scenario: Source not selected <!-- UNVERIFIED: stage 1 playback has not been built or run on the board. -->
 
 - **WHEN** the board boots with the text-effects source not selected
 - **THEN** the console shows the normal stage 1 sequence and the static logo is unchanged
 
-#### Scenario: Source selected <!-- UNVERIFIED: requires the installed stage 1 build and a console transcript. -->
+#### Scenario: Source selected, defaults <!-- UNVERIFIED: requires the installed stage 1 build and a console transcript. -->
 
-- **WHEN** the board boots with the text-effects source selected
-- **THEN** the console reports the frames drawn and the record's frame and hash, and the glass shows the effect
+- **WHEN** the board boots with the source selected and no overrides
+- **THEN** the console reports the effect, text and seed it chose, the frames drawn and the record's frame and hash, and the glass shows that effect
+
+#### Scenario: Overrides <!-- UNVERIFIED: requires the installed stage 1 build. -->
+
+- **WHEN** `tfx_effect`, `tfx_text` and `tfx_seed` are set at the `K230#` prompt before `boot`
+- **THEN** stage 1 plays exactly that effect, text and seed, and the record carries them
+
+### Requirement: A failing engine falls back to a pre-rendered sequence
+
+If the engine cannot start or fails before drawing its first frame (no arena, an
+unknown effect, a Rust panic), stage 1 SHALL play a sequence generated on the host
+from the same ttfx for a default effect, or leave the static logo, and SHALL record
+which it did. The failure SHALL NOT stop the boot.
+
+#### Scenario: Engine forced to fail <!-- UNVERIFIED: requires the installed stage 1 build and the operator's failure trigger. -->
+
+- **WHEN** the engine is made to fail at start
+- **THEN** the replay sequence or the logo is shown, the record's flags say so, and Linux still boots
+
+#### Scenario: The sequence is reproducible
+
+- **WHEN** the host generator is run twice with the same ttfx revision, seed and arguments
+- **THEN** both sequence files have the same SHA-256
+
+*Grounding (2026-10-30): `tests/test_textfx_frames.py`, output in
+`docs/evidence/boot-text-effects/host-textfx-tests.txt`.*
 
 ### Requirement: Linux continues the same run live
 
-Early Linux SHALL render a live `ttfx` run of the same effect, text, canvas and
-seed into the panel through DRM, SHALL skip to the frame named by a valid stage
-1 record after confirming its own cell-grid hash for that frame, and SHALL
-otherwise play from the first frame. The player SHALL NOT make the shell
-depend on it.
+Early Linux SHALL render a live run of the same effect, text, canvas and seed named
+by a valid stage 1 record into the panel through DRM, SHALL skip to the frame the
+record names after confirming its own cell-grid hash for that frame equals the
+record's, and SHALL otherwise play from the first frame. The player SHALL NOT make
+the shell depend on it.
 
-*Grounding (2026-10-30): the live ttfx dump on the host is identical across
-runs; the continuation is a software property. Board behaviour is recorded by
-the board-process tasks, not assumed.*
+*Grounding (2026-10-30): the continuation is a software property tested on the host
+(`tests/test_textfx_player.py`); board behaviour is recorded by the board-process
+tasks, not assumed.*
 
 #### Scenario: Valid record
 
@@ -86,18 +115,20 @@ framebuffer, and write the same acknowledgement the splash owner writes.
 - **WHEN** the shell is released while the player holds the scanout
 - **THEN** the player acknowledges `master-dropped` and the shell opens DRM
 
-### Requirement: The animation is bounded in cost and time
+### Requirement: The animation is bounded in cost, memory and time
 
-The player SHALL run at the lowest practical CPU priority, drop frames rather
-than run late, and stop on its own after the effect completes, leaving the
-final frame on screen. A measured CPU cost per frame SHALL be recorded before
-the player is enabled at boot. U-Boot-to-Linux ownership MAY leave a visible
-pause while the kernel starts; no uninterrupted-motion claim is made.
+The Linux player SHALL run at the lowest practical CPU priority, drop frames rather
+than run late, and stop on its own after the effect completes, leaving the final
+frame on screen. The stage 1 engine SHALL allocate only from an arena it is given,
+bounded at build time, and SHALL not use U-Boot's heap. A measured CPU cost per
+frame SHALL be recorded for both before they are enabled at boot. U-Boot-to-Linux
+ownership MAY leave a visible pause while the kernel starts; no uninterrupted-motion
+claim is made.
 
 #### Scenario: Measured cost
 
-- **WHEN** the player is started by hand on the running board
-- **THEN** the committed record states CPU time per frame and frames dropped
+- **WHEN** the player and the engine bench are started by hand on the running board
+- **THEN** the committed records state CPU time per frame and frames dropped
 
 #### Scenario: Physical continuity <!-- UNVERIFIED: no film has been taken; the webcam must not be used without the operator. -->
 

@@ -35,3 +35,5 @@ result-sd-image
 
 # Per-worktree nix out-links for probes (drm_info etc.)
 /.scratch/
+/nix/ttfx-boot/ttfx
+/nix/ttfx-boot/target/

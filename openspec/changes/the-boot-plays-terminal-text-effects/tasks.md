@@ -12,16 +12,27 @@
   Done 2026-10-30 (host): `src/textfx.{h,c}`, generated `src/textfx_font.c` (608 Unifont 17.0.04 glyphs, reproducible from `tools/gen-textfx-font.py`), `tests/textfx_harness.c`, `tests/test_textfx.py`: 4 tests pass over all 138 wipe frames, pixel hashes equal at frames 0, 1, 40 and 137. The licence notice travels in the generated file; no board, U-Boot or QEMU run.
 - [ ] 2.3 Choose the default effect and canvas from measurements of the candidates at the panel's real grid (frame count, changed cells per frame, sequence bytes, glyph coverage). Proof: the table in `docs/evidence/boot-text-effects/effect-candidates.md` produced by `tools/textfx_frames.py survey`; the choice is then written into `design.md` and this task is ticked.
 
+## 2b. A no_std ttfx engine for stage 1
+
+- [x] 2.4 Feasibility: what separating the engine from the terminal writer takes, std dependencies, floating point, the U-Boot target's FPU, memory per effect, linking a staticlib. Proof: `docs/evidence/boot-text-effects/nostd-feasibility.md` (host evidence; reads `readelf -A` of the built U-Boot and the pinned tarball).
+  Done 2026-10-30: bounded, about 600 hand-written lines in a 73-file patch, FPU off so soft-float `riscv64imac`, engine 125 to 520 KB depending on the effects, heap 1 to 13 MiB per effect.
+- [x] 2.5 The `no_std` patch and parity: `nix/ttfx-nostd/ttfx-nostd.patch` against `14ed274`, the std CLI unchanged. Proof: `cargo test --release` on the patched tree (37 unit and 11 integration tests pass), `--parity-dump` identical to unpatched for 37 effects in both engines (74 of 74), and `TTFX=<std ttfx> TTFX_NOSTD_SRC=<patched source> FW=1 FULL=1 RISCV_CC=<riscv64 gcc> python3 -I tests/test_ttfx_nostd.py` (output: `docs/evidence/boot-text-effects/nostd-parity-full.txt`).
+  Done 2026-10-30 (host build/test; the riscv64imac staticlib ran under `qemu-riscv64-static`, user mode, which proves the machine code and says nothing about speed or U-Boot): 148 of 148 host streams and 37 of 37 firmware streams byte-identical to std ttfx.
+- [ ] 2.6 `nix build .#k230-ttfx-boot` (patched source, official `rust-std` for `riscv64imac-unknown-none-elf`, `Cargo.lock` vendored) and record the staticlib size. Proof: that command's output path and `nm`/`readelf` of the archive. Laptop claim; queued behind the shared build lock.
+- [ ] 2.7 Record codec and per-boot selector in portable C: `src/textfx_record.{h,c}` (payload of source id 2, D5) and a selector over the effect and text lists (D11), with a host test. Proof: `python3 -I tests/test_textfx_record.py` (host).
+- [ ] 2.8 The engine bench on the board: `nix/ttfx-boot/bench/bench.c` linked with the staticlib into a static soft-float executable, run for every effect in the subset over the K230 banner under the board lock. Proof: `docs/evidence/boot-text-effects/board-engine-bench.txt` with frames, bytes, FNV hash (equal to the host's) and milliseconds per effect. Board process run on the live system, not a boot observation.
+
 ## 3. Early-Linux live player
 
 - [ ] 3.1 `k230-textfx` player (C, `nix/textfx/`), a Nix derivation, and a NixOS option that is off by default: reads `ttfx --parity-dump` from a pipe, skips to a frame given on the command line after checking its cell-grid hash, paces at the sequence frame rate, renders cell deltas, supports `--output-file` (no DRM) and the splash owner's ready-file/`SIGUSR1` protocol. Proof: `nix build .#k230-textfx` (target build, laptop claim) and `tests/test_textfx_player.py` against the host build.
 - [ ] 3.2 Start the player by hand on the running board with `--output-file`, under the board lock, and compare its framebuffer hashes with the host reference. Proof: `docs/evidence/boot-text-effects/board-offscreen.txt` (board process run, no glass).
 - [ ] 3.3 Start the player by hand against DRM on the running board (stopping and restoring the shell under the board lock, or an equivalent that leaves the user's session intact) and record the KMS calls, exit status and measured CPU per frame. Proof: `docs/evidence/boot-text-effects/board-drm.txt` (board process run). A claim about what the glass shows needs camera or glass evidence and is not made here.
 
-## 4. Stage 1 playback (waits for the operator)
+## 4. Stage 1 playback (waits for Life's interface and the operator)
 
-- [ ] 4.1 Add a text-effects frame source (source id 2) to the generic stage 1 loop once `src/boot_frame.h` is on `master`, with the sequence embedded or loaded from a boot file as design decision D2 settles, and build it. Proof: `nix build .#uboot-k230-boot-textfx` (laptop claim). Writing it to a board is task 4.2.
-- [ ] 4.2 Install the stage 1 build and the sequence file by the plan in `design.md`, verify readback and a console transcript of one `K230#` run, and keep the rollback. Not started: **HARD STOP**, requires the operator's go-ahead and board reservation.
+- [ ] 4.1 Add the text-effects frame source (source id 2) to the generic stage 1 loop once `src/boot_frame.h` is on `master`: the engine library linked in, the effect/text/seed selection of D11, the replay fallback of D1b, and the record of D5. Proof: `nix build .#uboot-k230-boot-textfx` (laptop claim). Writing it to a board is task 4.2.
+- [ ] 4.2 Install the stage 1 build by the plan in `design.md`, verify readback and a console transcript of one `K230#` run (with and without `tfx_*` overrides, and with the engine forced to fail so the fallback runs), and keep the rollback. Not started: **HARD STOP**, requires the operator's go-ahead and board reservation.
+- [ ] 4.3 Decide how stage 1 animates while U-Boot loads (D12) from the cyclic-framework research on the Life branch and the engine bench of 2.8. Proof: a design note and the frame period achieved in the 4.2 transcript.
 
 ## 5. Placement in Linux and handoff (waits for the operator)
 

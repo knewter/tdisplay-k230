@@ -1,0 +1,14 @@
+# FULL=1 run of tests/test_ttfx_nostd.py, 2026-10-30T14:59:50Z
+# evidence class: host build/test; the riscv64imac object code ran under qemu-riscv64-static (user mode), not on the board or in U-Boot
+# std ttfx: cargo build of 14ed274 (x86-64, glibc libm). nostd engine: libm 0.2.16 + hashbrown 0.15.5
+# rust: host cargo 1.97.1 (c980f4866 2026-06-30) / firmware rustc 1.97.1 (8bab26f4f 2026-07-14)
+test_bare_metal_object_code_equals_std (__main__.FirmwareParity.test_bare_metal_object_code_equals_std) ... ok
+test_effect_names_match_the_cli (__main__.NostdParity.test_effect_names_match_the_cli) ... ok
+test_frames_equal_the_std_engine (__main__.NostdParity.test_frames_equal_the_std_engine) ... ok
+test_unknown_effect_is_an_error (__main__.NostdParity.test_unknown_effect_is_an_error) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 143.817s
+
+OK
+exit=0

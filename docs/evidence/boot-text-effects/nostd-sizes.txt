@@ -1,0 +1,23 @@
+# sizes of libk230_ttfx_boot.a linked with rust-lld --gc-sections (stub ttfx_fw_panic), 2026-10-30T15:06:55Z
+# evidence class: host build; rustc 1.97.1 (8bab26f4f 2026-07-14); target riscv64imac-unknown-none-elf; opt-level z, lto, panic=abort, relocation-model=pic
+## wipe (features fw,ttfx/effect-wipe)
+.rodata=18032 bytes
+.eh_frame=17528 bytes
+.text=107202 bytes
+.data=232 bytes
+.bss=793 bytes
+  Flags:                             0x1, RVC, soft-float ABI
+## subset (features fw,subset)
+.rodata=22320 bytes
+.eh_frame=25012 bytes
+.text=175310 bytes
+.data=232 bytes
+.bss=793 bytes
+  Flags:                             0x1, RVC, soft-float ABI
+## all (features fw,all-effects)
+.rodata=40952 bytes
+.eh_frame=50500 bytes
+.text=479094 bytes
+.data=232 bytes
+.bss=793 bytes
+  Flags:                             0x1, RVC, soft-float ABI
