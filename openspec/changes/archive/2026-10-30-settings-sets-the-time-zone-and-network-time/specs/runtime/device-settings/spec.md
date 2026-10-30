@@ -4,7 +4,7 @@
 
 *Grounding (2026-10-29): the zone is build-time (`time.timeZone = "America/Chicago"` in `nix/k230.nix`), and Settings' Date & time page shows the zone and synchronization read-only (`nix/rust-shell-client/src/device_info.rs`; board captures in `docs/evidence/settings-about/`). The operator moved this follow-up out of `settings-has-about-and-date-time-pages` on 2026-10-29 (`docs/evidence/glass-checklist-2026-10-29/operator-report.md`).*
 
-<!-- UNVERIFIED: nothing in this requirement is built yet, and the privileged path is undecided (design task 1.1). -->
+*Grounding (2026-10-30): `nix/time-settings.nix` and `tools/k230_time_helper.py` (host tests in `tests/test_time_helper.py`); the chooser in `nix/rust-shell-client/src/device_info.rs` (host renders in `docs/evidence/time-zone/host/`). Board, injected, on `sqd58h8c…`: Europe/London applied and followed by the shade and Clock app without a restart, network time off, both held across a switch and a reboot, and other requests refused (`docs/evidence/time-zone/board/`). The glass step was replaced by injected checks on the operator's instruction. The page shows network time switched off as "Off". The zone change was observed in daylight time, a 5-hour move, not the scenario's standard-time 6 hours.*
 
 Settings' Date & time page SHALL let a person choose the time zone from a list
 and turn network time on or off. The change SHALL take effect without a

@@ -2459,6 +2459,18 @@ DATA 10e900c1a0e24918f70388aefc64135972ed062a0028ef6bfcf36ba2ebf582fb docs/evide
 DATA ad608683fb9e6c2f1bba69f87a1f162285f05961120611828b300b477f0240a6 docs/evidence/time-zone/host/europe-page-2-100-568x1232.png
 DATA 3dadd48d7000b418d72ec1c1692793ffe5ed849c2ac57df307666a2625a6826c docs/evidence/time-zone/host/europe-page-2-200-1232x568.png
 DATA 30cc3802ef27fbdf0e7c41d9fed8dd979df778cbc4d8d928bd7b31d6b0971b73 docs/evidence/time-zone/host/europe-page-2-200-568x1232.png
+DATA cb2bed6826b8ac07bebbecb5130bfd329a43f0eb16d8612d91fb6c80316ffba5 docs/evidence/time-zone/board/tz-01-date-time.png
+DATA f7d7613d27999a164a9dd8eeae279191979ad8b1759f9f1e0b5ac53e32a627a1 docs/evidence/time-zone/board/tz-02-areas.png
+DATA 8e681d41720f7ee58320fc67610cf43b1bd89a88f021dc39d22b2bffb61bc0b7 docs/evidence/time-zone/board/tz-03-europe-1.png
+DATA 15e44bdff760367f35894641c25c51d4ea1c200f839daa0977d6afbfba4ffe77 docs/evidence/time-zone/board/tz-04-europe-2.png
+DATA 17f1935ff386fc83518a9dcb32f64a1056845bd3d29c77e3b17b49f43c2cb31a docs/evidence/time-zone/board/tz-05-date-time-london.png
+DATA 1af4237a65f066aab18a2bb41087c8c32ece215b30f1ea270126302a0d7dc474 docs/evidence/time-zone/board/tz-06-shade-london.png
+DATA 134dc09ba5911187924bdab79317d2f8415797e1b9fe1816a8d18fed8759db90 docs/evidence/time-zone/board/tz-08-clock-app-london.png
+DATA cc98d7f17bc149d9d1b83397db62e7860f8164dc2ba80b229fb75cc2d031741a docs/evidence/time-zone/board/tz-10-network-off.png
+DATA 53cd47895761b1f174c611dfa88d7a75a5d6a1a8ec92c0de522a47a8db4cab24 docs/evidence/time-zone/board/tz-11-shade-after-reboot.png
+DATA 55fc62e9b2af0e35ef7d2df82e9ecd912a28eac5024ccb2a4b436800331a0aed docs/evidence/time-zone/board/tz-12-date-time-after-reboot.png
+DATA 074d24ce73861ccd2e7c4c01ee97943fe0e4bddcb20b45d0399c7f0aab9cd3ce docs/evidence/time-zone/board/tz-13-america-3.png
+DATA e2d1d3f73c3b22becc3089e86350235fc91d31dc9a70db48c55b289e911f25f8 docs/evidence/time-zone/board/tz-14-restored.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4821,3 +4833,22 @@ Host renders of Settings' time zone chooser and network time switch (settings-se
 | `docs/evidence/time-zone/host/europe-page-2-100-568x1232.png` | 63971 | DATA | `ad608683fb9e6c2f1bba69f87a1f162285f05961120611828b300b477f0240a6` |
 | `docs/evidence/time-zone/host/europe-page-2-200-1232x568.png` | 70077 | DATA | `3dadd48d7000b418d72ec1c1692793ffe5ed849c2ac57df307666a2625a6826c` |
 | `docs/evidence/time-zone/host/europe-page-2-200-568x1232.png` | 87542 | DATA | `30cc3802ef27fbdf0e7c41d9fed8dd979df778cbc4d8d928bd7b31d6b0971b73` |
+
+## Time zone board captures
+
+Board captures of the time zone chooser and network time switch (settings-sets-the-time-zone-and-network-time task 3.1); see docs/evidence/time-zone/board/README.md.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/time-zone/board/tz-01-date-time.png` | 36438 | DATA | `cb2bed6826b8ac07bebbecb5130bfd329a43f0eb16d8612d91fb6c80316ffba5` |
+| `docs/evidence/time-zone/board/tz-02-areas.png` | 34382 | DATA | `f7d7613d27999a164a9dd8eeae279191979ad8b1759f9f1e0b5ac53e32a627a1` |
+| `docs/evidence/time-zone/board/tz-03-europe-1.png` | 46384 | DATA | `8e681d41720f7ee58320fc67610cf43b1bd89a88f021dc39d22b2bffb61bc0b7` |
+| `docs/evidence/time-zone/board/tz-04-europe-2.png` | 42960 | DATA | `15e44bdff760367f35894641c25c51d4ea1c200f839daa0977d6afbfba4ffe77` |
+| `docs/evidence/time-zone/board/tz-05-date-time-london.png` | 34466 | DATA | `17f1935ff386fc83518a9dcb32f64a1056845bd3d29c77e3b17b49f43c2cb31a` |
+| `docs/evidence/time-zone/board/tz-06-shade-london.png` | 40756 | DATA | `1af4237a65f066aab18a2bb41087c8c32ece215b30f1ea270126302a0d7dc474` |
+| `docs/evidence/time-zone/board/tz-08-clock-app-london.png` | 6990 | DATA | `134dc09ba5911187924bdab79317d2f8415797e1b9fe1816a8d18fed8759db90` |
+| `docs/evidence/time-zone/board/tz-10-network-off.png` | 33455 | DATA | `cc98d7f17bc149d9d1b83397db62e7860f8164dc2ba80b229fb75cc2d031741a` |
+| `docs/evidence/time-zone/board/tz-11-shade-after-reboot.png` | 41027 | DATA | `53cd47895761b1f174c611dfa88d7a75a5d6a1a8ec92c0de522a47a8db4cab24` |
+| `docs/evidence/time-zone/board/tz-12-date-time-after-reboot.png` | 33719 | DATA | `55fc62e9b2af0e35ef7d2df82e9ecd912a28eac5024ccb2a4b436800331a0aed` |
+| `docs/evidence/time-zone/board/tz-13-america-3.png` | 51260 | DATA | `074d24ce73861ccd2e7c4c01ee97943fe0e4bddcb20b45d0399c7f0aab9cd3ce` |
+| `docs/evidence/time-zone/board/tz-14-restored.png` | 36506 | DATA | `e2d1d3f73c3b22becc3089e86350235fc91d31dc9a70db48c55b289e911f25f8` |

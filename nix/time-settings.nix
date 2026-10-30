@@ -1,5 +1,5 @@
 # The root half of Settings' time zone and network time controls
-# (openspec/changes/settings-sets-the-time-zone-and-network-time). The board
+# (openspec/changes/archive/2026-10-30-settings-sets-the-time-zone-and-network-time). The board
 # has no polkit, so timedated refuses the shell user. Instead a socket owned
 # by root and the shell group starts one short-lived helper per request; it
 # accepts only `zone <listed name>` and `network-time on|off`
