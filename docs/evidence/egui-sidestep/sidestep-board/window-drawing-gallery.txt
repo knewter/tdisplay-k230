@@ -1,0 +1,24 @@
+D-Bus property CPUAccounting is deprecated, ignoring assignment: CPUAccounting=yes
+window mapped after ? s (1 s polling)
+mainpid 9404
+ "width": 1232,
+ "height": 568
+ "width": 0,
+ "height": 0
+ "width": 0,
+ "height": 0
+ "width": 0,
+ "height": 0
+ "name": "root",
+ "width": 1232,
+ "height": 568
+ "width": 0,
+grim rc=0
+smaps:
+Rss:               19940 kB
+Pss:               16885 kB
+Pss_Anon:           5988 kB
+idle 20 s: client ticks 0 sway ticks 22 (100 ticks = 1 s of one core)
+system used delta kB 2148
+inactive
+system same: yes sway same: yes

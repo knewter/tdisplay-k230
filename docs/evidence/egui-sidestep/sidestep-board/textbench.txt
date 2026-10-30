@@ -1,0 +1,6 @@
+START 1.66 1.17 0.75 1/165 7368
+D-Bus property CPUAccounting is deprecated, ignoring assignment: CPUAccounting=yes
+11000000 bytes, 200000 lines
+EXIT 0
+END 1.43 1.37 1.20 2/163 7541
+MemAvailable:     569436 kB

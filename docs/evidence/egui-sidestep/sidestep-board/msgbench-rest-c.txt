@@ -1,0 +1,3 @@
+START 1.19 1.06 1.09 2/164 8022
+weak load + release                                 98.22 ns  (min 97.30)
+weak reference create + destroy                    437.47 ns  (min 419.01)

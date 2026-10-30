@@ -2499,6 +2499,10 @@ DATA b9c3298c5f20d739a412b393b1a1fd07aae3373f7730ac03ee868bee2128df08 docs/evide
 DATA fff35ca8dc4db11c6da8c86358b2088ca8c66a18aaa42d90228b4cb8d586ad40 docs/evidence/short-list-swipe/board/sl-06-close-check.png
 DATA fff35ca8dc4db11c6da8c86358b2088ca8c66a18aaa42d90228b4cb8d586ad40 docs/evidence/short-list-swipe/board/sl-07-after-upward.png
 DATA 5f35234d742097f77e5be024f4e71a1f985dc9c02ee82e978b6ffa2827f24fd0 docs/evidence/short-list-swipe/board/sl-08-after-fast-upward.png
+DATA bdb13da30016239c101131eb6c8c20c56ddc33644407313f0a234d318886c3ac docs/evidence/egui-sidestep/captures/egui-probe-startup.png
+DATA 805acaad6189b6a28db4d58e7e19a5c5c797a0ecfe9d8f09e261eba263112c71 docs/evidence/egui-sidestep/captures/shm-baseline-startup.png
+DATA ce33c961f4b896ed752397d6ddc4b694f8d549b454934355a0b046fd6fbb4f12 docs/evidence/egui-sidestep/captures/sidestep-controls-gallery.png
+DATA a3281541551e14aa954bb9d339d669410f99ca72be6342337c99d80b0cef1644 docs/evidence/egui-sidestep/captures/sidestep-drawing-gallery.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4936,3 +4940,7 @@ Injected-touch grim captures of sideways swipes dismissing rows of a one- and tw
 | `docs/evidence/short-list-swipe/board/sl-06-close-check.png` | 47935 | DATA | `fff35ca8dc4db11c6da8c86358b2088ca8c66a18aaa42d90228b4cb8d586ad40` |
 | `docs/evidence/short-list-swipe/board/sl-07-after-upward.png` | 47935 | DATA | `fff35ca8dc4db11c6da8c86358b2088ca8c66a18aaa42d90228b4cb8d586ad40` |
 | `docs/evidence/short-list-swipe/board/sl-08-after-fast-upward.png` | 6076 | DATA | `5f35234d742097f77e5be024f4e71a1f985dc9c02ee82e978b6ffa2827f24fd0` |
+| `docs/evidence/egui-sidestep/captures/egui-probe-startup.png` | 28869 | DATA | `bdb13da30016239c101131eb6c8c20c56ddc33644407313f0a234d318886c3ac` |
+| `docs/evidence/egui-sidestep/captures/shm-baseline-startup.png` | 25863 | DATA | `805acaad6189b6a28db4d58e7e19a5c5c797a0ecfe9d8f09e261eba263112c71` |
+| `docs/evidence/egui-sidestep/captures/sidestep-controls-gallery.png` | 16326 | DATA | `ce33c961f4b896ed752397d6ddc4b694f8d549b454934355a0b046fd6fbb4f12` |
+| `docs/evidence/egui-sidestep/captures/sidestep-drawing-gallery.png` | 34913 | DATA | `a3281541551e14aa954bb9d339d669410f99ca72be6342337c99d80b0cef1644` |

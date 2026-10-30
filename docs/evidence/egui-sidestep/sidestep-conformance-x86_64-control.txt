@@ -1,0 +1,382 @@
+   Compiling bitflags v2.13.2
+   Compiling cfg-if v1.0.5
+   Compiling stable_deref_trait v1.2.1
+   Compiling smallvec v1.16.2
+   Compiling log v0.4.34
+   Compiling writeable v0.6.4
+   Compiling objc2-encode v4.1.0 (<scratch>/src-sidestep/.rv-patch/objc2-encode-4.1.0)
+   Compiling litemap v0.8.3
+   Compiling linux-raw-sys v0.12.1
+   Compiling utf8_iter v1.0.4
+   Compiling foldhash v0.2.0
+   Compiling memchr v2.8.3
+   Compiling downcast-rs v1.2.1
+   Compiling once_cell v1.21.4
+   Compiling simd-adler32 v0.3.10
+   Compiling adler2 v2.0.1
+   Compiling equivalent v1.0.2
+   Compiling objc2 v0.6.4 (<scratch>/src-sidestep/.objc2-overlay/objc2-0.6.4)
+   Compiling rustix v1.1.5
+   Compiling libc v0.2.189
+   Compiling icu_properties_data v2.3.0
+   Compiling icu_locale_fallback_data v2.3.0
+   Compiling wayland-client v0.31.15
+   Compiling crc32fast v1.5.2
+   Compiling wayland-sys v0.31.11
+   Compiling icu_normalizer_data v2.3.0
+   Compiling rustix v0.38.44
+   Compiling wayland-backend v0.3.17
+   Compiling thiserror v1.0.69
+   Compiling bytemuck v1.25.2
+   Compiling zerofrom v0.1.8
+   Compiling icu_segmenter_data v2.3.0
+   Compiling zerocopy v0.8.59
+   Compiling utf16_iter v1.0.5
+   Compiling arrayvec v0.7.8
+   Compiling linux-raw-sys v0.4.15
+   Compiling libloading v0.8.9
+   Compiling write16 v1.0.0
+   Compiling icu_collator_data v2.3.0
+   Compiling thiserror v2.0.21
+warning: value assigned to `n` is never read
+  --> .rv-patch/objc2-encode-4.1.0/src/static_str.rs:35:9
+   |
+35 |         n /= 10;
+   |         ^^^^^^^
+   |
+   = help: maybe it is overwritten before being read?
+   = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling icu_casemap_data v2.3.0
+   Compiling yeslogic-fontconfig-sys v6.0.1
+   Compiling num-traits v0.2.19
+   Compiling hashbrown v0.17.1
+   Compiling bit-vec v0.8.0
+   Compiling regex-syntax v0.8.11
+   Compiling font-types v0.12.5
+   Compiling yoke v0.8.3
+   Compiling miniz_oxide v0.9.1
+   Compiling weezl v0.1.12
+   Compiling quick-error v2.0.1
+   Compiling time-core v0.1.9
+   Compiling slab v0.4.12
+   Compiling powerfmt v0.2.0
+   Compiling deranged v0.5.8
+   Compiling zune-core v0.5.3
+   Compiling num-conv v0.2.2
+   Compiling sidestep-runtime v0.0.1 (<scratch>/src-sidestep/crates/sidestep-runtime)
+   Compiling miniz_oxide v0.8.9
+   Compiling dlib v0.5.3
+   Compiling fdeflate v0.3.7
+   Compiling aho-corasick v1.1.5
+warning: `objc2-encode` (lib) generated 1 warning
+   Compiling quick-xml v0.42.0
+   Compiling linearize v0.1.8
+   Compiling arrayref v0.3.9
+   Compiling zerovec v0.11.8
+   Compiling zerotrie v0.2.5
+   Compiling bit-set v0.8.0
+   Compiling color_quant v1.1.0
+   Compiling parlance v0.1.0
+   Compiling pxfm v0.1.30
+   Compiling base64 v0.23.1
+   Compiling byteorder-lite v0.1.0
+   Compiling linebender_resource_handle v0.1.1
+   Compiling read-fonts v0.41.0
+   Compiling zune-jpeg v0.5.15
+   Compiling xcursor v0.3.11
+   Compiling fax v0.2.7
+   Compiling jiff-core v0.1.1
+   Compiling flate2 v1.1.10
+   Compiling indexmap v2.14.2
+   Compiling strict-num v0.1.1
+   Compiling block2 v0.6.2
+   Compiling allocator-api2 v0.2.21
+   Compiling cursor-icon v1.2.0
+   Compiling time v0.3.55
+   Compiling gif v0.14.2
+   Compiling tiny-skia-path v0.12.0
+   Compiling image-webp v0.2.4
+   Compiling smithay-client-toolkit v0.19.2
+   Compiling sidestep-foundation v0.0.1 (<scratch>/src-sidestep/crates/sidestep-foundation)
+   Compiling kbvm v0.2.0
+   Compiling regex-automata v0.4.18
+   Compiling bstr v1.13.1
+   Compiling objc2-core-foundation v0.3.2 (<scratch>/src-sidestep/.objc2-overlay/objc2-core-foundation-0.3.2)
+   Compiling memmap2 v0.9.11
+   Compiling png v0.18.1
+   Compiling polycool v0.4.0
+   Compiling secure-execution v0.1.0
+   Compiling xkeysym v0.2.1
+   Compiling yazi v0.2.1
+   Compiling zeno v0.3.3
+   Compiling hashbrown v0.16.1
+   Compiling isnt v0.2.0
+   Compiling tinystr v0.8.4
+   Compiling potential_utf v0.1.6
+   Compiling jiff v0.2.37
+   Compiling unicode-width v0.2.2
+   Compiling debug-fn v1.0.0
+   Compiling kurbo v0.13.1
+   Compiling icu_locale_core v2.3.0
+   Compiling tiny-skia v0.12.0
+   Compiling dispatch2 v0.3.1
+   Compiling icu_collections v2.3.0
+   Compiling half v2.7.1
+   Compiling moxcms v0.8.1
+   Compiling kasuari v0.4.12
+   Compiling plist v1.10.1
+   Compiling tiff v0.11.3
+   Compiling objc2-core-graphics v0.3.2 (<scratch>/src-sidestep/.objc2-overlay/objc2-core-graphics-0.3.2)
+   Compiling objc2-foundation v0.3.2 (<scratch>/src-sidestep/.objc2-overlay/objc2-foundation-0.3.2)
+   Compiling icu_provider v2.3.1
+   Compiling polling v3.11.0
+   Compiling icu_properties v2.3.0
+   Compiling icu_locale_fallback v2.3.0
+   Compiling icu_normalizer v2.3.0
+   Compiling fancy-regex v0.16.2
+   Compiling calloop v0.13.0
+   Compiling icu_segmenter v2.3.0
+   Compiling wayland-csd-frame v0.3.0
+   Compiling objc2-core-text v0.3.2 (<scratch>/src-sidestep/.objc2-overlay/objc2-core-text-0.3.2)
+   Compiling objc2-image-io v0.3.2 (<scratch>/src-sidestep/.objc2-overlay/objc2-image-io-0.3.2)
+   Compiling parley_data v0.11.1
+   Compiling icu_casemap v2.3.0
+   Compiling icu_collator v2.3.1
+   Compiling image v0.25.10
+   Compiling skrifa v0.44.0
+   Compiling fontique v0.11.1
+   Compiling harfrust v0.12.0
+   Compiling wayland-protocols v0.32.13
+   Compiling wayland-cursor v0.31.14
+   Compiling calloop-wayland-source v0.3.0
+   Compiling objc2-quartz-core v0.3.2 (<scratch>/src-sidestep/.objc2-overlay/objc2-quartz-core-0.3.2)
+   Compiling objc2-app-kit v0.3.2 (<scratch>/src-sidestep/.objc2-overlay/objc2-app-kit-0.3.2)
+   Compiling swash v0.2.10
+   Compiling parley v0.11.1
+   Compiling wayland-protocols-wlr v0.3.12
+   Compiling sidestep-appkit v0.0.1 (<scratch>/src-sidestep/crates/sidestep-appkit)
+   Compiling sidestep v0.0.1 (<scratch>/src-sidestep/crates/sidestep)
+   Compiling sidestep-conformance v0.0.0 (<scratch>/src-sidestep/conformance)
+    Finished `release` profile [optimized] target(s) in 2m 54s
+     Running tests/appkit_autolayout.rs (../ss-target/release/deps/appkit_autolayout-d1ebfffe73deedb7)
+test defaults ... ok
+test anchors ... ok
+test installing ... ok
+
+thread 'main' (2367302) panicked at conformance/tests/appkit_autolayout.rs:317:5:
+assertion `left == right` failed
+  left: CGRect { origin: CGPoint { x: 20.0, y: 230.4 }, size: CGSize { width: 100.0, height: 59.99999999999997 } }
+ right: CGRect { origin: CGPoint { x: 20.0, y: 230.0 }, size: CGSize { width: 100.0, height: 60.0 } }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `-p sidestep-conformance --test appkit_autolayout`
+     Running tests/appkit_split.rs (../ss-target/release/deps/appkit_split-02cd7be6e1765e84)
+test defaults ... ok
+test adjusting ... ok
+test moving_dividers ... ok
+test resizing ... ok
+test arranged_subviews ... ok
+test autosaving ... ok
+
+thread 'main' (2367315) panicked at conformance/tests/appkit_split.rs:359:5:
+assertion `left == right` failed
+  left: [CGRect { origin: CGPoint { x: 0.0, y: 0.0 }, size: CGSize { width: 150.4, height: 100.0 } }, CGRect { origin: CGPoint { x: 151.4, y: 0.0 }, size: CGSize { width: 149.4, height: 100.0 } }]
+ right: [CGRect { origin: CGPoint { x: 0.0, y: 0.0 }, size: CGSize { width: 150.0, height: 100.0 } }, CGRect { origin: CGPoint { x: 151.0, y: 0.0 }, size: CGSize { width: 150.0, height: 100.0 } }]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `-p sidestep-conformance --test appkit_split`
+     Running tests/appkit_stack.rs (../ss-target/release/deps/appkit_stack-454cba26a2617633)
+test defaults ... ok
+test arranging ... ok
+test fitting ... ok
+
+thread 'main' (2367341) panicked at conformance/tests/appkit_stack.rs:196:5:
+assertion `left == right` failed
+  left: [CGRect { origin: CGPoint { x: 0.0, y: 15.2 }, size: CGSize { width: 40.0, height: 20.000000000000004 } }, CGRect { origin: CGPoint { x: 48.0, y: 10.4 }, size: CGSize { width: 60.0, height: 29.6 } }, CGRect { origin: CGPoint { x: 116.0, y: 20.0 }, size: CGSize { width: 50.400000000000006, height: 10.399999999999999 } }]
+ right: [CGRect { origin: CGPoint { x: 0.0, y: 15.0 }, size: CGSize { width: 40.0, height: 20.0 } }, CGRect { origin: CGPoint { x: 48.0, y: 10.0 }, size: CGSize { width: 60.0, height: 30.0 } }, CGRect { origin: CGPoint { x: 116.0, y: 20.0 }, size: CGSize { width: 50.0, height: 10.0 } }]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `-p sidestep-conformance --test appkit_stack`
+     Running tests/appkit_views.rs (../ss-target/release/deps/appkit_views-297d938e2b8f064b)
+test subviews_are_snapshots ... ok
+test adding_and_removing ... ok
+test positioned_subviews ... ok
+test replacing_subviews ... ok
+test setting_subviews ... ok
+test sorting_subviews ... ok
+test ancestry ... ok
+test hiding_tells_shown_subviews ... ok
+test view_state ... ok
+test autoresizing_subviews_is_optional ... ok
+test scaled_bounds ... ok
+test converting_sizes ... ok
+
+thread 'main' (2367358) panicked at conformance/tests/appkit_views.rs:682:5:
+assertion `left == right` failed
+  left: CGRect { origin: CGPoint { x: 0.40000000000000036, y: 0.8000000000000007 }, size: CGSize { width: 10.4, height: 9.599999999999998 } }
+ right: CGRect { origin: CGPoint { x: 0.0, y: 1.0 }, size: CGSize { width: 10.0, height: 10.0 } }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `-p sidestep-conformance --test appkit_views`
+     Running tests/autorelease.rs (../ss-target/release/deps/autorelease-648a748196c1695e)
+
+running 14 tests
+test claiming_a_different_object_retains_it ... ok
+test objects_autoreleased_while_a_pool_drains_go_with_it ... ok
+test claimed_return_outlives_its_pool ... ok
+test autorelease_return_by_hand ... ok
+test claimed_and_unclaimed_mixed ... ok
+test a_plain_return_right_after_an_unclaimed_one_leaves_the_pool_its_reference ... ok
+test unclaimed_return_while_a_pool_drains_goes_with_it ... ok
+test unclaimed_returns_in_a_row ... ok
+test claimed_return_is_handed_over ... ok
+test retain_autorelease_return_value ... ok
+test a_later_plain_return_of_an_unclaimed_object_leaves_the_pool_its_reference ... ok
+test unclaimed_return_lives_until_its_pool_drains ... ok
+test unclaimed_return_belongs_to_the_innermost_pool ... ok
+test unclaimed_return_released_when_its_thread_ends ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/coregraphics.rs (../ss-target/release/deps/coregraphics-8748d1c140eaceb4)
+
+running 35 tests
+test geometry_edge_cases ... ok
+test path_queries ... ok
+test path_shapes ... ok
+test hdr_and_adaptive_constants ... ok
+test arcs ... ok
+test rectangles ... ok
+test transforms ... ok
+test path_building ... ok
+test context_state ... ok
+test gradients ... ok
+test bitmap_layouts ... ok
+test color_burn_and_soft_light ... ok
+test transparency_layers_save_on_the_stack ... ok
+test clips_of_nothing_and_of_no_area ... ok
+test color_spaces ... ok
+test bitmap_contexts_over_program_memory ... ok
+test images ... ok
+test masks_and_context_images ... ok
+test generic_spaces_are_managed ... ok
+test the_current_path ... ok
+test drawing_and_clipping_take_the_current_path ... ok
+test radial_gradients_after_their_end ... ok
+test translucent_paint_casts_translucent_shadows ... ok
+test image_parts_decodes_and_layouts ... ok
+test fonts ... FAILED
+test image_layouts ... ok
+test data_providers ... ok
+test bitmap_pixels_in_every_layout ... ok
+test shadows ... ok
+test derived_spaces ... ok
+test colors ... ok
+test colors_alpha_and_compositing ... ok
+test type_ids_and_objects ... ok
+test fills_and_strokes ... ok
+test arcs_dashes_and_strokes_at_the_limits ... ok
+
+failures:
+
+---- fonts stdout ----
+
+thread 'fonts' (2367429) panicked at conformance/tests/coregraphics.rs:1635:13:
+no DejaVu Sans to read
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    fonts
+
+test result: FAILED. 34 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `-p sidestep-conformance --test coregraphics`
+     Running tests/rich_text.rs (../ss-target/release/deps/rich_text-30bdfcf37e1f85fe)
+test constants ... ok
+test rtf_writes_as_appkit_does ... ok
+test rtf_round_trips ... ok
+test rtf_document_attributes ... ok
+test rtf_from_other_writers ... ok
+test errors_and_types ... ok
+test plain_text ... ok
+test html_writes_as_appkit_does ... ok
+test html_round_trips ... ok
+test html_from_browsers ... ok
+test html_lists ... ok
+test html_breaks_and_spaces ... ok
+test extreme_numbers ... ok
+test rtf_default_font ... ok
+test html_options_and_urls ... ok
+test rtfd ... ok
+test read_in_place ... ok
+test pasteboards ... ok
+     Running tests/services.rs (../ss-target/release/deps/services-980e8022f85e9b6d)
+
+running 43 tests
+test empty_data_has_no_bytes ... ok
+test subdata_ranges_and_bytes ... ok
+test core_foundation_strings_and_data ... ok
+test url_components_of_strings ... ok
+test base64 ... ok
+test runtime_functions ... ok
+test url_components ... ok
+test core_foundation_urls_errors_dates ... ok
+test url_derivations ... ok
+test url_path_helpers ... ok
+test atomic_writes_keep_permissions ... ok
+test url_standardizing ... ok
+test copies ... ok
+test error_constants_and_texts ... ok
+test url_relative_resolution ... ok
+test property_list_serialization ... ok
+test data_descriptions ... ok
+test data_equality_and_hash ... ok
+test url_equality_and_reachability ... ok
+test url_query_items ... ok
+test uuids ... ok
+test file_urls ... ok
+test url_ports_and_path_components ... ok
+test files ... ok
+test file_manager_operations ... ok
+test file_operation_errors ... ok
+test empty_data_without_a_buffer ... ok
+test json_arrays_and_numbers ... ok
+test json ... ok
+test core_foundation_numbers_and_arrays ... ok
+test process_info ... ok
+test file_manager_listings_and_attributes ... ok
+test mutable_data ... ok
+test search_path_urls ... ok
+test no_copy_deallocator_runs_once ... ok
+test home_temporary_and_user ... FAILED
+test process_arguments ... ok
+test trash_on_linux ... ok
+test property_list_numbers_and_arrays ... ok
+test core_foundation_preferences ... ok
+test bundles ... ok
+test locks_under_contention ... ok
+test locks ... ok
+
+failures:
+
+---- home_temporary_and_user stdout ----
+
+thread 'home_temporary_and_user' (2367634) panicked at conformance/tests/services.rs:1441:5:
+assertion `left == right` failed
+  left: Some("/root")
+ right: Some("<home>")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    home_temporary_and_user
+
+test result: FAILED. 42 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+error: test failed, to rerun pass `-p sidestep-conformance --test services`
+error: 6 targets failed:
+    `-p sidestep-conformance --test appkit_autolayout`
+    `-p sidestep-conformance --test appkit_split`
+    `-p sidestep-conformance --test appkit_stack`
+    `-p sidestep-conformance --test appkit_views`
+    `-p sidestep-conformance --test coregraphics`
+    `-p sidestep-conformance --test services`
+exit=101

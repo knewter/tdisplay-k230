@@ -1,0 +1,194 @@
+{
+ "arms": [
+  {
+   "metrics": {
+    "startup_ms": 194,
+    "incremental_memory_mib": 10.515625,
+    "idle_client_cpu_pct": 0.016595851037240688,
+    "idle_sway_cpu_pct": 0.9997500624843788,
+    "idle_combined_cpu_pct": 1.0163459135216195,
+    "active_client_cpu_pct": 11.484351304057997,
+    "active_sway_cpu_pct": 10.832430630780769,
+    "active_combined_cpu_pct": 22.316781934838765,
+    "input_to_commit_p50_ms": 12,
+    "input_to_commit_p95_ms": 770,
+    "input_to_commit_max_ms": 1318,
+    "input_samples": 134,
+    "commit_gap_p95_ms": 24,
+    "commit_gap_max_ms": 1383,
+    "interactions": 18,
+    "injector_cpu_s": 0.05,
+    "commit_gap_p50_ms": 19,
+    "commit_gap_p99_ms": 672,
+    "input_to_commit_p99_ms": 1257,
+    "commits_in_active": 251,
+    "render_p50_ms": null,
+    "render_p95_ms": null,
+    "render_max_ms": null
+   },
+   "missing": [
+    "interactions"
+   ],
+   "boundary": "client_commit",
+   "name": "baseline",
+   "pair": 1,
+   "functional": {
+    "software_route": "PASS",
+    "pixels_correct": "PASS",
+    "scroll": "PASS",
+    "tap": "PASS",
+    "interrupted_motion": "PASS",
+    "text_focus": "FAIL",
+    "text_entry": "FAIL",
+    "readable": "PASS",
+    "bounded_lifetime": "PASS",
+    "restored": "PASS"
+   },
+   "gates": {
+    "pixels_correct": true,
+    "readable": true,
+    "tap": true,
+    "scroll": true,
+    "interrupted_motion": true,
+    "text_focus": false,
+    "text_entry": false,
+    "software_route": true
+   },
+   "restored": true,
+   "status": "ok",
+   "arm_system_busy_pct": 20.305609681058353,
+   "mem_samples": [
+    376192,
+    376180,
+    376168,
+    376164
+   ]
+  },
+  {
+   "metrics": {
+    "startup_ms": 273,
+    "incremental_memory_mib": 15.6875,
+    "idle_client_cpu_pct": 0.017245688577855536,
+    "idle_sway_cpu_pct": 0.9997500624843788,
+    "idle_combined_cpu_pct": 1.0169957510622343,
+    "active_client_cpu_pct": 52.34409632530623,
+    "active_sway_cpu_pct": 16.415298725106243,
+    "active_combined_cpu_pct": 68.75939505041248,
+    "input_to_commit_p50_ms": 37,
+    "input_to_commit_p95_ms": 44,
+    "input_to_commit_max_ms": 51,
+    "input_samples": 134,
+    "commit_gap_p95_ms": 51,
+    "commit_gap_max_ms": 490,
+    "interactions": 18,
+    "injector_cpu_s": 0.06,
+    "commit_gap_p50_ms": 44,
+    "commit_gap_p99_ms": 466,
+    "input_to_commit_p99_ms": 50,
+    "commits_in_active": 232,
+    "render_p50_ms": 35.589,
+    "render_p95_ms": 40.016,
+    "render_max_ms": 45.223
+   },
+   "missing": [
+    "interactions"
+   ],
+   "boundary": "client_commit",
+   "name": "egui",
+   "pair": 1,
+   "functional": {
+    "software_route": "PASS",
+    "pixels_correct": "PASS",
+    "scroll": "PASS",
+    "tap": "PASS",
+    "interrupted_motion": "PASS",
+    "text_focus": "FAIL",
+    "text_entry": "FAIL",
+    "readable": "PASS",
+    "bounded_lifetime": "PASS",
+    "restored": "PASS"
+   },
+   "gates": {
+    "pixels_correct": true,
+    "readable": true,
+    "tap": true,
+    "scroll": true,
+    "interrupted_motion": true,
+    "text_focus": false,
+    "text_entry": false,
+    "software_route": true
+   },
+   "restored": true,
+   "status": "ok",
+   "arm_system_busy_pct": 32.52814738996929,
+   "mem_samples": [
+    389496,
+    389488,
+    389464,
+    389464
+   ]
+  }
+ ],
+ "comparison": {
+  "active_combined_cpu_pct": {
+   "qt_mean": 68.75939505041248,
+   "qt_sd": 0.0,
+   "baseline_mean": 22.316781934838765,
+   "baseline_sd": 0.0,
+   "regression_pct": 208.10622808959778,
+   "pairs": [
+    [
+     68.75939505041248,
+     22.316781934838765
+    ]
+   ],
+   "status": "REGRESSION",
+   "baseline_noisy": false
+  },
+  "input_to_commit_p95_ms": {
+   "qt_mean": 44.0,
+   "qt_sd": 0.0,
+   "baseline_mean": 770.0,
+   "baseline_sd": 0.0,
+   "regression_pct": -94.28571428571429,
+   "pairs": [
+    [
+     44,
+     770
+    ]
+   ],
+   "status": "WITHIN_10_PCT",
+   "baseline_noisy": false
+  },
+  "idle_combined_cpu_pct": {
+   "qt_mean": 1.0169957510622343,
+   "qt_sd": 0.0,
+   "baseline_mean": 1.0163459135216195,
+   "baseline_sd": 0.0,
+   "regression_pct": 0.06393861892582288,
+   "pairs": [
+    [
+     1.0169957510622343,
+     1.0163459135216195
+    ]
+   ],
+   "status": "WITHIN_10_PCT",
+   "baseline_noisy": false
+  },
+  "startup_ms": {
+   "qt_mean": 273.0,
+   "qt_sd": 0.0,
+   "baseline_mean": 194.0,
+   "baseline_sd": 0.0,
+   "regression_pct": 40.72164948453608,
+   "pairs": [
+    [
+     273,
+     194
+    ]
+   ],
+   "status": "REGRESSION",
+   "baseline_noisy": false
+  }
+ }
+}

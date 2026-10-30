@@ -1,0 +1,21 @@
+START 1.85 0.88 0.52 2/164 6994
+D-Bus property CPUAccounting is deprecated, ignoring assignment: CPUAccounting=yes
+baseline: indirect call to a Rust fn                 7.27 ns  (min 7.19)
+msg_send instance method (define_class!)            23.35 ns  (min 22.98)
+msg_send class method                               23.05 ns  (min 22.99)
+generated binding: -[NSObject hash]                 27.77 ns  (min 27.62)
+retain + release (Retained clone/drop)              38.75 ns  (min 38.67)
+retain + msg_send + release                         51.49 ns  (min 51.21)
+objc_msgSend called directly                        59.94 ns  (min 59.82)
+forwarded message (forwardingTargetForSelector:)   115.04 ns  (min 114.81)
+performSelector:withObject: forwarded              146.07 ns  (min 145.53)
+forwarded message (forwardInvocation:)            2929.99 ns  (min 2923.74)
+NSInvocation invoke, one object argument           755.27 ns  (min 754.94)
+allocator: malloc + free, 24 bytes                  94.50 ns  (min 93.69)
+allocator: calloc + free, 24 bytes                 103.12 ns  (min 102.32)
+alloc + init + release NSObject                    187.48 ns  (min 186.84)
+alloc + init + release, class with ivars           354.39 ns  (min 353.13)
+autorelease pool push/pop, one object              161.96 ns  (min 161.68)
+EXIT 1
+END 1.14 1.03 0.68 2/160 7190
+MemAvailable:     577896 kB

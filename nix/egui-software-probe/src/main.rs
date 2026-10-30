@@ -17,36 +17,36 @@ use wayland_protocols::wp::text_input::zv3::client::{zwp_text_input_manager_v3, 
 use wayland_protocols::xdg::shell::client::{xdg_surface, xdg_toplevel, xdg_wm_base};
 
 // Geometry mirrors Probe.qml; tests/test_egui_probe_scene.py compares these with it.
-const SC_WIDTH: i32 = 568;
-const SC_HEIGHT: i32 = 1232;
+const SC_WIDTH: i32 = 1232;
+const SC_HEIGHT: i32 = 568;
 const SC_BG: u32 = 0x161b28;
-const SC_HEADER_H: f32 = 136.0;
+const SC_HEADER_H: f32 = 80.0;
 const SC_HEADER_COLOR: u32 = 0x26344c;
 const SC_LIST_X: f32 = 20.0;
-const SC_LIST_Y: f32 = 152.0;
-const SC_LIST_W: f32 = 528.0;
-const SC_LIST_H: f32 = 510.0;
+const SC_LIST_Y: f32 = 96.0;
+const SC_LIST_W: f32 = 580.0;
+const SC_LIST_H: f32 = 452.0;
 const SC_ROW_COUNT: usize = 20;
 const SC_ROW_H: f32 = 74.0;
 const SC_ROW_SPACING: f32 = 12.0;
 const SC_ROW_COLOR: u32 = 0x31415d;
 const SC_ROW_SELECTED: u32 = 0x4b6ea8;
-const SC_EDITOR_X: f32 = 20.0;
-const SC_EDITOR_Y: f32 = 682.0;
-const SC_EDITOR_W: f32 = 528.0;
+const SC_EDITOR_X: f32 = 628.0;
+const SC_EDITOR_Y: f32 = 96.0;
+const SC_EDITOR_W: f32 = 584.0;
 const SC_EDITOR_H: f32 = 90.0;
-const SC_MOVER_Y: f32 = 796.0;
+const SC_MOVER_Y: f32 = 206.0;
 const SC_MOVER_W: f32 = 172.0;
 const SC_MOVER_H: f32 = 90.0;
-const SC_MOVER_X_LEFT: f32 = 20.0;
-const SC_MOVER_X_RIGHT: f32 = 376.0;
+const SC_MOVER_X_LEFT: f32 = 628.0;
+const SC_MOVER_X_RIGHT: f32 = 1040.0;
 const SC_ANIM_S: f32 = 0.280;
-const SC_PANEL_X: f32 = 20.0;
-const SC_PANEL_Y: f32 = 912.0;
-const SC_PANEL_W: f32 = 528.0;
+const SC_PANEL_X: f32 = 628.0;
+const SC_PANEL_Y: f32 = 316.0;
+const SC_PANEL_W: f32 = 584.0;
 const SC_PANEL_H: f32 = 112.0;
-const SC_SWATCH_X: f32 = 132.0;
-const SC_SWATCH_Y: f32 = 1038.0;
+const SC_SWATCH_X: f32 = 740.0;
+const SC_SWATCH_Y: f32 = 448.0;
 const SC_SWATCH_W: f32 = 96.0;
 const SC_SWATCH_H: f32 = 64.0;
 const SC_SWATCH_COLOR: u32 = 0xff5b79;
@@ -246,15 +246,37 @@ impl App {
         }
         let Some(bi) = self.get_buffer(qh) else { return };
         let t0 = Instant::now();
-        let raw = egui::RawInput {
-            screen_rect: Some(Rect::from_min_size(Pos2::ZERO, Vec2::new(SC_WIDTH as f32, SC_HEIGHT as f32))),
-            time: Some(self.start.elapsed().as_secs_f64()),
-            events: std::mem::take(&mut self.events),
-            focused: true,
-            ..Default::default()
-        };
+        // Input events that piled up while a frame callback was pending are fed one
+        // press/release at a time: egui needs to see a press in a pass of its own
+        // before the matching release, or a short tap is lost.
+        let mut batches: Vec<Vec<egui::Event>> = vec![Vec::new()];
+        for ev in std::mem::take(&mut self.events) {
+            let boundary = matches!(ev, egui::Event::PointerButton { .. });
+            batches.last_mut().unwrap().push(ev);
+            if boundary {
+                batches.push(Vec::new());
+            }
+        }
+        if batches.len() > 1 && batches.last().map_or(false, |b| b.is_empty()) {
+            batches.pop();
+        }
         let ctx = self.ctx.clone();
-        let out = ctx.run(raw, |ctx| draw_scene(ctx, &mut self.scene));
+        let mut textures = egui::TexturesDelta::default();
+        let mut out = None;
+        for events in batches {
+            let raw = egui::RawInput {
+                screen_rect: Some(Rect::from_min_size(Pos2::ZERO, Vec2::new(SC_WIDTH as f32, SC_HEIGHT as f32))),
+                time: Some(self.start.elapsed().as_secs_f64()),
+                events,
+                focused: true,
+                ..Default::default()
+            };
+            let mut o = ctx.run(raw, |ctx| draw_scene(ctx, &mut self.scene));
+            textures.append(std::mem::take(&mut o.textures_delta));
+            out = Some(o);
+        }
+        let mut out = out.unwrap();
+        out.textures_delta = textures;
         let prims = ctx.tessellate(out.shapes, out.pixels_per_point);
         let t1 = Instant::now();
         let data = unsafe { std::slice::from_raw_parts_mut(self.bufs[bi].ptr as *mut [u8; 4], (SC_WIDTH * SC_HEIGHT) as usize) };

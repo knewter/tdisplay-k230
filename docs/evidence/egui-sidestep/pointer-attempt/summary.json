@@ -1,0 +1,69 @@
+{
+ "arms": [
+  {
+   "metrics": {
+    "startup_ms": 280,
+    "incremental_memory_mib": 17.03515625,
+    "idle_client_cpu_pct": 0.017220694826293424,
+    "idle_sway_cpu_pct": 0.9997500624843788,
+    "idle_combined_cpu_pct": 1.0169707573106723,
+    "active_client_cpu_pct": 17.97473543871344,
+    "active_sway_cpu_pct": 13.3322223148071,
+    "active_combined_cpu_pct": 31.306957753520543,
+    "input_to_commit_p50_ms": 28,
+    "input_to_commit_p95_ms": 41,
+    "input_to_commit_max_ms": 64,
+    "input_samples": 132,
+    "commit_gap_p95_ms": 444,
+    "commit_gap_max_ms": 511,
+    "interactions": 17,
+    "injector_cpu_s": 0.06,
+    "commit_gap_p50_ms": 34,
+    "commit_gap_p99_ms": 497,
+    "input_to_commit_p99_ms": 49,
+    "commits_in_active": 142,
+    "render_p50_ms": 16.797,
+    "render_p95_ms": 28.426,
+    "render_max_ms": 55.755
+   },
+   "missing": [
+    "interactions"
+   ],
+   "boundary": "client_commit",
+   "name": "egui",
+   "pair": 1,
+   "functional": {
+    "software_route": "PASS",
+    "pixels_correct": "PASS",
+    "scroll": "FAIL",
+    "tap": "FAIL",
+    "interrupted_motion": "PASS",
+    "text_focus": "FAIL",
+    "text_entry": "FAIL",
+    "readable": "PASS",
+    "bounded_lifetime": "PASS",
+    "restored": "PASS"
+   },
+   "gates": {
+    "pixels_correct": true,
+    "readable": true,
+    "tap": false,
+    "scroll": false,
+    "interrupted_motion": true,
+    "text_focus": false,
+    "text_entry": false,
+    "software_route": true
+   },
+   "restored": true,
+   "status": "ok",
+   "arm_system_busy_pct": null,
+   "mem_samples": [
+    397756,
+    397748,
+    397728,
+    397720
+   ]
+  }
+ ],
+ "comparison": {}
+}

@@ -1,0 +1,4 @@
+START 0.29 0.93 1.06 3/167 7824
+autoreleased return not kept, own pool             209.00 ns  (min 207.58)
+EXIT 0
+END 0.65 0.98 1.07 1/161 7855

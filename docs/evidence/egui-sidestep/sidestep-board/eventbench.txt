@@ -1,0 +1,11 @@
+START 1.04 1.01 0.68 2/160 7272
+D-Bus property CPUAccounting is deprecated, ignoring assignment: CPUAccounting=yes
+view frame change, unobserved        3127.5 ns
+view frame change, observed          4740.9 ns
+post and take an event (tracking)    1636.7 ns
+key event to the first responder      450.3 ns
+idle pass of the run loop            3674.0 ns
+pointer move to a tracking loop     12698.6 ns
+EXIT 0
+END 1.03 1.01 0.68 1/160 7281
+MemAvailable:     551736 kB

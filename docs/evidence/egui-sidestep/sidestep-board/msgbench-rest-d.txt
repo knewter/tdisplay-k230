@@ -1,0 +1,6 @@
+START 2.77 1.74 1.33 1/160 8510
+associated object get                              142.14 ns  (min 140.24)
+associated object set + get + remove              1054.18 ns  (min 1053.87)
+4 threads: associated object get, own objects      623.52 ns  (min 620.67)
+EXIT 0
+END 2.09 1.71 1.34 1/160 8549

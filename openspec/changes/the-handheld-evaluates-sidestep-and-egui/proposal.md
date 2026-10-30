@@ -1,3 +1,7 @@
+## Status (2026-10-30)
+
+In progress; see `tasks.md`. First results: egui runs correctly on the CPU path (one valid matched pair measured); Sidestep was ported to riscv64 (about 500 lines, conformance passes apart from one optimisation) and its runtime and demo apps run on the board.
+
 ## Why
 
 Two people-visible questions are open as of 2026-10-30. The user asked whether the new Linux UI toolkit Sidestep (an Objective-C runtime plus Foundation/AppKit for Linux, so objc2 apps run unchanged) can run on this handheld, and how fast egui is on it. Neither is known. The shell, the Qt Quick trial and the card budgets give the yardsticks, but nobody has run an egui or Sidestep client on the board, and the board has no OpenGL, so egui's normal renderers are unavailable.

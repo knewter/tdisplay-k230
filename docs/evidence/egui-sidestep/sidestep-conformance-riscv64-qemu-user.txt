@@ -1,0 +1,1674 @@
+warning: value assigned to `n` is never read
+  --> .rv-patch/objc2-encode-4.1.0/src/static_str.rs:35:9
+   |
+35 |         n /= 10;
+   |         ^^^^^^^
+   |
+   = help: maybe it is overwritten before being read?
+   = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+warning: `objc2-encode` (lib) generated 1 warning
+warning: function `ext_of` is never used
+   --> crates/sidestep-runtime/src/call.rs:773:4
+    |
+773 | fn ext_of(ty: &Ty) -> Ext {
+    |    ^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: constant `CACHE` is never used
+  --> crates/sidestep-runtime/src/msgsend.rs:41:7
+   |
+41 | const CACHE: usize = std::mem::offset_of!(Class, cache);
+   |       ^^^^^
+
+warning: constant `HOME_SHIFT` is never used
+  --> crates/sidestep-runtime/src/msgsend.rs:46:7
+   |
+46 | const HOME_SHIFT: u32 = MASK_SHIFT - SLOT_SHIFT;
+   |       ^^^^^^^^^^
+
+warning: constant `SLOT` is never used
+  --> crates/sidestep-runtime/src/msgsend.rs:48:7
+   |
+48 | const SLOT: usize = 1 << SLOT_SHIFT;
+   |       ^^^^
+
+warning: `sidestep-runtime` (lib) generated 4 warnings
+   Compiling sidestep-conformance v0.0.0 (<scratch>/src-sidestep/conformance)
+    Finished `release` profile [optimized] target(s) in 2m 04s
+     Running unittests src/lib.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/sidestep_conformance-2815122d28866ee1)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/alert.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/alert-4a198eedeb29a0f0)
+alert: running alerts skipped (SIDESTEP_CONFORMANCE_WINDOWS=1 runs them, which show windows)
+test defaults ... ok
+test buttons ... ok
+test alerts_from_errors ... ok
+     Running tests/animation.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/animation-257f563e94d7fa02)
+test contexts ... ok
+test completions ... ok
+     Running tests/appkit.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/appkit-c1b430cdd75ca421)
+test frames_and_bounds ... ok
+test converts_points ... ok
+test hit_tests ... ok
+test autoresizes ... ok
+test clip_view_scrolls ... ok
+     Running tests/appkit_autolayout.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/appkit_autolayout-23ea2381975454f0)
+test defaults ... ok
+test anchors ... ok
+test installing ... ok
+
+thread 'main' (3651028) panicked at conformance/tests/appkit_autolayout.rs:317:5:
+assertion `left == right` failed
+  left: CGRect { origin: CGPoint { x: 20.0, y: 230.4 }, size: CGSize { width: 100.0, height: 59.99999999999997 } }
+ right: CGRect { origin: CGPoint { x: 20.0, y: 230.0 }, size: CGSize { width: 100.0, height: 60.0 } }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `-p sidestep-conformance --test appkit_autolayout`
+     Running tests/appkit_events.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/appkit_events-381eddb04582b2bb)
+test mode_names ... ok
+test the_application_adds_its_modes_to_the_common_modes ... ok
+test tracking_timers_fire_only_in_tracking_loops ... ok
+test default_timers_wait_while_tracking ... ok
+test a_window_tracks_events_in_the_tracking_mode ... ok
+test nested_loops_leave_other_events_queued ... ok
+test run_loop_observers_see_appkit_loops ... ok
+test plain_runs_leave_events_queued ... ok
+test loops_in_a_mode_of_their_own ... ok
+test notification_names ... ok
+test delegates_hear_through_the_notification_center ... ok
+test application_delegates_are_weak ... ok
+test moving_and_resizing_windows ... ok
+test closing_tells_and_releases ... ok
+test terminating_asks_the_delegate ... ok
+test terminating_now_exits ... ok
+test launching_and_stopping ... ok
+test views_post_frame_and_bounds_changes ... ok
+test keys_go_to_the_key_window ... ok
+test the_window_ends_the_key_chain ... ok
+test responders_pass_commands_up ... ok
+test clicks_that_move_windows ... ok
+test key_view_links ... ok
+test selecting_key_views ... ok
+test recalculated_key_view_loops ... ok
+test a_subclass_is_the_application ... ok
+test panels ... ok
+test tool_tips ... ok
+test frame_autosave ... ok
+test view_controllers ... ok
+test window_controllers ... ok
+
+thread 'main' (3651122) panicked at crates/sidestep-appkit/src/event_loop.rs:578:9:
+*** +[NSEvent startPeriodicEventsAfterDelay:withPeriod:]: periodic events are already on
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test periodic_events ... ok
+     Running tests/appkit_input.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/appkit_input-633617eff6940579)
+test key_events_carry_their_fields ... ok
+test mouse_events_carry_their_fields ... ok
+test event_timing_settings ... ok
+test key_events_go_to_the_first_responder ... ok
+test unhandled_key_events_go_up_the_chain ... ok
+test first_responder_changes ... ok
+test key_equivalents_search_the_view_tree ... ok
+test first_responders_belong_to_their_window ... ok
+test a_new_window_is_its_own_first_responder ... ok
+test key_window_state ... ok
+test window_delegates_are_weak ... ok
+test style_masks ... ok
+test window_settings ... ok
+test more_window_settings ... ok
+test size_limits ... ok
+test child_windows_and_screen_coordinates ... ok
+test backing_scale ... ok
+test pasteboards ... ok
+test pasteboard_names ... ok
+test cursors ... ok
+test tracking_areas ... ok
+test posted_events ... ok
+test event_monitors ... ok
+test closing_and_miniaturizing ... ok
+test windows_by_number ... ok
+test content_views_outlive_their_windows ... ok
+     Running tests/appkit_keybindings.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/appkit_keybindings-4fa945a1a8a79955)
+test commands_travel_up_the_chain ... ok
+test key_bindings_through_input_contexts ... ok
+test key_bindings_through_responders ... ok
+test text_input_clients ... ok
+test actions ... ok
+     Running tests/appkit_scroll.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/appkit_scroll-95cbe7e93b01385c)
+test scroller_classes ... ok
+test scroller_defaults ... ok
+test scroller_parts ... ok
+test clip_view_defaults ... ok
+test redraw_policies ... ok
+test documents_and_constraints ... ok
+test scrolling_messages ... ok
+test following_documents ... ok
+test losing_documents ... ok
+test scroll_view_defaults ... ok
+test tiling ... ok
+test reflecting ... ok
+test autohiding ... ok
+test size_helpers ... ok
+test replacing_parts ... ok
+test paging_and_keys ... ok
+test magnification ... ok
+test snapshots_draw_documents ... ok
+test notification_names ... ok
+     Running tests/appkit_split.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/appkit_split-f4349ffcbd714528)
+test defaults ... ok
+test adjusting ... ok
+test moving_dividers ... ok
+test resizing ... ok
+test arranged_subviews ... ok
+test autosaving ... ok
+
+thread 'main' (3652738) panicked at conformance/tests/appkit_split.rs:359:5:
+assertion `left == right` failed
+  left: [CGRect { origin: CGPoint { x: 0.0, y: 0.0 }, size: CGSize { width: 150.4, height: 100.0 } }, CGRect { origin: CGPoint { x: 151.4, y: 0.0 }, size: CGSize { width: 149.4, height: 100.0 } }]
+ right: [CGRect { origin: CGPoint { x: 0.0, y: 0.0 }, size: CGSize { width: 150.0, height: 100.0 } }, CGRect { origin: CGPoint { x: 151.0, y: 0.0 }, size: CGSize { width: 150.0, height: 100.0 } }]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `-p sidestep-conformance --test appkit_split`
+     Running tests/appkit_stack.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/appkit_stack-26fd0167d1b013c0)
+test defaults ... ok
+test arranging ... ok
+test fitting ... ok
+
+thread 'main' (3652865) panicked at conformance/tests/appkit_stack.rs:196:5:
+assertion `left == right` failed
+  left: [CGRect { origin: CGPoint { x: 0.0, y: 15.2 }, size: CGSize { width: 40.0, height: 20.000000000000004 } }, CGRect { origin: CGPoint { x: 48.0, y: 10.4 }, size: CGSize { width: 60.0, height: 29.6 } }, CGRect { origin: CGPoint { x: 116.0, y: 20.0 }, size: CGSize { width: 50.400000000000006, height: 10.399999999999999 } }]
+ right: [CGRect { origin: CGPoint { x: 0.0, y: 15.0 }, size: CGSize { width: 40.0, height: 20.0 } }, CGRect { origin: CGPoint { x: 48.0, y: 10.0 }, size: CGSize { width: 60.0, height: 30.0 } }, CGRect { origin: CGPoint { x: 116.0, y: 20.0 }, size: CGSize { width: 50.0, height: 10.0 } }]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `-p sidestep-conformance --test appkit_stack`
+     Running tests/appkit_tab.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/appkit_tab-82319d857a2ed035)
+test defaults ... ok
+test content_rects ... ok
+test selecting ... ok
+test showing_views ... ok
+test adding_and_removing ... ok
+test tab_rects ... ok
+test items_come_and_go ... ok
+test clicking ... ok
+     Running tests/appkit_table.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/appkit_table-b1ae0486276ac66a)
+test defaults ... ok
+test geometry ... ok
+test visible_rows ... ok
+test selecting ... ok
+test updating_rows ... ok
+test row_heights ... ok
+test styles ... ok
+test selection_follows_rows ... ok
+test column_changes ... ok
+test background_styles ... ok
+test heights_for_new_rows ... ok
+test delegates_ask_as_rows_go ... ok
+test columns_outlive_their_table ... ok
+test clicking ... ok
+     Running tests/appkit_views.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/appkit_views-4b6d51eacddbacf6)
+test subviews_are_snapshots ... ok
+test adding_and_removing ... ok
+test positioned_subviews ... ok
+test replacing_subviews ... ok
+test setting_subviews ... ok
+test sorting_subviews ... ok
+test ancestry ... ok
+test hiding_tells_shown_subviews ... ok
+test view_state ... ok
+test autoresizing_subviews_is_optional ... ok
+test scaled_bounds ... ok
+test converting_sizes ... ok
+
+thread 'main' (3653460) panicked at conformance/tests/appkit_views.rs:682:5:
+assertion `left == right` failed
+  left: CGRect { origin: CGPoint { x: 0.40000000000000036, y: 0.8000000000000007 }, size: CGSize { width: 10.4, height: 9.599999999999998 } }
+ right: CGRect { origin: CGPoint { x: 0.0, y: 1.0 }, size: CGSize { width: 10.0, height: 10.0 } }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `-p sidestep-conformance --test appkit_views`
+     Running tests/appkit_windows.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/appkit_windows-a2eb7becc55fc10a)
+appkit_windows: skipped (SIDESTEP_CONFORMANCE_WINDOWS=1 runs these tests, which show windows)
+     Running tests/attribute_names.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/attribute_names-cbf126e4c7d02c86)
+
+running 1 test
+test attribute_name_values ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/attributed.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/attributed-2dd142866cc65495)
+
+running 17 tests
+test effective_and_longest_ranges ... ok
+test text_without_attributes_is_one_run ... ok
+test equality_hash_and_copies ... ok
+test runs_split_but_only_shared_dictionaries_merge ... ok
+test enumeration_allows_edits_to_the_passed_range ... ok
+test subclasses_implementing_only_the_primitives ... ok
+test edits_between_begin_and_end_editing ... ok
+test ranges_may_split_surrogate_pairs ... ok
+test basics ... ok
+test attributed_edits_keep_and_clip_runs ... ok
+test the_mutable_string_is_live ... ok
+test attribute_dictionaries_are_copied ... ok
+test enumeration ... ok
+test longest_ranges_clipped_to_the_limit ... ok
+test enumeration_follows_edits_that_change_the_length ... ok
+test adding_and_removing_attributes ... ok
+test edits_inherit_attributes ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+     Running tests/attributed_drawing.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/attributed_drawing-09fcca9102e2d4b1)
+test default_attributes ... ok
+test one_run_matches_string_drawing ... ok
+test runs_measure_together ... ok
+test paragraph_styles_per_paragraph ... ok
+test drawing_context ... ok
+test drawn_runs_have_their_colors ... ok
+test backgrounds ... ok
+test rectangles ... ok
+     Running tests/autorelease.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/autorelease-2efb5b47bdb91ae5)
+
+running 14 tests
+test a_later_plain_return_of_an_unclaimed_object_leaves_the_pool_its_reference ... ok
+test unclaimed_return_while_a_pool_drains_goes_with_it ... ok
+test a_plain_return_right_after_an_unclaimed_one_leaves_the_pool_its_reference ... ok
+test claimed_return_outlives_its_pool ... ok
+test claimed_and_unclaimed_mixed ... ok
+test retain_autorelease_return_value ... ok
+test unclaimed_return_lives_until_its_pool_drains ... ok
+test autorelease_return_by_hand ... ok
+test unclaimed_returns_in_a_row ... ok
+test unclaimed_return_belongs_to_the_innermost_pool ... ok
+test claiming_a_different_object_retains_it ... ok
+test objects_autoreleased_while_a_pool_drains_go_with_it ... ok
+test unclaimed_return_released_when_its_thread_ends ... ok
+test claimed_return_is_handed_over ... FAILED
+
+failures:
+
+---- claimed_return_is_handed_over stdout ----
+
+thread 'claimed_return_is_handed_over' (3654031) panicked at conformance/tests/autorelease.rs:221:9:
+assertion `left == right` failed
+  left: 3
+ right: 2
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    claimed_return_is_handed_over
+
+test result: FAILED. 13 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+error: test failed, to rerun pass `-p sidestep-conformance --test autorelease`
+     Running tests/block_imp.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/block_imp-b2bc6ae030b8827c)
+
+running 5 tests
+test block_receives_the_receiver ... ok
+test global_block_as_method ... ok
+test get_and_remove_blocks ... ok
+test block_methods ... ok
+test many_block_methods ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running tests/block_imp_mdwe.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/block_imp_mdwe-acbb7a5a2d824a7a)
+
+running 1 test
+test linux::block_methods_without_writable_executable_memory ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/cell_backgrounds.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/cell_backgrounds-c547b6de76435494)
+test who_takes_styles ... ok
+test row_interiors ... ok
+test when_rows_restyle ... ok
+test key_focus ... ok
+test snapshots_prepare ... ok
+test source_lists ... ok
+test emphasized_text ... ok
+test interior_styles ... ok
+test button_titles ... ok
+test generic_cells ... ok
+     Running tests/census_selectors.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/census_selectors-4eb3c43460cdc782)
+test every_sent_selector_responds ... ignored (debug builds)
+     Running tests/cf_collections.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/cf_collections-3dff8bcca151f853)
+
+running 11 tests
+test type_ids_differ ... ok
+test number_constants ... ok
+test data_find ... ok
+test errors_from_keys_and_values ... ok
+test a_run_loops_modes ... ok
+test sets ... ok
+test dictionaries_count_and_apply ... ok
+test value_arrays::with_callbacks ... ok
+test value_arrays::without_callbacks ... ok
+test arrays_search_sort_and_replace ... ok
+test sorting_with_comparators_that_arent_orders ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests/cf_strings.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/cf_strings-33faa21bdc938e7a)
+
+running 10 tests
+test transform_names ... ok
+test hyphenation_without_a_dictionary ... ok
+test external_characters_are_the_backing_store ... ok
+test encodings ... ok
+test representations ... ok
+test transforms ... ok
+test pieces_and_find_results ... ok
+test bounds_and_searches ... ok
+test find_results_as_an_array ... ok
+test mutable_strings_change_in_place ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+     Running tests/cf_types.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/cf_types-6d4847525aa40897)
+
+running 13 tests
+test bidi_levels ... ok
+test strings_files ... ok
+test bundle_resource_search ... ok
+test file_and_memory_streams ... ok
+test character_sets ... ok
+test socket_streams ... ok
+test ports_and_file_security ... ok
+test stream_clients ... ok
+test bound_pairs ... ok
+test calendars ... ok
+test attributed_strings ... ok
+test bundles ... ok
+test locales ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+
+     Running tests/cf_urls.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/cf_urls-ec39d41d025ede8c)
+
+running 8 tests
+test resource_keys ... ok
+test percent_escapes ... ok
+test parts_as_corefoundation_sees_them ... ok
+test urls_from_bytes_and_relative_paths ... ok
+test bytes_and_byte_ranges ... ok
+test file_path_and_reference_urls ... ok
+test bookmarks ... ok
+test resource_properties ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+     Running tests/charset_scanner.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/charset_scanner-d8acaffc040b04aa)
+
+running 7 tests
+test url_component_sets ... ok
+test predefined_sets ... ok
+test scanner_copies_and_settings ... ok
+test scanning_signs_digits_and_hex_floats ... ok
+test scanning ... ok
+test mutable_sets ... ok
+test built_sets ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests/class_lookup.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/class_lookup-dbb7078530ee8b3a)
+
+running 5 tests
+test class_lists_include_unused_framework_classes ... ok
+test unknown_names ... ok
+test framework_class_names_are_taken ... ok
+test block_classes_by_name ... ok
+test framework_classes_by_name_before_first_use ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests/cold_category.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/cold_category-038442aa2ec4c00e)
+
+running 1 test
+test foundation_methods_are_on_nsobject_before_first_use ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/cold_description.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/cold_description-d6d7cf3304ec2607)
+
+running 1 test
+test description_before_strings_are_used ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/cold_start.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/cold_start-0cf215283d57e523)
+
+running 1 test
+test introspection_before_first_message ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/cold_string_classes.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/cold_string_classes-3df90c2b4243ee92)
+
+running 1 test
+test first_instances_are_of_the_named_classes ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running tests/collections.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/collections-213c7e4b5f78916e)
+
+running 38 tests
+test arrays_hold_their_elements ... ok
+test mutable_arrays ... ok
+test null_is_a_singleton ... ok
+test nil_set_members_fail_like_foundation ... ok
+test mutation_during_iteration_is_detected ... ok
+test out_of_range_fails_like_foundation ... ok
+test nil_fails_like_foundation ... ok
+test mutable_sets ... ok
+test searching_uses_is_equal ... ok
+test arrays_retain_their_elements ... ok
+test copies_are_independent ... ok
+test equality_and_hash ... ok
+test copies ... ok
+test binary_search ... ok
+test block_enumeration ... ok
+test set_copies_are_independent ... ok
+test enumerators ... ok
+test removing_many_objects ... ok
+test make_objects_perform_selector ... ok
+test array_enumerators_follow_their_array ... ok
+test subclasses_get_the_rest_of_nsarray ... ok
+test arrays_with_index_sets ... ok
+test index_sets ... ok
+test descriptions_match_foundation ... ok
+test sorting ... ok
+test api_surface ... ok
+test mutable_set_subclasses_change_through_their_primitives ... ok
+test derived_arrays ... ok
+test set_enumerators_notice_changes ... ok
+test subclasses_get_the_rest_of_nsset ... ok
+test index_sets_fail_like_foundation ... ok
+test index_set_subclasses_inherit_everything ... ok
+test sets_hold_distinct_members ... ok
+test mutable_subclasses_change_through_their_primitives ... ok
+test immutable_collections_cross_threads ... ok
+test huge_index_sets_cost_their_ranges ... ok
+test mutable_arrays_are_queues_and_stacks ... ok
+test mutable_collections_allow_concurrent_readers ... ok
+
+test result: ok. 38 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.57s
+
+     Running tests/collections2.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/collections2-5e7248c00bb4c528)
+
+running 29 tests
+test ordered_set_changes_during_fast_enumeration_are_seen ... ok
+test ordered_set_views_follow_the_set ... ok
+test ordered_set_sorting_and_searching ... ok
+test caches_evict_the_least_recently_used ... ok
+test ordered_sets_keep_order_and_distinct_members ... ok
+test ordered_set_subclasses_work_through_their_primitives ... ok
+test pointer_function_barriers_are_only_reported ... ok
+test pointer_arrays ... ok
+test ordered_sets_fail_like_foundation ... ok
+test weak_members_may_leave_as_they_go ... ok
+test sort_descriptors_describe_themselves ... ok
+test pointer_arrays_compare_by_contents ... ok
+test sort_descriptors_compare_by_key_paths ... ok
+test ordered_set_constructors ... ok
+test collections_allow_concurrent_readers ... ok
+test weak_hash_tables_forget_objects_that_go ... ok
+test counted_sets ... ok
+test ordered_set_enumeration ... ok
+test ordered_set_equality_copies_and_descriptions ... ok
+test sort_descriptor_keys_as_key_value_coding_reads_them ... ok
+test mutable_ordered_sets ... ok
+test hash_tables_by_options ... ok
+test caches ... ok
+test sort_descriptors_treat_null_as_nil ... ok
+test sorting_by_descriptors ... ok
+test caches_are_thread_safe ... ok
+test map_tables ... ok
+test weak_tables_while_objects_go_on_other_threads ... ok
+test mutable_ordered_sets_change_anywhere ... ok
+
+test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s
+
+     Running tests/color_appearance.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/color_appearance-7e087a3e2c0731a5)
+test exported_names ... ok
+test component_colors ... ok
+test blending ... ok
+test color_spaces ... ok
+test system_colors ... ok
+test system_effects ... ok
+test dynamic_colors ... ok
+test named_appearances ... ok
+test drawing_appearance ... ok
+test inheritance ... ok
+test visual_effect_views ... ok
+     Running tests/constants.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/constants-bb04a0fb740b5d3c)
+
+running 2 tests
+test optional_string_constants ... ok
+test string_constants ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests/contract_sweep.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/contract_sweep-7b5dc528121bb640)
+test app_symbol ... ok
+test booleans ... ok
+test constants ... ok
+test font_manager ... ok
+test haptics ... ok
+test accessibility_element ... ok
+test custom_action ... ok
+contract_sweep: windows_menu on screen skipped (SIDESTEP_CONFORMANCE_WINDOWS=1 runs it)
+test windows_menu ... ok
+test clips_to_bounds ... ok
+test view_accessibility ... ok
+test window_center ... ok
+test running_application ... ok
+test responder_hooks ... ok
+test property_list_files ... ok
+test resource_values ... ok
+test call_stack ... ok
+test zones_and_pages ... ok
+test appkit_functions ... ok
+     Running tests/control_events.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/control_events-02808a6d5800e968)
+test tracks_a_click ... ok
+test tracks_leaving ... ok
+test actions_on_mouse_down ... ok
+test disabled_buttons_ignore_clicks ... ok
+test buttons_track_and_keep_their_mouse_up ... ok
+test huge_periodic_delays ... ok
+test radio_buttons_are_exclusive ... ok
+test key_equivalents ... ok
+test first_responders ... ok
+test segments_track ... ok
+test steppers_track ... ok
+test sliders_track ... ok
+test switches_track ... ok
+test tracking_ends_headless ... ok
+     Running tests/control_images.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/control_images-609d088ba13b6197)
+test factories_and_defaults ... ok
+test rounded_bezels ... ok
+test square_bezels ... ok
+test disclosure_buttons ... ok
+test borderless_buttons ... ok
+test image_scalings ... ok
+test leading_and_trailing ... ok
+test images_that_show_nowhere ... ok
+test template_images_by_state ... ok
+test alternate_images ... ok
+test image_buttons_are_labelled_by_their_images ... ok
+     Running tests/controls.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/controls-ff0bed670b1880df)
+test cell_defaults ... ok
+test text_cells ... ok
+test cell_values ... ok
+test cell_state ... ok
+test control_defaults ... ok
+test control_forwards_to_its_cell ... ok
+test actions ... ok
+test button_defaults ... ok
+test button_values ... ok
+test button_types ... ok
+test push_buttons ... ok
+test check_boxes ... ok
+test buttons_of_every_bezel ... ok
+test check_box_rects ... ok
+test text_field_defaults ... ok
+test labels ... ok
+test wrapping_labels ... ok
+test text_fields ... ok
+test search_fields ... ok
+test notification_names ... ok
+test boxes ... ok
+test custom_and_separator_boxes ... ok
+test box_sizing ... ok
+test progress_indicators ... ok
+test segmented_controls ... ok
+test steppers_sliders_switches ... ok
+test accessibility ... ok
+test values_that_change_their_cell ... ok
+test copying_cells ... ok
+test sizes_that_fit ... ok
+test hit_tests ... ok
+test attributed_values ... ok
+test text_notifications ... ok
+     Running tests/coregraphics.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/coregraphics-08528cb48ef5752f)
+
+running 35 tests
+test geometry_edge_cases ... ok
+test transforms ... ok
+test hdr_and_adaptive_constants ... ok
+test bitmap_layouts ... ok
+test generic_spaces_are_managed ... ok
+test transparency_layers_save_on_the_stack ... ok
+test color_burn_and_soft_light ... ok
+test context_state ... ok
+test bitmap_contexts_over_program_memory ... ok
+test data_providers ... ok
+test images ... ok
+test color_spaces ... ok
+test colors_alpha_and_compositing ... ok
+test bitmap_pixels_in_every_layout ... ok
+test derived_spaces ... ok
+test fonts ... FAILED
+test drawing_and_clipping_take_the_current_path ... ok
+test masks_and_context_images ... ok
+test translucent_paint_casts_translucent_shadows ... ok
+test image_layouts ... ok
+test clips_of_nothing_and_of_no_area ... ok
+test shadows ... ok
+test path_shapes ... ok
+test image_parts_decodes_and_layouts ... ok
+test type_ids_and_objects ... ok
+test the_current_path ... ok
+test fills_and_strokes ... ok
+test radial_gradients_after_their_end ... ok
+test rectangles ... ok
+test path_queries ... ok
+test colors ... ok
+test path_building ... ok
+test arcs ... ok
+test gradients ... ok
+test arcs_dashes_and_strokes_at_the_limits ... ok
+
+failures:
+
+---- fonts stdout ----
+
+thread 'fonts' (3658445) panicked at conformance/tests/coregraphics.rs:1635:13:
+no DejaVu Sans to read
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    fonts
+
+test result: FAILED. 34 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+
+error: test failed, to rerun pass `-p sidestep-conformance --test coregraphics`
+     Running tests/coregraphics_appkit.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/coregraphics_appkit-1fccdb28a8df44bb)
+test colors ... ok
+test graphics_contexts ... ok
+test drawing_in_views ... ok
+test images ... ok
+test bezier_paths ... ok
+test flipped_wrappers ... ok
+test bitmaps_of_cg_images ... ok
+test colors_and_contexts ... ok
+test set_cg_path ... ok
+test coretext_in_views ... ok
+     Running tests/coretext.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/coretext-0abe10e3dee24512)
+
+running 27 tests
+test constants ... ok
+test attributed_strings ... ok
+test glyph_paths ... ok
+test right_to_left_runs ... ok
+test runs_of_two_sizes ... ok
+test metrics ... ok
+test line_of_text ... ok
+test glyphs_and_advances ... ok
+test right_to_left_carets ... ok
+test type_ids_and_bridges ... ok
+test ligatures_reach_their_characters ... ok
+test truncation_and_justification ... ok
+test font_without_a_character_map ... ok
+test typesetter_breaks ... ok
+test separators_tabs_and_empty_lines ... ok
+test carets ... ok
+test justification ... ok
+test bounds_options ... ok
+test kerning_and_tracking ... ok
+test truncation_edges ... ok
+test run_attributes_are_the_strings ... ok
+test drawing_glyphs ... ok
+test feature_settings ... ok
+test frames ... ok
+test drawing_colors_and_modes ... ok
+test drawing_lines ... ok
+test font_by_name_and_descriptor ... ok
+
+test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.60s
+
+     Running tests/dates.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/dates-df3432a5cc3e91e7)
+
+running 12 tests
+test arithmetic ... ok
+test reference_date_and_constants ... ok
+test now ... ok
+test comparison_is_exact ... ok
+test copies_are_the_same_object ... ok
+test description ... ok
+test locales ... ok
+test templates_and_relative_dates ... ok
+test parsing ... ok
+test time_zones ... ok
+test en_us_posix_patterns_round_trip ... ok
+test style_pairs_in_en_us ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests/defaults.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/defaults-6c898d6f1bf480c7)
+test coercions ... ok
+test numbers_and_arrays ... ok
+test registration_and_suites ... ok
+test domains ... ok
+test change_notification ... ok
+test urls ... ok
+test files ... ok
+test exit_during_a_write ... ok
+test arguments_and_exit ... ok
+     Running tests/dictionary.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/dictionary-f99908defb4936bc)
+
+running 19 tests
+test nil_fails_like_foundation ... ok
+test contents_and_copies ... ok
+test mutation_during_iteration_is_detected ... ok
+test short_and_non_ascii_string_keys ... ok
+test string_keys ... ok
+test equality_copies_and_hash ... ok
+test copies_are_independent ... ok
+test keys_sorted_by_value ... ok
+test custom_keys_use_hash_and_is_equal ... ok
+test duplicate_keys_keep_one_entry ... ok
+test mutable_dictionaries ... ok
+test dictionary_enumerators_notice_changes ... ok
+test colliding_keys_survive_removal ... ok
+test descriptions_match_foundation ... ok
+test subclasses_get_the_rest_of_nsdictionary ... ok
+test keys_values_and_enumeration ... ok
+test api_surface ... ok
+test mutable_subclasses_change_through_their_primitives ... ok
+test mutable_dictionaries_match_a_model ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+     Running tests/dispatch.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/dispatch-35004326160e6fcc)
+test main_queue_order_and_modes ... ok
+test main_queue_after_and_sync ... ok
+test serial_queues ... ok
+test global_queues_run_concurrently ... ok
+test concurrent_queue_barriers ... ok
+test dispatch_once_runs_once ... ok
+test dispatch_times ... ok
+test groups_and_semaphores ... ok
+test data_and_timer_sources ... ok
+test vnode_sources ... ok
+test operation_main_queue ... ok
+test operations ... ok
+test cancelled_operations_are_ready ... ok
+test dependencies_across_queues ... ok
+test completion_blocks_read_back ... ok
+test queue_attributes ... ok
+test suspend_and_resume ... ok
+test targets_and_specifics ... ok
+test queue_functions ... ok
+test source_cancel_and_one_shot_timers ... ok
+test sync_while_the_pool_is_busy ... ok
+test unwinding_blocks_end_the_process ... ok
+     Running tests/drag_defaults.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/drag_defaults-790f82c4ed771f3d)
+test views_and_windows_are_destinations ... ok
+test view_defaults ... ok
+test registered_types_are_an_ordered_set ... ok
+test subclasses_reach_the_defaults ... ok
+test windows_pass_the_rest_to_their_delegate ... ok
+     Running tests/drawing.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/drawing-d7e855a92de501cf)
+test context_lifetime ... ok
+test bitmap_contexts ... ok
+test fresh_state_per_view ... ok
+test save_and_restore ... ok
+test rect_fill_copies ... ok
+test antialiasing ... ok
+test frames_erasing_and_clips ... ok
+test fill_lists ... ok
+test copies ... ok
+test transform_math ... ok
+test transforms_move_drawing ... ok
+test rects_being_drawn ... ok
+test view_snapshots ... ok
+test path_structure ... ok
+test close_path ... ok
+test arcs ... ok
+test path_bounds ... ok
+test hit_testing ... ok
+test path_defaults ... ok
+test stroke_pixels ... ok
+test derived_paths ... ok
+test clip_paths ... ok
+test clipped_text ... ok
+test fills_and_strokes ... ok
+test gradient_colors ... ok
+test gradient_drawing ... ok
+test shadows ... ok
+     Running tests/file_wrappers.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/file_wrappers-7bb0ab0efc1e7d91)
+
+running 6 tests
+test what_only_one_kind_answers ... ok
+test directories_made_from_dictionaries ... ok
+test directories_key_children_by_name ... ok
+test wrappers_made_in_memory ... ok
+test matching_what_is_on_disk ... ok
+test trees_read_and_written ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests/forwarding.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/forwarding-364d5f83477646ef)
+
+running 11 tests
+test plain_objects_do_not_forward ... ok
+test forwards_class_messages ... ok
+test perform_selector_forwards_without_resolving_every_time ... ok
+test asks_for_the_target_every_time ... ok
+test forwards_integer_and_float_arguments ... ok
+test forwards_stack_arguments ... ok
+test own_methods_are_not_forwarded ... ok
+test forwards_struct_returns ... ok
+test msg_send_forwards ... ok
+test unrecognized_selectors_are_reported_through_the_class ... ok
+test no_target_is_unrecognized ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests/foundation.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/foundation-53b1fa9983a2fa15)
+
+running 5 tests
+test string_literals ... ok
+test string_equality_and_hash ... ok
+test string_class_is_linked ... ok
+test utf16_access ... ok
+test strings_round_trip ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests/funnels.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/funnels-64d1aa8f3cf16a16)
+test text_field_commands ... ok
+test selection ... ok
+test container_origin ... ok
+test pasteboard ... ok
+test drop_index ... ok
+test unmark_on_click ... ok
+test needs_display ... ok
+test live_resize_hooks ... ok
+test window_funnels ... ok
+funnels: window_constraints_on_screen skipped (SIDESTEP_CONFORMANCE_WINDOWS=1 runs it on macOS)
+test window_constraints_on_screen ... ok
+     Running tests/geometry_functions.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/geometry_functions-b4fa9cc11e899d14)
+
+running 5 tests
+test integral_rects ... ok
+test insets_offsets_and_division ... ok
+test points_and_edges ... ok
+test unions_and_intersections ... ok
+test string_forms ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/image_views.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/image_views-d83a5024ea29f762)
+test image_view_defaults ... ok
+
+thread 'main' (3664084) panicked at crates/sidestep-appkit/src/controls/image_view.rs:303:5:
+NSImageCell's object value must be an NSImage, not a "_SidestepString".
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'main' (3664084) panicked at crates/sidestep-appkit/src/controls/image_view.rs:303:5:
+NSImageCell's object value must be an NSImage, not a "_SidestepString".
+test image_cells ... ok
+test image_values ... ok
+test frame_styles ... ok
+test image_placement ... ok
+test frames_place_the_image ... ok
+test nothing_without_an_image ... ok
+test template_tints ... ok
+test symbol_images ... ok
+test editing ... ok
+test edit_menu ... ok
+test drags ... ok
+test clicks ... ok
+test animated_images ... ok
+test animation ... ok
+     Running tests/imageio.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/imageio-a340ff78708ac2f2)
+
+running 18 tests
+test bmp_densities ... ok
+test type_ids_and_identifiers ... ok
+test jpeg_properties ... ok
+test sources_from_urls_and_providers ... ok
+test iptc_from_other_metadata ... ok
+test incremental_sources ... ok
+test sources_cache_their_images ... ok
+test frames_asked_for_out_of_order ... ok
+test unknown_and_unreadable_data ... ok
+test png_properties ... ok
+test images_at_index ... ok
+test icon_files ... ok
+test finalizing_needs_the_images_promised ... ok
+test animated_gifs_are_written ... ok
+test gif_and_webp_frames ... ok
+test destinations_write_files_sources_read ... ok
+test thumbnails ... ok
+test thumbnail_sizes ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.36s
+
+     Running tests/images.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/images-5be963bbaea554e9)
+test basics ... ok
+test decoding ... ok
+test draw_orientation ... ok
+test flipped_images ... ok
+test copies ... ok
+test compositing ... ok
+test representation_choice ... ok
+test drawing_handlers ... ok
+test bitmap_layout ... ok
+test encoding ... ok
+test lock_focus ... ok
+test symbol_images ... ok
+test exported_names ... ok
+     Running tests/invocation.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/invocation-c5189ab226524f28)
+
+running 27 tests
+test signatures_describe_their_types ... ok
+test signatures_refuse_what_they_cannot_lay_out ... ok
+test signatures_compare_their_types ... ok
+test init_gives_nil ... ok
+test new_invocations_are_empty ... ok
+test replaced_values_stay_until_the_invocation_goes ... ok
+test short_signatures_have_no_target_or_selector ... ok
+test forwarding_asks_the_target_then_the_signature_then_forwards ... ok
+test retained_blocks_are_copied ... ok
+test nsobject_does_not_take_forwarded_invocations ... ok
+test no_signature_is_unrecognized ... ok
+test a_nil_target_is_not_invoked ... ok
+test retained_strings_are_copied ... ok
+test retained_arguments_outlive_their_owners ... ok
+test invokes_objects_selectors_and_pointers ... ok
+test objects_describe_their_methods ... ok
+test retained_return_values_reach_the_sender ... ok
+test msg_send_forwards_invocations ... ok
+test invokes_class_methods_and_other_targets ... ok
+test arguments_read_back ... ok
+test invokes_structs_past_the_registers ... ok
+test recorded_invocations_replay_later ... ok
+test invokes_integer_and_floating_point_arguments ... ok
+test forwards_struct_arguments_and_returns ... ok
+test protocols_describe_the_methods_they_declare ... ok
+test invokes_struct_arguments_and_returns ... ok
+test forwards_arguments_of_every_kind ... ok
+
+test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests/keycodes.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/keycodes-227b8469f160faac)
+
+running 1 test
+test table_is_consistent ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/menus.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/menus-4827cfb4e9843c81)
+menus: tracking skipped (SIDESTEP_CONFORMANCE_WINDOWS=1 runs it, which shows windows)
+test menu_defaults ... ok
+test item_defaults ... ok
+test separators ... ok
+
+thread 'main' (3670733) panicked at crates/sidestep-appkit/src/menu.rs:1582:5:
+Item to be inserted into menu already is in another menu
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test adding_and_removing ... ok
+test submenus ... ok
+test copies ... ok
+test notifications ... ok
+test validation ... ok
+
+thread 'main' (3670733) panicked at crates/sidestep-appkit/src/category.rs:66:5:
+Abstract method -[NSResponder menu:] called from class NSResponder.  Subclasses must override.
+test validators_exist ... ok
+test key_equivalents ... ok
+test traversal_order ... ok
+test disabled_and_hidden ... ok
+test actions_through_the_application ... ok
+test action_notifications ... ok
+test change_notifications ... ok
+     Running tests/msgsend.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/msgsend-210c747ed67e839f)
+
+running 4 tests
+test objc_msg_send_to_nil ... ok
+test objc_msg_send_directly ... ok
+test objc_msg_send_returning_a_large_struct ... ok
+test objc_msg_send_hits_the_cache ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests/notifications.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/notifications-ae0a5b1096277171)
+test default_center_is_one_object ... ok
+test observers_are_not_retained ... ok
+test delivery_in_registration_order ... ok
+test duplicates_and_filters ... ok
+test mutation_during_a_post ... ok
+test removing_with_filters ... ok
+test delivery_on_the_posting_thread ... ok
+test block_observers_on_the_main_queue ... ok
+test tokens_keep_their_blocks_until_removed ... ok
+test notifications ... ok
+test private_centers_are_separate ... ok
+test one_name_many_objects ... ok
+     Running tests/numbers.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/numbers-819fe61d0493f380)
+
+running 15 tests
+test numbers_copy_as_themselves ... ok
+test unsigned_accessors_of_out_of_range_doubles ... ok
+test accessors_convert_like_c ... ok
+test values_from_bytes ... ok
+test values_need_contents ... ok
+test values_compare_by_type_and_bytes ... ok
+test numbers_report_foundations_c_types ... ok
+test value_subclasses_compare_through_their_primitives ... ok
+test equality_crosses_types ... ok
+test nonretained_objects_are_pointers ... ok
+test arbitrary_values ... ok
+test geometry_values_round_trip ... ok
+test api_surface ... ok
+test numbers_are_dictionary_keys ... ok
+test descriptions_are_c_formatted ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running tests/panels.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/panels-73ebbf49ca8edf99)
+test save_panels ... ok
+test open_panels ... ok
+test the_workspace ... ok
+test open_configurations ... ok
+test the_running_application ... ok
+test opening_with_handlers ... ok
+     Running tests/pasteboard.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/pasteboard-d3c51566e70bfe26)
+
+running 25 tests
+test timing ... ignored
+test names_and_types_have_their_values ... ok
+test types_are_listed_in_the_order_written_with_their_old_names ... ok
+test board_writes_go_to_the_first_item ... ok
+test a_fresh_board_is_empty ... ok
+test items_are_live_until_their_board_is_cleared ... ok
+test boards_by_name_are_shared ... ok
+test declared_types_read_nothing_until_set ... ok
+test objects_are_read_only_from_their_own_types ... ok
+test available_types_follow_the_callers_order ... ok
+test writing_items_makes_one_item_each ... ok
+test property_lists ... ok
+test file_names_are_the_file_urls_paths ... ok
+test old_names_read_and_write_the_new_types ... ok
+test writing_strings ... ok
+test available_types_conform ... ok
+test types_conform ... ok
+test change_counts ... ok
+test nil_data_is_empty_data ... ok
+test added_types_replace_what_was_set ... ok
+test owners_provide_declared_types_when_read ... ok
+test item_data_providers_are_asked_when_read ... ok
+test data_and_strings_convert_as_utf8 ... ok
+test items_hold_types_and_values ... ok
+test asking_whether_objects_can_be_read_reads_nothing ... ok
+
+test result: ok. 24 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running tests/popup_button.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/popup_button-e68e0ab07d52e504)
+test defaults ... ok
+test selection_in_pop_up_mode ... ok
+test pull_downs ... ok
+test choosing_sends_the_action ... ok
+test the_menu_is_the_cells ... ok
+test geometry ... ok
+     Running tests/proxy.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/proxy-758bfe597b88b0f5)
+
+running 8 tests
+test proxies_are_counted_and_freed ... ok
+test proxy_classes_describe_their_methods ... ok
+test proxy_classes_answer_as_classes ... ok
+test proxies_answer_for_themselves ... ok
+test proxies_forward_what_they_do_not_implement ... ok
+test proxies_forward_introspection ... ok
+test plain_proxies_refuse_to_forward ... ok
+test proxies_answer_objc2_introspection_by_forwarding ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running tests/quartzcore.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/quartzcore-212fa2dc36bf7e86)
+test defaults ... ok
+test constants ... ok
+test geometry ... ok
+test conversions_and_hits ... ok
+test tree ... ok
+
+thread 'main' (3671860) panicked at crates/sidestep-appkit/src/quartzcore/function.rs:99:22:
+-[CAMediaTimingFunction getControlPointAtIndex:values:]: index 5 out of range
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test timing_functions ... ok
+test transforms ... ok
+test key_value_coding ... ok
+test animation_objects ... ok
+test transactions ... ok
+
+thread 'main' (3671860) panicked at crates/sidestep-appkit/src/quartzcore/animation.rs:171:9:
+attempting to modify read-only animation 0x5555568162a0
+test implicit_actions ... ok
+test presentation_timing ... ok
+test keyframes_springs_groups ... ok
+test view_layers ... ok
+test render_in_context ... ok
+test shape_layers ... ok
+
+thread 'main' (3671860) panicked at crates/sidestep-appkit/src/quartzcore/layer.rs:506:17:
+replaced layer 0x555556868cc0 is not a sublayer of 0x55555686cfa0
+
+thread 'main' (3671860) panicked at crates/sidestep-appkit/src/quartzcore/function.rs:54:44:
+unknown timing function name: bogus
+test tree_details ... ok
+test kvc_details ... ok
+
+thread 'main' (3671860) panicked at crates/sidestep-appkit/src/quartzcore/layer.rs:1667:9:
+attempting to modify read-only layer 0x555556820d90
+test timing_details ... ok
+test completion_order ... ok
+test view_details ... ok
+test pixel_details ... ok
+     Running tests/raise.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/raise-c0a10e546483c1f6)
+
+running 2 tests
+test linux::enumeration_mutation_panics_by_default ... ok
+test linux::exception_throw_names_the_class ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/regular_expression.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/regular_expression-42e99764c090b3b8)
+
+running 12 tests
+test escaping ... ok
+test equality_and_lone_surrogates ... ok
+test invalid_patterns_are_errors ... ok
+test enumerating ... ok
+test results_from_ranges ... ok
+test replacing ... ok
+test ranges_are_regions ... ok
+test matches_as_an_array ... ok
+test flags_progress_and_completion ... ok
+test matching ... ok
+test lines_and_inline_flags ... ok
+test icu_syntax ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.36s
+
+     Running tests/rich_text.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/rich_text-4d35181013958ac4)
+test constants ... ok
+test rtf_writes_as_appkit_does ... ok
+test rtf_round_trips ... ok
+test rtf_document_attributes ... ok
+test rtf_from_other_writers ... ok
+test errors_and_types ... ok
+test plain_text ... ok
+test html_writes_as_appkit_does ... ok
+test html_round_trips ... ok
+test html_from_browsers ... ok
+test html_lists ... ok
+test html_breaks_and_spaces ... ok
+test extreme_numbers ... ok
+
+thread 'main' (3672756) panicked at conformance/tests/rich_text.rs:680:5:
+assertion `left != right` failed
+  left: "DejaVuSans"
+ right: "DejaVuSans"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `-p sidestep-conformance --test rich_text`
+     Running tests/runloop.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/runloop-ae073e261608a984)
+test mode_names ... ok
+test loop_identity ... ok
+test current_mode_inside_callouts ... ok
+test empty_modes_return_at_once ... ok
+test main_loop_is_never_empty_in_common_modes ... ok
+test run_mode_returns ... ok
+test mode_filtering ... ok
+test timer_phase_after_a_stall ... ok
+test timer_details ... ok
+test timer_scheduling ... ok
+test one_shot_timer_rearmed_in_its_callout ... ok
+test timers_retain_target_and_user_info ... ok
+test perform_block_modes_and_order ... ok
+test perform_in_modes ... ok
+test perform_block_from_another_thread_waits_for_a_wake_up ... ok
+test run_results ... ok
+test observer_sequence_and_order ... ok
+test nested_runs ... ok
+test common_mode_registrations ... ok
+test limit_date_and_next_fire_date ... ok
+test cf_timers ... ok
+test cf_timer_context_outlives_its_callout ... ok
+test timer_and_run_entry_points ... ok
+test other_threads_see_and_stop_a_loop ... ok
+test timer_added_to_the_main_loop_from_another_thread ... ok
+test delayed_performs ... ok
+test delayed_performs_in_modes ... ok
+test performs_on_the_main_thread ... ok
+test performs_on_other_threads ... ok
+test another_threads_loop_objects ... ok
+test performs_right_after_start ... ok
+test performs_in_bursts ... ok
+test performs_for_threads_that_end ... ok
+test loops_end_with_their_threads ... ok
+     Running tests/runtime.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/runtime-03a3c3c17775f95d)
+
+running 21 tests
+test blocks ... ok
+test main_thread_marker_off_main_thread ... ok
+test load_is_not_sent_to_classes_made_at_run_time ... ok
+test nsobject_basics ... ok
+test retain_release_across_threads ... ok
+test method_changes_reach_cached_messages ... ok
+test class_introspection ... ok
+test methods_and_ivars ... ok
+test autorelease_pools_release_on_pop ... ok
+test dealloc_drops_ivars_after_last_release ... ok
+test nested_pools ... ok
+test weak_references_clear_on_dealloc ... ok
+test protocols ... ok
+test messages_race_method_changes ... ok
+test weak_reference_counts_rising_and_falling ... ok
+test descriptions ... ok
+test subclass_and_super ... ok
+test weak_locations_moving_between_objects ... ok
+test many_weak_references_to_one_object ... ok
+test many_weak_locations_under_contention ... ok
+test weak_references_across_threads ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.45s
+
+     Running tests/runtime_abi.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/runtime_abi-3ef7f45edc1b0235)
+
+running 15 tests
+test nil_classes ... ok
+test protocol_properties ... ok
+test enumeration_mutation_handler ... ok
+test property_attribute_strings ... ok
+test alloc_goes_through_alloc_with_zone ... ok
+test associated_objects_released_with_their_owner ... ok
+test methods_and_ivars_by_hand ... ok
+test synchronized_objects_are_freed ... ok
+test associated_objects_by_policy ... ok
+test atomic_getter_keeps_the_value_alive ... ok
+test overrides_added_later_reach_subclasses ... ok
+test class_properties ... ok
+test heap_blocks_leave_the_side_tables_when_freed ... ok
+test associated_objects_across_threads ... ok
+test synchronized ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running tests/screen.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/screen-1101a92738b1b14a)
+test constants ... ok
+  first NSScreen.screens: 103.41 ms
+test screens_relate ... ok
+test backing_alignment ... ok
+test windows_have_screens ... ok
+test the_expected_screen ... ok
+     Running tests/services.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/services-525603b6e271f31f)
+
+running 43 tests
+test copies ... ok
+test empty_data_without_a_buffer ... ok
+test data_equality_and_hash ... ok
+test empty_data_has_no_bytes ... ok
+test no_copy_deallocator_runs_once ... ok
+test mutable_data ... ok
+test subdata_ranges_and_bytes ... ok
+test data_descriptions ... ok
+test base64 ... ok
+test files ... ok
+test url_ports_and_path_components ... ok
+test atomic_writes_keep_permissions ... ok
+test core_foundation_strings_and_data ... ok
+test url_relative_resolution ... ok
+test url_components_of_strings ... ok
+test file_urls ... ok
+test url_path_helpers ... ok
+test url_derivations ... ok
+test process_arguments ... ok
+test trash_on_linux ... ok
+test url_standardizing ... ok
+test error_constants_and_texts ... ok
+test runtime_functions ... ok
+test core_foundation_numbers_and_arrays ... ok
+test file_operation_errors ... ok
+test search_path_urls ... ok
+test home_temporary_and_user ... FAILED
+test process_info ... ok
+test url_equality_and_reachability ... ok
+test file_manager_listings_and_attributes ... ok
+test core_foundation_preferences ... ok
+test json ... ok
+test core_foundation_urls_errors_dates ... ok
+test json_arrays_and_numbers ... ok
+test uuids ... ok
+test property_list_numbers_and_arrays ... ok
+test url_components ... ok
+test url_query_items ... ok
+test property_list_serialization ... ok
+test bundles ... ok
+test file_manager_operations ... ok
+test locks_under_contention ... ok
+test locks ... ok
+
+failures:
+
+---- home_temporary_and_user stdout ----
+
+thread 'home_temporary_and_user' (3678241) panicked at conformance/tests/services.rs:1441:5:
+assertion `left == right` failed
+  left: Some("/root")
+ right: Some("<home>")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    home_temporary_and_user
+
+test result: FAILED. 42 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s
+
+error: test failed, to rerun pass `-p sidestep-conformance --test services`
+     Running tests/string_alloc_linux.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/string_alloc_linux-551636135a69b0b3)
+
+running 4 tests
+test short_strings_take_one_allocation ... ok
+test reading_immutable_strings_allocates_nothing ... ok
+test string_classes_allocate_through_the_placeholder ... ok
+test out_of_range_calls_panic_like_foundation ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests/string_core.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/string_core-6c0367333cf1e9ac)
+
+running 20 tests
+test substrings ... ok
+test available_and_default_encodings ... ok
+test no_copy_initializers_free_only_what_they_keep ... ok
+test range_functions ... ok
+test utf16_model ... ok
+test class_methods_build_the_receiving_class ... ok
+test creation_from_utf8 ... ok
+test walking_long_mixed_text ... ok
+test get_bytes_converts_until_it_must_stop ... ok
+test byte_lengths_and_encodings ... ok
+test creation_from_single_byte_encodings ... ok
+test creation_from_utf16_and_utf32 ... ok
+test other_initializers ... ok
+test mutable_copies_and_pointers ... ok
+test mutable_strings ... ok
+test equality_is_literal_and_hashes_agree ... ok
+test c_strings ... ok
+test lone_surrogates ... ok
+test subclasses_with_only_primitives ... ok
+test data_conversions ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running tests/string_paths.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/string_paths-754c76801feacde4)
+
+running 8 tests
+test standardizing_and_tildes ... ok
+test path_pieces ... ok
+test resolving_symlinks ... ok
+test file_system_representation ... ok
+test extensions_and_tidying ... ok
+test components_as_arrays ... ok
+test arrays_of_paths ... ok
+test expanding_tildes_from_many_threads ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.58s
+
+     Running tests/string_search.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/string_search-38ece5628060441f)
+
+running 23 tests
+test compare_orders ... ok
+test lines_and_paragraphs ... ok
+test forms_taking_a_locale ... ok
+test ascii_needles_in_other_text ... ok
+test lone_surrogates_in_searches ... ok
+test character_set_searches ... ok
+test composed_character_sequences ... ok
+test prefixes_and_empty_arguments ... ok
+test compare_options ... ok
+test percent_encoding ... ok
+test range_of_string ... ok
+test enumerating_substrings ... ok
+test common_prefixes ... ok
+test trimming ... ok
+test localized_sort_orders ... ok
+test enumeration_follows_edits_to_a_mutable_string ... ok
+test replacing_and_padding ... ok
+test numbers ... ok
+test localized_ties ... ok
+test components_and_trimming ... ok
+test case_mapping ... ok
+test mutable_replacing_expands_templates ... ok
+test regular_expression_search ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+
+     Running tests/swizzle.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/swizzle-3e3266e4b8915f53)
+
+running 1 test
+test replaced_root_methods_are_called ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/text.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/text-9fd09300fc9174d6)
+test attribute_names ... ok
+test weight_and_width_values ... ok
+test font_sizes ... ok
+test font_weights_and_traits ... ok
+test text_styles ... ok
+test fixed_pitch ... ok
+test metrics ... ok
+test names ... ok
+test font_equality ... ok
+test paragraph_defaults ... ok
+test paragraph_mutation_and_copies ... ok
+test sizes ... ok
+test kerning ... ok
+test bounding_rects ... ok
+test line_break_modes ... ok
+test spacing ... ok
+test indents ... ok
+test bounds_and_alignment ... ok
+test tab_stops ... ok
+test tab_stop_lists ... ok
+test tab_layout ... ok
+test numeric_attributes ... ok
+test line_separators ... ok
+test trailing_spaces_hang ... ok
+     Running tests/text_attachments.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/text_attachments-3920b4c1164af2b0)
+test attachments ... ok
+test cells ... ok
+test measuring ... ok
+test drawing ... ok
+test program_cells ... ok
+test textkit1 ... ok
+test textkit2 ... ok
+test editing ... ok
+test packages ... ok
+test baseline_offsets ... ok
+test controls ... ok
+test subclasses ... ok
+test cell_copies ... ok
+     Running tests/text_blocks.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/text_blocks-52c27214f1cddc94)
+
+running 13 tests
+test block_rects_on_their_own ... ok
+test block_settings ... ok
+test paragraph_spacing_in_a_block ... ok
+test content_widths ... ok
+test collapsed_borders_share_a_width ... ok
+test edges_and_percentages ... ok
+test table_rows_are_as_tall_as_their_tallest_cell ... ok
+test a_block_first_and_last ... ok
+test a_block_insets_its_paragraphs ... ok
+test a_table_lays_its_rows_out_across ... ok
+test nested_and_neighbouring_blocks ... ok
+test editing_in_a_table_keeps_rows_together ... ok
+test table_widths ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s
+
+     Running tests/text_first_call.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/text_first_call-a60d0ec6461c0fad)
+
+running 1 test
+test measuring_is_the_first_appkit_call ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+
+     Running tests/text_fixing.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/text_fixing-5ebfeef0c8d8d602)
+
+running 10 tests
+test fixes_lazily ... ok
+test a_subclass_fixing_lazily ... ok
+test what_the_delegate_reads ... ok
+test long_edits_are_left_to_fix ... ok
+test a_paragraph_restyled_through_its_end ... ok
+test ensuring_a_range ... ok
+test a_change_left_to_fix_covers_its_paragraphs ... ok
+test fixed_a_stretch_at_a_time ... ok
+test layout_of_text_left_to_fix ... ok
+test a_delegates_restyling_is_laid_out ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.66s
+
+     Running tests/text_layout.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/text_layout-59ed0a32ea8c9177)
+
+running 15 tests
+test a_container_starts_padded_and_unbounded_by_tracking ... ok
+test glyphs_are_characters ... ok
+test hit_testing ... ok
+test the_extra_line_fragment ... ok
+test the_delegate_hears_layout_complete ... ok
+test a_container_limits_its_lines ... ok
+test a_delegate_may_leave_while_told ... ok
+test paragraph_spacing ... ok
+test wrapping ... ok
+test line_spacing_and_heights ... ok
+test line_fragments_and_used_rects ... ok
+test used_rects_stay_inside_their_line ... ok
+test used_rects_follow_alignment_and_indents ... ok
+test temporary_attributes ... ok
+test edits_lay_out_as_fresh_text_does ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.42s
+
+     Running tests/text_storage.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/text_storage-b796173836813779)
+
+running 14 tests
+test notification_names ... ok
+test longest_effective_ranges ... ok
+test made_with_text ... ok
+test layout_managers ... ok
+test font_and_color_of_all_the_text ... ok
+test a_subclass_with_its_own_text ... ok
+test fixing_attributes ... ok
+test processing_order ... ok
+test runs_and_inheritance ... ok
+test edits_gather_into_one_change ... ok
+test the_string_is_live ... ok
+test attributed_edits ... ok
+test the_string_answers_as_any_string ... ok
+test walking_by_longest_effective_range ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.58s
+
+     Running tests/text_view.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/text_view-9b0c12d3a2b6fec5)
+test defaults ... ok
+test edit_transaction ... ok
+test commands ... ok
+test granularity ... ok
+test undo ... ok
+test input_client ... ok
+test pasteboard ... ok
+test rich_pasteboard ... ok
+test window_undo ... ok
+test field_editor ... ok
+test scrolling ... ok
+test storage_edits ... ok
+test programmatic_undo ... ok
+test selected_ranges ... ok
+test live_string ... ok
+test made_with_a_frame ... ok
+test replaced_storage ... ok
+test layout_on_another_thread ... ok
+     Running tests/textkit2.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/textkit2-8fe4a20d594647f5)
+
+running 29 tests
+test layout_manager_setup ... ok
+test enumerating_asks_the_delegate ... ok
+test relocating_the_viewport_lays_nothing_out ... ok
+test elements_for_a_range_start_inside_it ... ok
+test locations_and_ranges ... ok
+test invalidation ... ok
+test delegate_paragraphs ... ok
+test a_shorter_delegate_paragraph ... ok
+test empty_and_extra_line ... ok
+test segments ... ok
+test spacing ... ok
+test edits_keep_what_they_dont_touch ... ok
+test line_fragment_edges ... ok
+test a_moved_frame_moves_carets_and_clicks ... ok
+test custom_fragments ... ok
+test an_empty_document_lays_out_its_extra_line ... ok
+test line_fragment_queries ... ok
+test selections ... ok
+test fragments_and_lines ... ok
+test rendering_attributes ... ok
+test editing_transactions_leave_the_storage_alone ... ok
+test segment_options ... ok
+test viewport_layout ... ok
+test navigation_moves ... ok
+test paragraphs_as_elements ... ok
+test a_subclass_groups_paragraphs ... ok
+test a_fragment_draws_into_a_bitmap_context ... ok
+test ensuring_layout_after_a_long_paragraph ... ok
+test long_text_lays_out_the_viewport ... ok
+
+test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.79s
+
+     Running tests/textkit2_view.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/textkit2_view-918ac1bdca0c70cf)
+test modes ... ok
+test switch_to_text_kit_1 ... ok
+test viewport_bounds ... ok
+test viewport_layout ... ok
+test drawing ... ok
+test rendering_surface ... ok
+test viewport_past_the_view ... ok
+test size_to_fit ... ok
+test switch_notifications ... ok
+test empty_field_editor ... ok
+test selections ... ok
+test editing ... ok
+     Running tests/threads.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/threads-e7ff553763426fb8)
+test first_start_posts_will_become_multi_threaded ... ok
+test the_main_thread ... ok
+test thread_states ... ok
+test target_threads_retain_and_post_on_exit ... ok
+test threads_nobody_started ... ok
+test exit_ends_the_thread ... ok
+test sleeping ... ok
+     Running tests/undo_manager.rs (../ss-target/riscv64gc-unknown-linux-gnu/release/deps/undo_manager-7e173a4797a6c327)
+undo_manager: ok
+   Doc-tests sidestep_conformance
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: 8 targets failed:
+    `-p sidestep-conformance --test appkit_autolayout`
+    `-p sidestep-conformance --test appkit_split`
+    `-p sidestep-conformance --test appkit_stack`
+    `-p sidestep-conformance --test appkit_views`
+    `-p sidestep-conformance --test autorelease`
+    `-p sidestep-conformance --test coregraphics`
+    `-p sidestep-conformance --test rich_text`
+    `-p sidestep-conformance --test services`
+exit=101

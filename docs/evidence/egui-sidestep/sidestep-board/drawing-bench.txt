@@ -1,0 +1,7 @@
+START 1.03 1.01 0.69 1/159 7315
+D-Bus property CPUAccounting is deprecated, ignoring assignment: CPUAccounting=yes
+bench at 1x: into a bitmap in 888.00 ms (median of 7), 919.93 ms of it drawing
+bench at 2x: into a bitmap in 2005.29 ms (median of 7), 2154.65 ms of it drawing
+EXIT 0
+END 1.80 1.19 0.75 2/167 7360
+MemAvailable:     564400 kB

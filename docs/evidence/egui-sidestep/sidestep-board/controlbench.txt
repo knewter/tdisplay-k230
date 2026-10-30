@@ -1,0 +1,19 @@
+START 1.03 1.01 0.68 1/160 7288
+D-Bus property CPUAccounting is deprecated, ignoring assignment: CPUAccounting=yes
+labelWithString: (sized to fit)                         54744.4 ns  (min 28416.6)
+labelWithString: (sized to fit), new text               33908.6 ns  (min 31577.0)
+label setStringValue: + intrinsicContentSize             7845.1 ns  (min 7457.0)
+label setStringValue: + intrinsicContentSize, new text    11216.0 ns  (min 10900.4)
+label setStringValue: the same text                       760.4 ns  (min 751.9)
+label intrinsicContentSize, unchanged                      59.9 ns  (min 58.3)
+buttonWithTitle:target:action:                          24588.6 ns  (min 24127.2)
+button intrinsicContentSize, unchanged                     51.8 ns  (min 48.4)
+button setTitle: + intrinsicContentSize                  8067.1 ns  (min 7899.3)
+button setTitle: + intrinsicContentSize, new text       11626.8 ns  (min 11372.2)
+checkbox setState:                                        690.2 ns  (min 680.7)
+slider setDoubleValue: + doubleValue                      745.5 ns  (min 730.7)
+segmentedControlWithLabels: (3 segments)                32779.7 ns  (min 31855.8)
+cell setIntValue: + stringValue                          4347.4 ns  (min 4248.5)
+EXIT 0
+END 1.03 1.01 0.69 1/159 7308
+MemAvailable:     583108 kB

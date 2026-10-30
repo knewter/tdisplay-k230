@@ -1,0 +1,14 @@
+Evidence class: QEMU user mode (riscv64 instructions on the x86_64 host). No speed or board claim.
+Date: 2026-10-30. Source: nix/egui-software-probe at the commit that adds this file.
+Method: headless Weston (pixman, 1232x568) on the host; the x86_64 build and a riscv64gc cargo
+cross-build (K230 cross compiler wrapper, glibc 2.42-84) each run with
+  egui-software-probe --exit-after-ms N --dump-ppm FILE
+(the riscv64 one as `qemu-riscv64-static -L /`), then the two frame dumps are compared.
+Result: byte-identical frames, sha256 of the PPM begins ceddc543a18f7b8c345f for both.
+riscv64 event log (times are the emulator's, not the board's):
+{"e":"start","t":661292293,"toolkit":"egui 0.1.0","backend":"egui_software_backend 0.0.3","route":"cpu-wl_shm"}
+{"e":"configured","t":661292309}
+{"e":"commit","t":661292609,"r":292220,"run":184351,"rast":107869}
+{"e":"first_frame","t":661292610}
+{"e":"commit","t":661292658,"r":39992,"run":2225,"rast":37767}
+{"e":"exit","t":661297309,"commits":2}

@@ -1,0 +1,38 @@
+{
+  "artifacts": {
+    "baseline": {
+      "binary": "bin/qtquick-shm-baseline",
+      "store_path": "/nix/store/y4qh2n92b7ailf2bw7129b9xynxzbz3h-qtquick-shm-baseline-riscv64-unknown-linux-gnu-0.1"
+    },
+    "egui": {
+      "binary": "bin/egui-software-probe",
+      "store_path": "/nix/store/aypmvvq4gan1qwpdrvlyq88qzsla206l-egui-software-probe-cargo"
+    }
+  },
+  "ceilings": {
+    "idle_client_cpu_pct": 2.0,
+    "incremental_memory_mib": 128,
+    "regression_report_pct": 10.0,
+    "startup_ms": 5000
+  },
+  "created_utc": "2026-10-30T15:53:46Z",
+  "hash": "3ce86593d267d10838cf671ab850f53277526ea00cf203ace8efb1de9e7a504c",
+  "schema": "toolkit-eval-manifest/1",
+  "system": {
+    "toplevel": "/nix/store/49mnsl2si30m1l4fxdx2h114myv3anjf-nixos-system-nixos-26.11.20260919.20b1ddd"
+  },
+  "workload": {
+    "active_s": 30,
+    "boundary": "client_commit",
+    "id": "qtq-workload-1",
+    "idle_s": 30,
+    "min_interactions": 24,
+    "order": "ABBA-style alternation: pair 1 qt then baseline, pair 2 baseline then qt, pair 3 qt then baseline",
+    "pairs": 3,
+    "scale": 1,
+    "viewport": [
+      1232,
+      568
+    ]
+  }
+}

@@ -1,0 +1,60 @@
+[
+  {
+    "label": "identity-egui",
+    "id": "qtq-db2917a8-ident-egui",
+    "kind": "identity",
+    "returncode": 0,
+    "wall_s": 9.5,
+    "stdout": "{\"ok\": true}\nSTAT1 cpu 43072 1011 20383 400996 1919 4405 2084 0 0 0\nSTAT2 cpu 43249 1011 20467 401290 1927 4415 2088 0 0 0",
+    "stderr": "",
+    "utc": "15:49:45Z",
+    "verify": "hot\": {\"sway_pid\": \"1058\", \"windows\": [\"k230-terminal\"], \"focused_app_id\": \"k230-terminal\", \"focused_con\": 5, \"shell_active\": true, \"qtq_units\": []}, \"pre\": {\"sway_pid\": \"1058\", \"windows\": [\"k230-terminal\"], \"focused_app_id\": \"k230-terminal\", \"focused_con\": 5, \"shell_active\": true, \"qtq_units\": []}}"
+  },
+  {
+    "label": "identity-baseline",
+    "id": "qtq-db2917a8-ident-baseline",
+    "kind": "identity",
+    "returncode": 0,
+    "wall_s": 9.5,
+    "stdout": "{\"ok\": true}\nSTAT1 cpu 43430 1011 20570 401644 1929 4429 2094 0 0 0\nSTAT2 cpu 43586 1011 20640 401983 1935 4438 2097 0 0 0",
+    "stderr": "",
+    "utc": "15:49:56Z",
+    "verify": "hot\": {\"sway_pid\": \"1058\", \"windows\": [\"k230-terminal\"], \"focused_app_id\": \"k230-terminal\", \"focused_con\": 5, \"shell_active\": true, \"qtq_units\": []}, \"pre\": {\"sway_pid\": \"1058\", \"windows\": [\"k230-terminal\"], \"focused_app_id\": \"k230-terminal\", \"focused_con\": 5, \"shell_active\": true, \"qtq_units\": []}}"
+  },
+  {
+    "label": "pair1-egui",
+    "busy_fraction": 0.09409190371991247,
+    "detail": "0.26 0.30 0.27 1/160 5932 |  150 ps | 50.0 sed |  1.5 sway",
+    "waited_s": 5
+  },
+  {
+    "label": "pair1-egui",
+    "id": "qtq-db2917a8-p11-egui",
+    "kind": "arm",
+    "returncode": 0,
+    "wall_s": 93.9,
+    "stdout": "{\"ok\": true, \"status\": \"ok\", \"restored\": true}\nSTAT1 cpu 43821 1011 20780 402752 1936 4457 2109 0 0 0\nSTAT2 cpu 46355 1011 21249 409330 1950 4577 2164 0 0 0",
+    "stderr": "",
+    "utc": "15:51:37Z",
+    "verify": "hot\": {\"sway_pid\": \"1058\", \"windows\": [\"k230-terminal\"], \"focused_app_id\": \"k230-terminal\", \"focused_con\": 5, \"shell_active\": true, \"qtq_units\": []}, \"pre\": {\"sway_pid\": \"1058\", \"windows\": [\"k230-terminal\"], \"focused_app_id\": \"k230-terminal\", \"focused_con\": 5, \"shell_active\": true, \"qtq_units\": []}}",
+    "quiet_before": true
+  },
+  {
+    "label": "pair1-baseline",
+    "busy_fraction": 0.046153846153846156,
+    "detail": "0.73 0.47 0.33 1/160 6135 |  150 ps |  1.6 sway |  1.3 sshd-session",
+    "waited_s": 5
+  },
+  {
+    "label": "pair1-baseline",
+    "id": "qtq-db2917a8-p12-baseline",
+    "kind": "arm",
+    "returncode": 0,
+    "wall_s": 93.2,
+    "stdout": "{\"ok\": true, \"status\": \"ok\", \"restored\": true}\nSTAT1 cpu 46718 1011 21435 410818 1973 4604 2178 0 0 0\nSTAT2 cpu 48057 1011 21919 418573 1989 4726 2213 0 0 0",
+    "stderr": "",
+    "utc": "15:53:25Z",
+    "verify": "hot\": {\"sway_pid\": \"1058\", \"windows\": [\"k230-terminal\"], \"focused_app_id\": \"k230-terminal\", \"focused_con\": 5, \"shell_active\": true, \"qtq_units\": []}, \"pre\": {\"sway_pid\": \"1058\", \"windows\": [\"k230-terminal\"], \"focused_app_id\": \"k230-terminal\", \"focused_con\": 5, \"shell_active\": true, \"qtq_units\": []}}",
+    "quiet_before": true
+  }
+]

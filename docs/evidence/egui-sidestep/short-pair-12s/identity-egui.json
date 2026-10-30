@@ -1,0 +1,44 @@
+{
+  "id": "qtq-db2917a8-ident-egui",
+  "toolkit": "egui",
+  "ok": true,
+  "mapped_graphics_libs": [],
+  "mapped_qt_libs": [],
+  "effective_env": {},
+  "qsg_rhi_backend_inherited": false,
+  "start_line": "{\"e\":\"start\",\"t\":4260687,\"toolkit\":\"egui 0.1.0\",\"backend\":\"egui_software_backend 0.0.3\",\"route\":\"cpu-wl_shm\"}",
+  "bound_protocols": [],
+  "create_buffer_formats": [],
+  "attach_count": 2,
+  "linux_dmabuf_requests": 0,
+  "wl_drm_requests": 0,
+  "qsg_info_lines": [
+    "Started [systemd-run] /nix/store/aypmvvq4gan1qwpdrvlyq88qzsla206l-egui-software-probe-cargo/bin/egui-software-probe --exit-after-ms 20000."
+  ],
+  "qsg_info_in_stderr": [
+    "[3196449.640][rs] -> xdg_toplevel@11.set_title(Some(\"egui software probe\"))",
+    "[3196449.736][rs] -> xdg_toplevel@11.set_app_id(Some(\"egui-software-probe\"))"
+  ],
+  "restoration": {
+    "ok": true,
+    "reason": "identity-finally",
+    "id": "qtq-db2917a8-ident-egui",
+    "actions": [
+      "unit-stopped"
+    ],
+    "post": {
+      "sway_pid": "1058",
+      "windows": [
+        "k230-terminal"
+      ],
+      "focused_app_id": "k230-terminal",
+      "focused_con": 5,
+      "shell_active": true,
+      "qtq_units": []
+    },
+    "focus_same_as_before": true
+  },
+  "shm_create_buffer_count": 2,
+  "gpu_protocols_bound": [],
+  "software_route": true
+}

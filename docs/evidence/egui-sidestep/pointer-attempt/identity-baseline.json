@@ -1,0 +1,47 @@
+{
+  "id": "qtq-63bbc91e-ident-baseline",
+  "toolkit": "baseline",
+  "ok": true,
+  "mapped_graphics_libs": [],
+  "mapped_qt_libs": [],
+  "effective_env": {},
+  "qsg_rhi_backend_inherited": false,
+  "start_line": "{\"e\":\"start\",\"t\":6621963,\"client\":\"qtquick-shm-baseline\",\"buffer\":\"wl_shm XRGB8888\",\"text_input\":true,\"boundary\":\"client_commit\"}",
+  "bound_protocols": [
+    "wl_compositor",
+    "wl_seat",
+    "wl_shm",
+    "xdg_wm_base",
+    "zwp_text_input_manager_v3"
+  ],
+  "create_buffer_formats": [
+    "XRGB8888"
+  ],
+  "attach_count": 1,
+  "linux_dmabuf_requests": 0,
+  "wl_drm_requests": 0,
+  "qsg_info_lines": [],
+  "qsg_info_in_stderr": [],
+  "restoration": {
+    "ok": true,
+    "reason": "identity-finally",
+    "id": "qtq-63bbc91e-ident-baseline",
+    "actions": [
+      "unit-stopped"
+    ],
+    "post": {
+      "sway_pid": "1058",
+      "windows": [
+        "k230-terminal"
+      ],
+      "focused_app_id": "k230-terminal",
+      "focused_con": 5,
+      "shell_active": true,
+      "qtq_units": []
+    },
+    "focus_same_as_before": true
+  },
+  "shm_create_buffer_count": 1,
+  "gpu_protocols_bound": [],
+  "software_route": true
+}

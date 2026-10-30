@@ -1,0 +1,4 @@
+START 0.79 1.00 1.08 4/161 7908
+NSString::from_str("hello") + release              519.50 ns  (min 514.90)
+EXIT 0
+END 0.85 1.00 1.07 1/161 7945

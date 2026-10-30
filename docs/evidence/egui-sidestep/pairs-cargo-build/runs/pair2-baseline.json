@@ -1,0 +1,457 @@
+{
+ "schema": "qtquick-run/1",
+ "id": "qtq-3ce86593-p21-baseline",
+ "toolkit": "baseline",
+ "pair": 2,
+ "order": 1,
+ "manifest_hash": "3ce86593d267d10838cf671ab850f53277526ea00cf203ace8efb1de9e7a504c",
+ "artifact": "/nix/store/y4qh2n92b7ailf2bw7129b9xynxzbz3h-qtquick-shm-baseline-riscv64-unknown-linux-gnu-0.1",
+ "boundary": "client_commit",
+ "evidence_class": "board; injected uinput touch; native grim capture",
+ "phases": {
+  "idle": {
+   "elapsed_s": 30.001,
+   "client_cpu_us": 4975,
+   "sway_cpu_us": 360000,
+   "start_mono_ms": 5961723,
+   "end_mono_ms": 5991724,
+   "mem_used_kib_samples": [
+    378176,
+    378164,
+    378156,
+    378156,
+    378148,
+    384060,
+    409628
+   ],
+   "runner_cpu_s": 0.01,
+   "thermal_start": {
+    "zone0_mC": 49703,
+    "zone1_mC": 38000,
+    "zone2_mC": 34400
+   },
+   "thermal_end": {
+    "zone0_mC": 48802,
+    "zone1_mC": 38000,
+    "zone2_mC": 34400
+   }
+  },
+  "active": {
+   "elapsed_s": 30.001,
+   "client_cpu_us": 136253,
+   "sway_cpu_us": 540000,
+   "start_mono_ms": 5991756,
+   "end_mono_ms": 6021757,
+   "mem_used_kib_samples": [
+    409628,
+    401188,
+    401176,
+    401164,
+    401156,
+    401152,
+    401140
+   ],
+   "runner_cpu_s": 0.12,
+   "thermal_start": {
+    "zone0_mC": 49403,
+    "zone1_mC": 38000,
+    "zone2_mC": 34400
+   },
+   "thermal_end": {
+    "zone0_mC": 49403,
+    "zone1_mC": 38000,
+    "zone2_mC": 34400
+   }
+  }
+ },
+ "interactions": [
+  {
+   "kind": "drag",
+   "mono_ms": 5991783
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 5992556
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 5993176
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 5993947
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 5994558
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 5994740
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 5995451
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 5996064
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 5996836
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 5997447
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 5998219
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 5998830
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 5999011
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 5999723
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6000335
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6001106
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6001717
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6002489
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6003101
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6003282
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6003993
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6004605
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6005376
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6005987
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6006759
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6007371
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6007553
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6008264
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6008875
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6009647
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6010258
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6011029
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6011641
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6011823
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6012534
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6013146
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6013917
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6014529
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6015300
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6015911
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6016093
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6016805
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6017416
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6018188
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6018799
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6019571
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6020182
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6020363
+  }
+ ],
+ "functional": {
+  "bounded_lifetime": true,
+  "restored": true,
+  "software_route": true,
+  "pixels_correct": true,
+  "scroll": false,
+  "tap": false,
+  "interrupted_motion": true,
+  "text_focus": false,
+  "text_entry": false,
+  "readable": true
+ },
+ "captures": [
+  {
+   "name": "a0-startup",
+   "file": "a0-startup.png",
+   "window": {
+    "x": 0,
+    "y": 0,
+    "w": 1232,
+    "h": 568,
+    "id": 55,
+    "floating": true,
+    "focused": true
+   },
+   "mono_s": 5961.721,
+   "osk_visible": true
+  },
+  {
+   "name": "f0-initial",
+   "file": "f0-initial.png",
+   "window": {
+    "x": 0,
+    "y": 0,
+    "w": 1232,
+    "h": 568,
+    "id": 55,
+    "floating": true,
+    "focused": true
+   },
+   "mono_s": 6022.104,
+   "osk_visible": true
+  },
+  {
+   "name": "f1-after-row-tap",
+   "file": "f1-after-row-tap.png",
+   "window": {
+    "x": 0,
+    "y": 0,
+    "w": 1232,
+    "h": 568,
+    "id": 55,
+    "floating": true,
+    "focused": true
+   },
+   "mono_s": 6023.075,
+   "osk_visible": true
+  },
+  {
+   "name": "f2-after-scroll",
+   "file": "f2-after-scroll.png",
+   "window": {
+    "x": 0,
+    "y": 0,
+    "w": 1232,
+    "h": 568,
+    "id": 55,
+    "floating": true,
+    "focused": true
+   },
+   "mono_s": 6025.483,
+   "osk_visible": true
+  },
+  {
+   "name": "f3-after-interrupt",
+   "file": "f3-after-interrupt.png",
+   "window": {
+    "x": 0,
+    "y": 0,
+    "w": 1232,
+    "h": 568,
+    "id": 55,
+    "floating": true,
+    "focused": true
+   },
+   "mono_s": 6026.915,
+   "osk_visible": true
+  },
+  {
+   "name": "f4-field-focused",
+   "file": "f4-field-focused.png",
+   "window": {
+    "x": 0,
+    "y": 0,
+    "w": 1232,
+    "h": 568,
+    "id": 55,
+    "floating": true,
+    "focused": true
+   },
+   "mono_s": 6029.3,
+   "osk_visible": true
+  },
+  {
+   "name": "f5-after-keys",
+   "file": "f5-after-keys.png",
+   "window": {
+    "x": 0,
+    "y": 0,
+    "w": 1232,
+    "h": 568,
+    "id": 55,
+    "floating": true,
+    "focused": true
+   },
+   "mono_s": 6031.529,
+   "osk_visible": true
+  }
+ ],
+ "log": [
+  "5957.979 launched"
+ ],
+ "pre": {
+  "sway_pid": "1058",
+  "windows": [
+   "k230-terminal"
+  ],
+  "focused_app_id": "k230-terminal",
+  "focused_con": 5,
+  "shell_active": true,
+  "qtq_units": []
+ },
+ "boot_id": "0b49504f-2d64-4acf-a62e-d95281ae4cc6",
+ "uptime_s": 5957.83,
+ "memory": {
+  "before_kib": 370656,
+  "active_used_kib": 409628,
+  "idle_used_kib": 409628
+ },
+ "system": "/nix/store/49mnsl2si30m1l4fxdx2h114myv3anjf-nixos-system-nixos-26.11.20260919.20b1ddd",
+ "launch_mono_ms": 5957906,
+ "window": {
+  "x": 0,
+  "y": 0,
+  "w": 1232,
+  "h": 568,
+  "id": 55,
+  "floating": true,
+  "focused": true
+ },
+ "injector_cpu_s": 0.12,
+ "functional_raw": {
+  "osk_visible_after_focus": true,
+  "text_input_enable_logged": true
+ },
+ "status": "ok",
+ "restoration": {
+  "ok": true,
+  "reason": "arm-finally",
+  "id": "qtq-3ce86593-p21-baseline",
+  "actions": [
+   "unit-stopped",
+   "refocused"
+  ],
+  "post": {
+   "sway_pid": "1058",
+   "windows": [
+    "k230-terminal"
+   ],
+   "focused_app_id": "k230-terminal",
+   "focused_con": 5,
+   "shell_active": true,
+   "qtq_units": []
+  },
+  "focus_same_as_before": true
+ },
+ "events_file": "pair2-baseline.jsonl",
+ "gates": {
+  "pixels_correct": true,
+  "_pixel_probe": {
+   "10,10": true,
+   "3,300": true,
+   "790,480": true,
+   "640,250": true,
+   "40,105": true
+  },
+  "readable": true,
+  "tap": false,
+  "scroll": false,
+  "interrupted_motion": true,
+  "text_focus": false,
+  "_osk_diff_samples": 0,
+  "text_entry": false,
+  "_text_entry_pixels": 64,
+  "software_route": true
+ }
+}

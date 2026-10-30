@@ -1,0 +1,460 @@
+{
+ "schema": "qtquick-run/1",
+ "id": "qtq-3ce86593-p11-egui",
+ "toolkit": "egui",
+ "pair": 1,
+ "order": 1,
+ "manifest_hash": "3ce86593d267d10838cf671ab850f53277526ea00cf203ace8efb1de9e7a504c",
+ "artifact": "/nix/store/aypmvvq4gan1qwpdrvlyq88qzsla206l-egui-software-probe-cargo",
+ "boundary": "client_commit",
+ "evidence_class": "board; injected uinput touch; native grim capture",
+ "phases": {
+  "idle": {
+   "elapsed_s": 30.001,
+   "client_cpu_us": 5484,
+   "sway_cpu_us": 360000,
+   "start_mono_ms": 4545875,
+   "end_mono_ms": 4575876,
+   "mem_used_kib_samples": [
+    384148,
+    384148,
+    384148,
+    384140,
+    384132,
+    390872,
+    413264
+   ],
+   "runner_cpu_s": 0.02,
+   "thermal_start": {
+    "zone0_mC": 49403,
+    "zone1_mC": 38000,
+    "zone2_mC": 34300
+   },
+   "thermal_end": {
+    "zone0_mC": 48501,
+    "zone1_mC": 38000,
+    "zone2_mC": 34300
+   }
+  },
+  "active": {
+   "elapsed_s": 30.003,
+   "client_cpu_us": 13757517,
+   "sway_cpu_us": 4990000,
+   "start_mono_ms": 4575908,
+   "end_mono_ms": 4605911,
+   "mem_used_kib_samples": [
+    413264,
+    402392,
+    402380,
+    402364,
+    402348,
+    402332,
+    402316
+   ],
+   "runner_cpu_s": 0.12,
+   "thermal_start": {
+    "zone0_mC": 49102,
+    "zone1_mC": 38000,
+    "zone2_mC": 34300
+   },
+   "thermal_end": {
+    "zone0_mC": 50304,
+    "zone1_mC": 38000,
+    "zone2_mC": 34300
+   }
+  }
+ },
+ "interactions": [
+  {
+   "kind": "drag",
+   "mono_ms": 4575936
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4576708
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 4577321
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4578092
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4578704
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 4578886
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4579598
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 4580210
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4580990
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 4581601
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4582373
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4582986
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 4583168
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4583881
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 4584493
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4585266
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 4585878
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4586651
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4587263
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 4587445
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4588157
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 4588769
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4589541
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 4590153
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4590924
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4591537
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 4591719
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4592438
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 4593050
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4593821
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 4594433
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4595206
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4595817
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 4596007
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4596719
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 4597337
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4598116
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 4598736
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4599515
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4600127
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 4600310
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4601032
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 4601643
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4602416
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 4603027
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4603800
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 4604411
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 4604593
+  }
+ ],
+ "functional": {
+  "bounded_lifetime": true,
+  "restored": true,
+  "software_route": true,
+  "pixels_correct": true,
+  "scroll": true,
+  "tap": true,
+  "interrupted_motion": true,
+  "text_focus": false,
+  "text_entry": false,
+  "readable": true
+ },
+ "captures": [
+  {
+   "name": "a0-startup",
+   "file": "a0-startup.png",
+   "window": {
+    "x": 0,
+    "y": 0,
+    "w": 1232,
+    "h": 568,
+    "id": 48,
+    "floating": true,
+    "focused": true
+   },
+   "mono_s": 4545.873,
+   "osk_visible": true
+  },
+  {
+   "name": "f0-initial",
+   "file": "f0-initial.png",
+   "window": {
+    "x": 0,
+    "y": 0,
+    "w": 1232,
+    "h": 568,
+    "id": 48,
+    "floating": true,
+    "focused": true
+   },
+   "mono_s": 4612.772,
+   "osk_visible": true
+  },
+  {
+   "name": "f1-after-row-tap",
+   "file": "f1-after-row-tap.png",
+   "window": {
+    "x": 0,
+    "y": 0,
+    "w": 1232,
+    "h": 568,
+    "id": 48,
+    "floating": true,
+    "focused": true
+   },
+   "mono_s": 4613.759,
+   "osk_visible": true
+  },
+  {
+   "name": "f2-after-scroll",
+   "file": "f2-after-scroll.png",
+   "window": {
+    "x": 0,
+    "y": 0,
+    "w": 1232,
+    "h": 568,
+    "id": 48,
+    "floating": true,
+    "focused": true
+   },
+   "mono_s": 4616.17,
+   "osk_visible": true
+  },
+  {
+   "name": "f3-after-interrupt",
+   "file": "f3-after-interrupt.png",
+   "window": {
+    "x": 0,
+    "y": 0,
+    "w": 1232,
+    "h": 568,
+    "id": 48,
+    "floating": true,
+    "focused": true
+   },
+   "mono_s": 4617.607,
+   "osk_visible": true
+  },
+  {
+   "name": "f4-field-focused",
+   "file": "f4-field-focused.png",
+   "window": {
+    "x": 0,
+    "y": 0,
+    "w": 1232,
+    "h": 568,
+    "id": 48,
+    "floating": true,
+    "focused": true
+   },
+   "mono_s": 4620.021,
+   "osk_visible": true
+  },
+  {
+   "name": "f5-after-keys",
+   "file": "f5-after-keys.png",
+   "window": {
+    "x": 0,
+    "y": 0,
+    "w": 1232,
+    "h": 568,
+    "id": 48,
+    "floating": true,
+    "focused": true
+   },
+   "mono_s": 4622.272,
+   "osk_visible": true
+  }
+ ],
+ "log": [
+  "4542.175 launched"
+ ],
+ "pre": {
+  "sway_pid": "1058",
+  "windows": [
+   "k230-terminal"
+  ],
+  "focused_app_id": "k230-terminal",
+  "focused_con": 5,
+  "shell_active": true,
+  "qtq_units": []
+ },
+ "boot_id": "0b49504f-2d64-4acf-a62e-d95281ae4cc6",
+ "uptime_s": 4542.03,
+ "memory": {
+  "before_kib": 374372,
+  "active_used_kib": 413264,
+  "idle_used_kib": 413264
+ },
+ "system": "/nix/store/49mnsl2si30m1l4fxdx2h114myv3anjf-nixos-system-nixos-26.11.20260919.20b1ddd",
+ "launch_mono_ms": 4542104,
+ "window": {
+  "x": 0,
+  "y": 0,
+  "w": 1232,
+  "h": 568,
+  "id": 48,
+  "floating": true,
+  "focused": true
+ },
+ "injector_cpu_s": 0.12,
+ "functional_reset": {
+  "row0_selected_after_reset": false
+ },
+ "functional_raw": {
+  "osk_visible_after_focus": true,
+  "text_input_enable_logged": true
+ },
+ "status": "ok",
+ "restoration": {
+  "ok": true,
+  "reason": "arm-finally",
+  "id": "qtq-3ce86593-p11-egui",
+  "actions": [
+   "unit-stopped",
+   "refocused"
+  ],
+  "post": {
+   "sway_pid": "1058",
+   "windows": [
+    "k230-terminal"
+   ],
+   "focused_app_id": "k230-terminal",
+   "focused_con": 5,
+   "shell_active": true,
+   "qtq_units": []
+  },
+  "focus_same_as_before": true
+ },
+ "events_file": "pair1-egui.jsonl",
+ "gates": {
+  "pixels_correct": true,
+  "_pixel_probe": {
+   "10,10": true,
+   "3,300": true,
+   "790,480": true,
+   "640,250": true,
+   "40,105": true
+  },
+  "readable": true,
+  "tap": true,
+  "scroll": true,
+  "interrupted_motion": true,
+  "text_focus": false,
+  "_osk_diff_samples": 0,
+  "text_entry": false,
+  "_text_entry_pixels": 0,
+  "software_route": true
+ }
+}
