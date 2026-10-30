@@ -6624,6 +6624,13 @@ impl ShellClient {
                 {
                     // Pulled down from the top: the next motion scrolls.
                     self.panel_close_candidate = false;
+                } else if !self.panel_close.tracking()
+                    && k230_shell_rust::service_ui::close_drag_sideways(self.route, dx, dy)
+                {
+                    // Sideways on the Shade: the next motion may start a
+                    // notification row swipe (offset still measured from
+                    // the touch-down point).
+                    self.panel_close_candidate = false;
                 }
                 if self.panel_close.tracking() {
                     let travel = self.panel_travel();

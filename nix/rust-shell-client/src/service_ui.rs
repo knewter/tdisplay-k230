@@ -601,6 +601,14 @@ pub fn close_drag_refused(route: Route, dx: f64, dy: f64) -> bool {
         && dy.abs() > dx.abs()
 }
 
+/// Whether a Shade close-drag candidate has moved clearly sideways, so a
+/// notification row swipe gets the gesture instead. A list that fits
+/// without scrolling is always "at its end" and so a close zone; without
+/// this, a sideways swipe there could never dismiss a row.
+pub fn close_drag_sideways(route: Route, dx: f64, dy: f64) -> bool {
+    route == Route::Shade && dx.abs() >= CLOSE_DRAG_SLOP && dx.abs() > dy.abs()
+}
+
 /// Where a close drag may originate: the existing top dismiss zone, or at
 /// or after the panel's own bottom edge -- the dim backdrop below it,
 /// which also covers grabbing right at ("the panel's bottom edge/handle").
@@ -1923,6 +1931,39 @@ mod tests {
             assert!(!close_drag_refused(route, 40.0, 30.0), "sideways");
         }
         assert!(!close_drag_refused(Route::Shade, 0.0, 30.0), "Shade keeps its gesture");
+    }
+
+    #[test]
+    fn a_sideways_move_releases_a_shade_close_candidate_and_nothing_else() {
+        assert!(close_drag_sideways(Route::Shade, 12.0, 2.0));
+        assert!(close_drag_sideways(Route::Shade, -12.0, 2.0), "either direction");
+        assert!(!close_drag_sideways(Route::Shade, 4.0, 0.0), "under slop");
+        assert!(!close_drag_sideways(Route::Shade, 10.0, -20.0), "mostly upward still closes");
+        for route in [Route::Settings, Route::Help, Route::Drawer, Route::Power] {
+            assert!(!close_drag_sideways(route, 40.0, 0.0), "{route:?}");
+        }
+    }
+
+    #[test]
+    fn a_short_wide_list_swipes_a_row_once_the_close_candidate_lets_go() {
+        // Two rows fit without scrolling, so the list is "at its end" and a
+        // touch on a row starts as a close-drag candidate.
+        let view = wide_shade_view(1, false);
+        let layout = shade_layout(1232, 568);
+        let start = (layout.list_x + 170.0, layout.list_top + 30.0);
+        assert_eq!(notification_max_scroll(&view.notifications.as_ref().unwrap().events, 1232, 568), 0.0);
+        assert!(shade_panel_close_zone(start, 1232, 568, &view));
+        // First samples: a few pixels right. Not yet a swipe; the candidate
+        // lets go once past the slop, and the next sample starts the swipe.
+        assert!(notification_swipe_start(start, (start.0 + 4.0, start.1), 1232, 568, &view).is_none());
+        assert!(!close_drag_engaged(Route::Shade, 12.0, 1.0));
+        assert!(close_drag_sideways(Route::Shade, 12.0, 1.0));
+        let swipe = notification_swipe_start(start, (start.0 + 40.0, start.1 + 1.0), 1232, 568, &view)
+            .expect("the row swipe starts after the candidate is released");
+        assert_eq!(swipe.offset, 40.0);
+        // An upward drag from the same place still closes the shade.
+        assert!(close_drag_engaged(Route::Shade, 1.0, -CLOSE_DRAG_SLOP - 2.0));
+        assert!(!close_drag_sideways(Route::Shade, 1.0, -CLOSE_DRAG_SLOP - 2.0));
     }
 
     #[test]
