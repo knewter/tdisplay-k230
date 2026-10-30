@@ -19,14 +19,20 @@ neither `CONFIG_WATCHDOG` nor `CONFIG_HW_WATCHDOG` (the k230 defconfig sets
 neither) it expands to `{}`. That macro is exactly the call site upstream
 later turned into `schedule()`.
 
+Correction found by the first full build: the tree does contain a function-like
+`#define schedule()` in the USB gadget compat headers (used by
+`cmd/usb_mass_storage.c`), so defining a `schedule()` of our own broke that
+file. The back-port therefore omits `schedule()` and `WATCHDOG_RESET()` calls
+`cyclic_run()` directly; upstream's name is not provided here.
+
 ## Backport size
 
 Small, because the port only needs the API shape:
 
 | Piece | Where | Size |
 | --- | --- | --- |
-| `cyclic_register/unregister/run`, `schedule()` | `nix/uboot-k230-life/cyclic.h`, `k230_cyclic.c` | about 90 lines |
-| route `WATCHDOG_RESET()` to `schedule()` when `CONFIG_K230_BOOT_LIFE_CYCLIC` and not SPL | hunk to `include/watchdog.h` in `0006-k230-stage1-boot-life.patch` | 8 lines |
+| `cyclic_register/unregister/run` | `nix/uboot-k230-life/cyclic.h`, `k230_cyclic.c` | about 90 lines |
+| route `WATCHDOG_RESET()` to `cyclic_run()` when `CONFIG_K230_BOOT_LIFE_CYCLIC` and not SPL | hunk to `include/watchdog.h` in `0006-k230-stage1-boot-life.patch` | 8 lines |
 | frame driver | `src/boot_frame.c` (`bf_begin`/`bf_advance`), `nix/uboot-k230-life/k230_boot_life.c` | existing code, restructured |
 
 Names and signatures follow upstream (`cyclic_register(c, func, delay_us,

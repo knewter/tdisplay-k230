@@ -2,8 +2,8 @@
 /*
  * Minimal back-port of U-Boot's cyclic framework (upstream: common/cyclic.c,
  * include/cyclic.h, v2023.01).  This tree is 2022.10 and has neither.  The
- * names, argument order and semantics of cyclic_register(), cyclic_unregister()
- * and schedule() follow upstream so the project can drop this file when the
+ * names, argument order and semantics of cyclic_register() and cyclic_unregister()
+ * follow upstream so the project can drop this file when the
  * vendor tree moves to 2023.01 or later and use CONFIG_CYCLIC directly.
  *
  * Differences from upstream, on purpose: a singly linked list of static
@@ -35,9 +35,8 @@ void cyclic_unregister(struct cyclic_info *c);
 /* Run every callback whose deadline has passed; never re-entered. */
 void cyclic_run(void);
 
-static inline void schedule(void)
-{
-	cyclic_run();
-}
+/* Upstream also defines schedule() here.  This tree's USB gadget code
+ * (include/linux/compat.h users) already #defines a function-like schedule(),
+ * so the hook below calls cyclic_run() directly instead. */
 
 #endif

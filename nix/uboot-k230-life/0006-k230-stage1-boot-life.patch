@@ -144,6 +144,6 @@
 + * notably udelay() in lib/time.c, which every SD poll loop uses. */
 +#include <cyclic.h>
 +#undef WATCHDOG_RESET
-+#define WATCHDOG_RESET() schedule()
++#define WATCHDOG_RESET() cyclic_run()
 +#endif
  #endif /* _WATCHDOG_H_ */
