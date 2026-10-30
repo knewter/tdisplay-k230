@@ -334,16 +334,21 @@ class Arm:
         pre = self.pre or json.loads(self.s.read(self.dir / "pre.json", "null") or "null")
         if pre and pre.get("focused_con"):
             now = self.snapshot()
-            if now["focused_app_id"] != pre["focused_app_id"]:
+            if now["focused_app_id"] != pre["focused_app_id"] and pre["focused_app_id"] in now["windows"]:
                 self.swaymsg(f'[con_id={int(pre["focused_con"])}]', "focus")
                 res["actions"].append("refocused")
                 self.s.sleep(0.5)
         post = self.snapshot()
         res["post"] = post
         ok = post["shell_active"] and all(self.id not in u for u in post["qtq_units"]) \
-            and app not in post["windows"]
+            and app not in post["windows"] and post["focused_app_id"] != app
         if pre:
-            ok = ok and post["sway_pid"] == pre["sway_pid"] and post["focused_app_id"] == pre["focused_app_id"]
+            # Other agents may open/close their own windows meanwhile; the compositor and the
+            # shell must be the same, and focus must be back on the previous window when it still exists.
+            ok = ok and post["sway_pid"] == pre["sway_pid"]
+            res["focus_same_as_before"] = post["focused_app_id"] == pre["focused_app_id"]
+            if pre["focused_app_id"] in post["windows"]:
+                ok = ok and res["focus_same_as_before"]
         res["ok"] = bool(ok)
         return res
 
@@ -562,13 +567,15 @@ def cmd_identity(args, system=None):
         ident["qsg_rhi_backend_inherited"] = "QSG_RHI_BACKEND" in ident["effective_env"]
         ident["start_line"] = next((l for l in arm.events_text().splitlines() if '"start"' in l), None)
         err = system.read(arm.dir / "client.err", "") or ""
-        interfaces = sorted(set(re.findall(r"wl_registry@\d+\.global\(\d+, \"(\w+)\"", err)))
-        ident["bound_protocols"] = interfaces
-        ident["wl_shm_formats"] = sorted(set(re.findall(r"wl_shm@\d+\.format\((\w+)\)", err)))[:12]
-        ident["create_buffer_formats"] = sorted(set(re.findall(r"wl_shm_pool@\d+\.create_buffer\(new id wl_buffer@\d+, \d+, \d+, \d+, \d+, (\d+)\)", err)))
-        ident["attach_count"] = len(re.findall(r"wl_surface@\d+\.attach\(wl_buffer@", err))
-        ident["linux_dmabuf_requests"] = len(re.findall(r"zwp_linux_dmabuf\w*@\d+\.(create_params|get_default_feedback|get_surface_feedback)", err))
-        ident["wl_drm_requests"] = len(re.findall(r"wl_drm@\d+\.", err))
+        ident["bound_protocols"] = sorted(set(re.findall(r'-> wl_registry#\d+\.bind\(\d+, "(\w+)"', err)))
+        fmt_names = {"0": "ARGB8888", "1": "XRGB8888"}
+        ident["create_buffer_formats"] = sorted({fmt_names.get(f, f) for f in re.findall(
+            r"wl_shm_pool#\d+\.create_buffer\(new id wl_buffer#\d+, \d+, \d+, \d+, \d+, (\d+)\)", err)})
+        ident["attach_count"] = len(re.findall(r"wl_surface#\d+\.attach\(wl_buffer#", err))
+        ident["linux_dmabuf_requests"] = len(re.findall(r"-> zwp_linux_\w+#\d+\.", err)) + \
+            len([p for p in ident["bound_protocols"] if "dmabuf" in p])
+        ident["wl_drm_requests"] = len(re.findall(r"-> wl_drm#\d+\.", err)) + \
+            len([p for p in ident["bound_protocols"] if p == "wl_drm"])
         qsg = [l.strip()[:160] for l in (system.run(["journalctl", "-u", arm.unit, "--no-pager", "-o", "cat"])[1]).splitlines()
                if re.search(r"QSG|scene graph|software|backend|RHI", l, re.I)][:12]
         ident["qsg_info_lines"] = qsg

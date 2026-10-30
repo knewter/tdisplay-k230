@@ -158,7 +158,7 @@ def identity_verdict(ident, toolkit):
     """Software/SHM route from the WAYLAND_DEBUG identity run."""
     if not ident.get("ok"):
         return None
-    shm = ident.get("attach_count", 0) > 0 and ident.get("create_buffer_formats")
+    shm = ident.get("attach_count", 0) > 0 and bool(ident.get("create_buffer_formats"))
     no_gpu_buffers = ident.get("linux_dmabuf_requests", 0) == 0 and ident.get("wl_drm_requests", 0) == 0
     if toolkit == "baseline":
         return bool(shm and no_gpu_buffers)

@@ -4,6 +4,7 @@
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QObject>
+#include <QPointerEvent>
 #include <QQuickItem>
 #include <QQuickView>
 #include <QQmlError>
@@ -35,6 +36,14 @@ class Observer : public QObject {
  public:
   bool eventFilter(QObject *, QEvent *e) override {
     const char *kind = nullptr;
+    int px = -1, py = -1;
+    if (e->isPointerEvent()) {
+      const auto *pe = static_cast<QPointerEvent *>(e);
+      if (!pe->points().isEmpty()) {
+        px = static_cast<int>(pe->points().first().position().x());
+        py = static_cast<int>(pe->points().first().position().y());
+      }
+    }
     switch (e->type()) {
       case QEvent::TouchBegin: kind = "press"; break;
       case QEvent::TouchUpdate: kind = "move"; break;
@@ -53,8 +62,9 @@ class Observer : public QObject {
       default: break;
     }
     if (kind) {
-      char extra[48];
-      std::snprintf(extra, sizeof extra, "\"k\":\"%s\"", kind);
+      char extra[80];
+      if (px >= 0) std::snprintf(extra, sizeof extra, "\"k\":\"%s\",\"x\":%d,\"y\":%d", kind, px, py);
+      else std::snprintf(extra, sizeof extra, "\"k\":\"%s\"", kind);
       logEvent("input", extra);
     }
     return false;

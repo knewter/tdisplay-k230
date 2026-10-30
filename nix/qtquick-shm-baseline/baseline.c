@@ -130,16 +130,17 @@ static void frame_done(void *data, struct wl_callback *cb, uint32_t t) {
 static void request_draw(struct app *a) { a->want_draw = true; draw(a); }
 
 /* input */
+static int px_x, px_y;
 static void input_ev(struct app *a, const char *kind) {
-    char extra[48];
-    snprintf(extra, sizeof extra, "\"k\":\"%s\"", kind);
+    char extra[80];
+    if (!strcmp(kind, "key")) snprintf(extra, sizeof extra, "\"k\":\"key\"");
+    else snprintf(extra, sizeof extra, "\"k\":\"%s\",\"x\":%d,\"y\":%d", kind, px_x, px_y);
     logev(a, "input", extra);
 }
 static void ptr_enter(void *d, struct wl_pointer *p, uint32_t s, struct wl_surface *sf, wl_fixed_t x, wl_fixed_t y) {
     (void)d; (void)p; (void)s; (void)sf; (void)x; (void)y;
 }
 static void ptr_leave(void *d, struct wl_pointer *p, uint32_t s, struct wl_surface *sf) { (void)d; (void)p; (void)s; (void)sf; }
-static int px_x, px_y;
 static void ptr_motion(void *d, struct wl_pointer *p, uint32_t t, wl_fixed_t x, wl_fixed_t y) {
     (void)p; (void)t;
     struct app *a = d;
