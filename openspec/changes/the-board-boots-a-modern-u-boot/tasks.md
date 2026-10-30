@@ -21,8 +21,8 @@
 
 ## 4. Install and recovery procedure (review gate)
 
-- [ ] 4.1 Save the 2022.10 slot (2 MiB, 1 MiB long), both SPL copies and both env copies from the card with hashes under `docs/evidence/modern-uboot/preinstall.txt`, and copy `fn_ug_u-boot.2022.10.bin` to `/boot`; verify with `sha256sum` equalities (real board or card reader).
-- [ ] 4.2 Write the exact write/rollback procedure (offsets, commands, preserved regions, console evidence per step) into `docs/modern-uboot-install.md`; verify by review by the coordinator. **Stop here until the coordinator approves.**
+- [x] 4.1 Save the 2022.10 slot (2 MiB, 1 MiB long), both SPL copies and both env copies from the card, with hashes in `docs/evidence/modern-uboot/preinstall.txt`; verify with `sha256sum` equalities. Done 2026-10-30, real board read-only over SSH; the copy of the rollback image onto `/boot` is a board write and is step 1 of task 3.2.
+- [ ] 4.2 Write the exact write/rollback procedure (offsets, commands, preserved regions, console evidence per step) into `docs/modern-uboot-install.md`; verify by review by the coordinator. **Stop here until the coordinator approves.** Written 2026-10-30 together with `tools/write-uboot-slot.sh` (host-tested on a regular file: padding, read-back, preserved-region hashes, refusals); review by the coordinator is the open part.
 
 ## 5. Stage a: install on the board (after 4.2 approval)
 
@@ -38,7 +38,7 @@
 
 ## 7. Stage c: modern OpenSBI
 
-- [ ] 7.1 Build OpenSBI v1.9 with the MAEE-clear forward-port and the unchanged `FW_JUMP_FDT_ADDR` departure; verify with `nix build .#opensbi-k230-modern` and a disassembly check that `FW_JUMP_ADDR=0x200000` (host build only).
+- [ ] 7.1 Build OpenSBI v1.9 with the MAEE-clear forward-port and the unchanged `FW_JUMP_FDT_ADDR` departure; also build U-Boot with `CONFIG_K230_PMP_LOCK_OTP=n` for that stage; verify with `nix build .#opensbi-k230-modern`, whose install phase asserts `thead_disable_maee` is linked and `fw_next_arg1` is `add a0, a1, zero`, plus the `fw_next_addr` disassembly showing `0x200000` (host build only).
 - [ ] 7.2 Replace `/fw_jump_add_uboot_head.bin` on `/boot` and boot; verify banner `OpenSBI v1.9`, `Domain0 Next Arg1` equal to `bootm`'s DTB address, `mxstatus.MAEE=0`, shell up (real board, console).
 
 ## 8. Close-out

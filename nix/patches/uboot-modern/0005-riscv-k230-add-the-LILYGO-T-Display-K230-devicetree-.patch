@@ -1,0 +1,191 @@
+From 297f081fc269e48ab96102be24f9c9467669fd92 Mon Sep 17 00:00:00 2001
+From: x <x@x>
+Date: Fri, 30 Oct 2026 10:12:15 -0500
+Subject: [PATCH 5/6] riscv: k230: add the LILYGO T-Display-K230 devicetree and
+ defconfig
+
+---
+ arch/riscv/dts/Makefile          |  2 +-
+ arch/riscv/dts/k230-tdisplay.dts | 58 ++++++++++++++++++++++++++++++++
+ arch/riscv/dts/k230.dtsi         | 23 +++++++++++++
+ configs/k230_tdisplay_defconfig  | 52 ++++++++++++++++++++++++++++
+ 4 files changed, 134 insertions(+), 1 deletion(-)
+ create mode 100644 arch/riscv/dts/k230-tdisplay.dts
+ create mode 100644 configs/k230_tdisplay_defconfig
+
+diff --git a/arch/riscv/dts/Makefile b/arch/riscv/dts/Makefile
+index 8ba75fdb9f..6c25f30ce5 100644
+--- a/arch/riscv/dts/Makefile
++++ b/arch/riscv/dts/Makefile
+@@ -2,7 +2,7 @@
+ 
+ dtb-$(CONFIG_TARGET_ANDES_AE350) += ae350_32.dtb ae350_64.dtb
+ dtb-$(CONFIG_TARGET_ANDES_VOYAGER) += qilai-voyager.dtb
+-dtb-$(CONFIG_TARGET_K230_CANMV) += k230-canmv.dtb
++dtb-$(CONFIG_TARGET_K230_CANMV) += k230-canmv.dtb k230-tdisplay.dtb
+ dtb-$(CONFIG_TARGET_MICROCHIP_ICICLE) += mpfs-icicle-kit.dtb
+ dtb-$(CONFIG_TARGET_MILKV_DUO) += cv1800b-milkv-duo.dtb
+ dtb-$(CONFIG_TARGET_MILKV_DUO_256M) += sg2002-milkv-duo256m.dtb
+diff --git a/arch/riscv/dts/k230-tdisplay.dts b/arch/riscv/dts/k230-tdisplay.dts
+new file mode 100644
+index 0000000000..8dbdb746a5
+--- /dev/null
++++ b/arch/riscv/dts/k230-tdisplay.dts
+@@ -0,0 +1,58 @@
++// SPDX-License-Identifier: GPL-2.0 OR MIT
++/*
++ * LILYGO T-Display-K230 (Kendryte K230D, 1 GiB LPDDR4, SD on mmc1).
++ *
++ * Stage a of openspec/changes/the-board-boots-a-modern-u-boot: U-Boot
++ * proper behind the SPL this project already builds. That SPL has done DDR
++ * training, pin multiplexing (its dts carries the 64-pin table) and the
++ * SD clock/pad setup, so this tree describes only what U-Boot proper
++ * drives. Peripheral clocks are fixed-rate nodes; there is no K230 clock
++ * driver in U-Boot.
++ */
++
++/dts-v1/;
++#include "k230.dtsi"
++
++/ {
++	model = "LILYGO T-Display-K230";
++	compatible = "lilygo,t-display-k230", "canaan,canmv-k230", "canaan,kendryte-k230";
++
++	aliases {
++		mmc1 = &mmc1;
++	};
++
++	chosen {
++		stdout-path = "serial0:115200n8";
++	};
++
++	memory@0 {
++		device_type = "memory";
++		reg = <0x0 0x0 0x0 0x40000000>;
++	};
++};
++
++&uart0 {
++	status = "okay";
++};
++
++&usb_phy {
++	status = "okay";
++};
++
++/* J3, the data USB-C: device mode for `ums`. */
++&usb0 {
++	dr_mode = "peripheral";
++	phys = <&usb_phy 0>;
++	status = "okay";
++};
++
++/* Onboard RTL8152 behind it: host. */
++&usb1 {
++	dr_mode = "host";
++	phys = <&usb_phy 1>;
++	status = "okay";
++};
++
++&mmc1 {
++	status = "okay";
++};
+diff --git a/arch/riscv/dts/k230.dtsi b/arch/riscv/dts/k230.dtsi
+index cf596677de..f213a2a919 100644
+--- a/arch/riscv/dts/k230.dtsi
++++ b/arch/riscv/dts/k230.dtsi
+@@ -54,6 +54,13 @@
+ 		#clock-cells = <0>;
+ 	};
+ 
++	def_100mhz: clock-100mhz {
++		compatible = "fixed-clock";
++		clock-frequency = <100000000>;
++		clock-output-names = "def_100mhz";
++		#clock-cells = <0>;
++	};
++
+ 	clk_dummy: clock-dummy {
+ 		compatible = "fixed-clock";
+ 		clock-frequency = <0>;
+@@ -148,6 +155,22 @@
+ 			status = "disabled";
+ 		};
+ 
++		usb_phy: usb-phy@91585000 {
++			compatible = "canaan,k230-usb-phy";
++			reg = <0x0 0x91585000 0x0 0x400>;
++			#phy-cells = <1>;
++			status = "disabled";
++		};
++
++		mmc1: mmc@91581000 {
++			compatible = "canaan,k230-dwcmshc";
++			reg = <0x0 0x91581000 0x0 0x400>;
++			bus-width = <4>;
++			clocks = <&def_100mhz>;
++			max-frequency = <50000000>;
++			status = "disabled";
++		};
++
+ 		usb0: usb@91500000 {
+ 			compatible = "canaan,k230-otg", "snps,dwc2";
+ 			reg = <0x0 0x91500000 0x0 0x40000>;
+diff --git a/configs/k230_tdisplay_defconfig b/configs/k230_tdisplay_defconfig
+new file mode 100644
+index 0000000000..1ff6dc31b1
+--- /dev/null
++++ b/configs/k230_tdisplay_defconfig
+@@ -0,0 +1,52 @@
++CONFIG_RISCV=y
++CONFIG_SYS_MALLOC_F_LEN=0x40000
++CONFIG_NR_DRAM_BANKS=1
++CONFIG_HAS_CUSTOM_SYS_INIT_SP_ADDR=y
++CONFIG_CUSTOM_SYS_INIT_SP_ADDR=0x80400000
++CONFIG_ENV_SIZE=0x2000
++CONFIG_ENV_OFFSET=0x300000
++CONFIG_DEFAULT_DEVICE_TREE="k230-tdisplay"
++CONFIG_SYS_BOOTM_LEN=0x8000000
++CONFIG_SYS_LOAD_ADDR=0xc000000
++CONFIG_TARGET_K230_CANMV=y
++CONFIG_ARCH_RV64I=y
++# CONFIG_BOARD_INIT is not set
++CONFIG_HUSH_PARSER=y
++CONFIG_SYS_PROMPT="K230# "
++CONFIG_BOOTDELAY=1
++CONFIG_CMD_GPT=y
++CONFIG_CMD_MMC=y
++CONFIG_CMD_USB=y
++CONFIG_CMD_USB_MASS_STORAGE=y
++CONFIG_CMD_EXT4=y
++CONFIG_CMD_FS_GENERIC=y
++CONFIG_FS_EXT4=y
++CONFIG_FAT_WRITE=y
++CONFIG_PARTITION_TYPE_GUID=y
++CONFIG_ENV_IS_IN_MMC=y
++CONFIG_ENV_MMC_DEVICE_INDEX=1
++CONFIG_SYS_RELOC_GD_ENV_ADDR=y
++CONFIG_NET_RANDOM_ETHADDR=y
++CONFIG_MMC=y
++CONFIG_DM_MMC=y
++CONFIG_MMC_SDHCI=y
++CONFIG_MMC_SDHCI_SDMA=y
++CONFIG_MMC_SDHCI_K230=y
++CONFIG_PHY=y
++CONFIG_PHY_K230_USB=y
++CONFIG_SYS_NS16550=y
++CONFIG_SYS_NS16550_MEM32=y
++CONFIG_USB=y
++CONFIG_USB_DWC2=y
++CONFIG_USB_GADGET=y
++CONFIG_DM_USB_GADGET=y
++CONFIG_USB_GADGET_DWC2_OTG=y
++CONFIG_USB_GADGET_DOWNLOAD=y
++CONFIG_USB_GADGET_VENDOR_NUM=0x29f1
++CONFIG_USB_GADGET_PRODUCT_NUM=0x0230
++CONFIG_USB_HOST_ETHER=y
++CONFIG_USB_ETHER_RTL8152=y
++CONFIG_CYCLIC=y
++# CONFIG_EFI_LOADER is not set
++CONFIG_CMD_IMPORTENV=y
++CONFIG_CMD_EXPORTENV=y

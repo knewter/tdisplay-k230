@@ -1,0 +1,235 @@
+From 53b07169bf510401d4942eb59e3e54b499f36259 Mon Sep 17 00:00:00 2001
+From: x <x@x>
+Date: Fri, 30 Oct 2026 10:12:14 -0500
+Subject: [PATCH 1/6] riscv: k230: cache enable, early hart setup and
+ pre-OpenSBI quiesce
+
+Forward-port of the parts of Canaan's SDK U-Boot 2022.10 cpu.c/cache.c this
+board's boot path needs. Upstream's k230 cpu.c is empty and leaves the caches
+off.
+---
+ arch/riscv/cpu/k230/Kconfig |   3 +
+ arch/riscv/cpu/k230/cpu.c   | 191 +++++++++++++++++++++++++++++++++++-
+ 2 files changed, 193 insertions(+), 1 deletion(-)
+
+diff --git a/arch/riscv/cpu/k230/Kconfig b/arch/riscv/cpu/k230/Kconfig
+index d76ad92a04..6fd2a966aa 100644
+--- a/arch/riscv/cpu/k230/Kconfig
++++ b/arch/riscv/cpu/k230/Kconfig
+@@ -6,9 +6,12 @@ config CANAAN_K230
+ 	bool
+ 	select ARCH_EARLY_INIT_R
+ 	select BINMAN
++	select SYS_CACHE_THEAD_CMO
+ 	imply CPU
+ 	imply CPU_RISCV
+ 	imply RISCV_TIMER
+ 	imply CMD_CPU
+ 	imply SYSRESET
+ 	imply SYSRESET_SYSCON
++	imply PHY_K230_USB
++	imply MMC_SDHCI_K230
+diff --git a/arch/riscv/cpu/k230/cpu.c b/arch/riscv/cpu/k230/cpu.c
+index 417a25f0a8..c0e9711415 100644
+--- a/arch/riscv/cpu/k230/cpu.c
++++ b/arch/riscv/cpu/k230/cpu.c
+@@ -1,9 +1,198 @@
+ // SPDX-License-Identifier: GPL-2.0+
+ /*
+- * Copyright (c) 2025, Junhui Liu <junhui.liu@pigmoral.tech>
++ * K230 early hart setup, T-Head C908 cache control and the pre-Linux
++ * quiesce.
++ *
++ * Forward-ported from Canaan's SDK U-Boot 2022.10 overlay
++ * (arch/riscv/cpu/k230/cpu.c and cache.c, BSD-2-Clause, read at
++ * kendryte/k230_linux_sdk 1104236), reduced to what this board's boot path
++ * uses. Register values are Canaan's, unchanged. Upstream's version of this
++ * file is an empty cleanup_before_linux(); the vendor SPL leaves the caches
++ * off and the clock gates programmed, and nothing upstream turns the caches
++ * back on or flushes the L2 before OpenSBI.
++ *
++ * openspec/changes/the-board-boots-a-modern-u-boot, design.md.
+  */
+ 
++#include <asm/csr.h>
++#include <asm/io.h>
++#include <cpu_func.h>
++#include <init.h>
++#include <linux/bitops.h>
++
++/* T-Head C9xx machine CSRs (vendor asm/csr.h). */
++#define CSR_MXSTATUS	0x7c0
++#define CSR_MHCR	0x7c1
++#define CSR_MCOR	0x7c2
++#define CSR_MCCR2	0x7c3
++#define CSR_MHINT	0x7c5
++#define CSR_SMPEN	0x7f3
++
++#define MHCR_IE		BIT(0)
++#define MHCR_DE		BIT(1)
++#define MHCR_WA		BIT(2)
++#define MHCR_WB		BIT(3)
++#define MHCR_RS		BIT(4)
++#define MHCR_BPE	BIT(5)
++#define MHCR_L0BTB	BIT(6)
++#define MHCR_IBPE	BIT(7)
++#define MHCR_WBR	BIT(8)
++
++/* Hand-encoded T-Head instructions, as the vendor does. */
++#define INSN_ICACHE_IALL	".long 0x0100000b"
++#define INSN_DCACHE_CIALL	".long 0x0030000b"
++#define INSN_L2CACHE_CIALL	".long 0x0170000b"
++#define INSN_SYNC_I		".long 0x01a0000b"
++
++/* Clock gates, STC and PLL (vendor harts_early_init). */
++#define SYSCTL_CLK		0x91100000UL
++#define CPU1_PLL_CTL		(SYSCTL_CLK + 0x04)
++#define SYSCTL_PWR		0x91103000UL
++#define STC_BASE		0x91108000UL
++#define HISYS_BASE		0x91585000UL
++#define SD0_CTRL		(HISYS_BASE + 0x00)
++#define SD_HOST_REG_VOL_STABLE	BIT(4)
++#define SD_CARD_WRITE_PROT	BIT(6)
++
++static inline void dsb(void)
++{
++	asm volatile(".long 0x0ff0000f" ::: "memory");	/* fence iorw,iorw */
++}
++
++static inline void isb(void)
++{
++	asm volatile(".long 0x0000100f" ::: "memory");	/* fence.i */
++}
++
++void harts_early_init(void)
++{
++	/* mtimer clock gates for both harts, then the system timer. */
++	writel(0x1, (void __iomem *)(STC_BASE + 0x20));
++	writel(0x1, (void __iomem *)(STC_BASE + 0x30));
++	writel(0x69, (void __iomem *)STC_BASE);
++
++	/* Big core to 1.6 GHz (SPL does this too; idempotent). */
++	writel(0x80199805, (void __iomem *)CPU1_PLL_CTL);
++
++	/* Disable PMU isolation. */
++	writel(0x0, (void __iomem *)(SYSCTL_PWR + 0x158));
++
++	/*
++	 * Protect the PUF/OTP window from writes, as the SDK's U-Boot does
++	 * outside burn-tool builds: pmpaddr0/1 cover 0x91213000 and
++	 * 0x91214000, 4 KiB each, locked read-only.
++	 */
++	csr_write(pmpaddr0, 0x24484dff);
++	csr_write(pmpaddr1, 0x244851ff);
++	csr_write(pmpcfg0, 0x9999);
++
++	/* SD0 controller: host voltage stable, card write-protect override. */
++	writel(readl((void __iomem *)SD0_CTRL) |
++	       SD_HOST_REG_VOL_STABLE | SD_CARD_WRITE_PROT,
++	       (void __iomem *)SD0_CTRL);
++}
++
++static void k230_cpu_perf_setup(void)
++{
++	csr_write(CSR_MCOR, 0x70013);
++	csr_write(CSR_MCCR2, 0xe0000009);
++	csr_write(CSR_MHCR, 0x11ff);
++	csr_write(CSR_MXSTATUS, 0x638000);
++	csr_write(CSR_MHINT, 0x6e30c);
++	csr_write(CSR_SMPEN, 0x1);
++}
++
++void flush_dcache_all(void)
++{
++	dsb();
++	isb();
++	asm volatile(INSN_DCACHE_CIALL ::: "memory");
++	dsb();
++	isb();
++}
++
++static void l2cache_flush_invalidate(void)
++{
++	dsb();
++	asm volatile(INSN_SYNC_I ::: "memory");
++	asm volatile(INSN_L2CACHE_CIALL ::: "memory");
++	dsb();
++	asm volatile(INSN_SYNC_I ::: "memory");
++}
++
++void icache_enable(void)
++{
++	if (CONFIG_IS_ENABLED(SYS_ICACHE_OFF))
++		return;
++
++	dsb();
++	isb();
++	asm volatile(INSN_ICACHE_IALL ::: "memory");
++	csr_set(CSR_MHCR, MHCR_IE);
++	dsb();
++	isb();
++}
++
++void icache_disable(void)
++{
++	dsb();
++	isb();
++	csr_clear(CSR_MHCR, MHCR_IE);
++	asm volatile(INSN_ICACHE_IALL ::: "memory");
++	dsb();
++	isb();
++}
++
++int icache_status(void)
++{
++	return !!(csr_read(CSR_MHCR) & MHCR_IE);
++}
++
++void dcache_enable(void)
++{
++	if (CONFIG_IS_ENABLED(SYS_DCACHE_OFF))
++		return;
++
++	flush_dcache_all();
++	csr_set(CSR_MHCR, MHCR_DE | MHCR_WB | MHCR_WA | MHCR_RS | MHCR_BPE |
++		MHCR_L0BTB | MHCR_IBPE | MHCR_WBR);
++	dsb();
++	isb();
++}
++
++void dcache_disable(void)
++{
++	dsb();
++	isb();
++	flush_dcache_all();
++	csr_clear(CSR_MHCR, MHCR_DE);
++	dsb();
++	isb();
++}
++
++int dcache_status(void)
++{
++	return !!(csr_read(CSR_MHCR) & MHCR_DE);
++}
++
++void enable_caches(void)
++{
++	icache_enable();
++	dcache_enable();
++}
++
++/*
++ * Hand the next stage (OpenSBI, then Linux) a quiet hart: caches flushed
++ * and off, L2 flushed, then the C908 performance CSRs the vendor sets for
++ * its kernel.
++ */
+ int cleanup_before_linux(void)
+ {
++	flush_dcache_all();
++	icache_disable();
++	dcache_disable();
++	l2cache_flush_invalidate();
++	k230_cpu_perf_setup();
++
+ 	return 0;
+ }

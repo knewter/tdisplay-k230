@@ -1,0 +1,183 @@
+From 9a18aa5c491335ae5d41661d17e215d3023c17fd Mon Sep 17 00:00:00 2001
+From: x <x@x>
+Date: Fri, 30 Oct 2026 10:12:14 -0500
+Subject: [PATCH 3/6] mmc: add Canaan K230 SDHCI host (SD path)
+
+Adds SDHCI_QUIRK_FORCE_PROG_CLOCK_MODE and a small DWC MSHC driver derived
+from the SD path of the vendor's snps_sdhci.c.
+---
+ drivers/mmc/Kconfig      |   7 +++
+ drivers/mmc/Makefile     |   1 +
+ drivers/mmc/k230_sdhci.c | 105 +++++++++++++++++++++++++++++++++++++++
+ drivers/mmc/sdhci.c      |   2 +
+ include/sdhci.h          |   2 +
+ 5 files changed, 117 insertions(+)
+ create mode 100644 drivers/mmc/k230_sdhci.c
+
+diff --git a/drivers/mmc/Kconfig b/drivers/mmc/Kconfig
+index f9f7aa5cf9..636d7163bd 100644
+--- a/drivers/mmc/Kconfig
++++ b/drivers/mmc/Kconfig
+@@ -711,6 +711,13 @@ config MMC_SDHCI_S5P
+ 
+ 	  If unsure, say N.
+ 
++config MMC_SDHCI_K230
++	bool "SDHCI support for the Canaan K230 SoC"
++	depends on MMC_SDHCI
++	help
++	  Synopsys DWC MSHC as integrated in the Canaan K230 (SD path only;
++	  the eMMC PHY configuration is not supported).
++
+ config MMC_SDHCI_SNPS
+ 	bool "Synopsys DesignWare SDHCI controller"
+ 	depends on MMC_SDHCI
+diff --git a/drivers/mmc/Makefile b/drivers/mmc/Makefile
+index a23336d7d8..65fa7bb81a 100644
+--- a/drivers/mmc/Makefile
++++ b/drivers/mmc/Makefile
+@@ -71,6 +71,7 @@ obj-$(CONFIG_MMC_SDHCI_ROCKCHIP)	+= rockchip_sdhci.o
+ obj-$(CONFIG_MMC_SDHCI_ADI)		+= adi_sdhci.o
+ obj-$(CONFIG_MMC_SDHCI_S5P)		+= s5p_sdhci.o
+ obj-$(CONFIG_MMC_SDHCI_SNPS)		+= snps_sdhci.o
++obj-$(CONFIG_MMC_SDHCI_K230)		+= k230_sdhci.o
+ obj-$(CONFIG_MMC_SDHCI_STI)		+= sti_sdhci.o
+ obj-$(CONFIG_MMC_SDHCI_TANGIER)		+= tangier_sdhci.o
+ obj-$(CONFIG_MMC_SDHCI_TEGRA)		+= tegra_mmc.o
+diff --git a/drivers/mmc/k230_sdhci.c b/drivers/mmc/k230_sdhci.c
+new file mode 100644
+index 0000000000..33e3998599
+--- /dev/null
++++ b/drivers/mmc/k230_sdhci.c
+@@ -0,0 +1,105 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * Canaan K230 SD/MMC host (Synopsys DWC MSHC, SDHCI-compatible).
++ *
++ * Derived from the SD path of Canaan's SDK U-Boot 2022.10 overlay
++ * (drivers/mmc/snps_sdhci.c and the sdhci.c hunks, read at
++ * kendryte/k230_linux_sdk 1104236): probe from a fixed clock, force the
++ * programmable clock mode bit on every divisor write, and clear the vendor
++ * MSHC_CTRL byte at 0x508 after each reset. The eMMC PHY path (mmc0,
++ * "have-emmc-phy") is not ported: this board boots from the SD slot on mmc1
++ * and nothing in the boot path touches mmc0. Linux's SDHCI series for this
++ * SoC (Jiayu Du, linux-riscv, March 2026, v5) is the register reference if
++ * that path is wanted later.
++ *
++ * openspec/changes/the-board-boots-a-modern-u-boot.
++ */
++
++#include <clk.h>
++#include <dm.h>
++#include <sdhci.h>
++#include <dm/device_compat.h>
++
++#define K230_MSHC_CTRL		0x508
++
++struct k230_sdhci_plat {
++	struct mmc_config cfg;
++	struct mmc mmc;
++};
++
++static int k230_sdhci_set_ios_post(struct sdhci_host *host)
++{
++	/* The vendor clears this vendor-area byte after every reset. */
++	sdhci_writeb(host, 0x0, K230_MSHC_CTRL);
++
++	return 0;
++}
++
++static const struct sdhci_ops k230_sdhci_ops = {
++	.set_ios_post	= k230_sdhci_set_ios_post,
++};
++
++static int k230_sdhci_probe(struct udevice *dev)
++{
++	struct mmc_uclass_priv *upriv = dev_get_uclass_priv(dev);
++	struct k230_sdhci_plat *plat = dev_get_plat(dev);
++	struct sdhci_host *host = dev_get_priv(dev);
++	struct clk clk;
++	int ret;
++
++	ret = clk_get_by_index(dev, 0, &clk);
++	if (ret)
++		return ret;
++
++	host->max_clk = clk_get_rate(&clk);
++	if (IS_ERR_VALUE(host->max_clk))
++		return host->max_clk;
++
++	host->mmc = &plat->mmc;
++	host->mmc->dev = dev;
++	host->mmc->priv = host;
++	host->ops = &k230_sdhci_ops;
++	host->quirks |= SDHCI_QUIRK_FORCE_PROG_CLOCK_MODE;
++	upriv->mmc = host->mmc;
++
++	ret = sdhci_setup_cfg(&plat->cfg, host, plat->cfg.f_max, 400000);
++	if (ret)
++		return ret;
++
++	return sdhci_probe(dev);
++}
++
++static int k230_sdhci_of_to_plat(struct udevice *dev)
++{
++	struct k230_sdhci_plat *plat = dev_get_plat(dev);
++	struct sdhci_host *host = dev_get_priv(dev);
++
++	host->name = dev->name;
++	host->ioaddr = dev_read_addr_ptr(dev);
++
++	return mmc_of_parse(dev, &plat->cfg);
++}
++
++static int k230_sdhci_bind(struct udevice *dev)
++{
++	struct k230_sdhci_plat *plat = dev_get_plat(dev);
++
++	return sdhci_bind(dev, &plat->mmc, &plat->cfg);
++}
++
++static const struct udevice_id k230_sdhci_ids[] = {
++	{ .compatible = "canaan,k230-dwcmshc" },
++	{ }
++};
++
++U_BOOT_DRIVER(k230_sdhci) = {
++	.name		= "k230_sdhci",
++	.id		= UCLASS_MMC,
++	.of_match	= k230_sdhci_ids,
++	.of_to_plat	= k230_sdhci_of_to_plat,
++	.ops		= &sdhci_ops,
++	.bind		= k230_sdhci_bind,
++	.probe		= k230_sdhci_probe,
++	.priv_auto	= sizeof(struct sdhci_host),
++	.plat_auto	= sizeof(struct k230_sdhci_plat),
++};
+diff --git a/drivers/mmc/sdhci.c b/drivers/mmc/sdhci.c
+index 962a99cd05..a701e93012 100644
+--- a/drivers/mmc/sdhci.c
++++ b/drivers/mmc/sdhci.c
+@@ -464,6 +464,8 @@ int sdhci_set_clock(struct mmc *mmc, unsigned int clock)
+ 	clk |= ((div & SDHCI_DIV_HI_MASK) >> SDHCI_DIV_MASK_LEN)
+ 		<< SDHCI_DIVIDER_HI_SHIFT;
+ 	clk |= SDHCI_CLOCK_INT_EN;
++	if (host->quirks & SDHCI_QUIRK_FORCE_PROG_CLOCK_MODE)
++		clk |= SDHCI_PROG_CLOCK_MODE;
+ 	sdhci_writew(host, clk, SDHCI_CLOCK_CONTROL);
+ 
+ 	/* Wait max 20 ms */
+diff --git a/include/sdhci.h b/include/sdhci.h
+index fb847821d5..26a83bd086 100644
+--- a/include/sdhci.h
++++ b/include/sdhci.h
+@@ -256,6 +256,8 @@
+ #define SDHCI_QUIRK_SUPPORT_SINGLE	(1 << 10)
+ /* Capability register bit-63 indicates HS400 support */
+ #define SDHCI_QUIRK_CAPS_BIT63_FOR_HS400	BIT(11)
++/* Canaan K230 DWC MSHC: set Programmable Clock Mode on every divisor write. */
++#define SDHCI_QUIRK_FORCE_PROG_CLOCK_MODE	BIT(12)
+ 
+ /* to make gcc happy */
+ struct sdhci_host;

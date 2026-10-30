@@ -75,18 +75,17 @@ stage says otherwise (layout: `nix/stage1.nix` `layout`).
 
 ### Stage a0 - run the modern U-Boot from RAM (no write)
 
-Load the new U-Boot binary from the card's `/boot` (or over ums-less
-means: the running 2022.10 U-Boot can `ext4load` it) to a RAM address, quiesce
-caches the way the vendor `k230_boot_uboot_uimage` does, and `go` to it. A
-power cycle or reset returns to the 2022.10 on the card. Nothing on the card
-changes except one extra file on `/boot` (a write through Linux, not boot
-firmware). The binary is the same image as stage a; it is linked at
-`TEXT_BASE=0x0` and relocates, so it is loaded at a scratch address only if
-position-independent loading is proven by the host build (`readelf`/`PIE`
-check); otherwise a0 is replaced by stage a with the card-reader rollback.
-Open question recorded, not assumed: the RAM-trial needs the old U-Boot to
-leave `0x0` unused after its own relocation, which task 3.1 checks from the
-2022.10 `bdinfo` on the board (read-only).
+Build the same U-Boot a second time linked at `CONFIG_TEXT_BASE=0x4000000`
+(`.#uboot-k230-modern-trial`), `ext4load` it from `/boot` into RAM at that
+address from the running 2022.10 prompt, evict the data cache with the
+32 MiB `crc32` read (memory note `k230-uboot-console-quirks`: there is no
+`dcache` command), and `go 0x4000000`. `go` passes `a0 = 0`, the boot hart the
+vendor SPL also passes. It is linked away from `0x0` on purpose: the running
+2022.10 image executed from `0x0` before relocating, so its instruction-cache
+lines for that range may be stale. A power cycle or reset returns to the
+2022.10 on the card; the only change on the card is two inert files on
+`/boot` (written through Linux, not boot firmware). Not run yet.
+<!-- UNVERIFIED: that 2022.10's `go` hands the new image a clean enough hart state (caches, MXSTATUS) is unproven; the first trial is the test. -->
 
 - Proof: console transcript (CH342 console capture) showing the
   `U-Boot 2026.10` banner, DRAM size, `mmc list`, `mmc info`, `ext4ls mmc 1:1`,
@@ -158,6 +157,76 @@ Linux, or `ext4load`/`ext4write` is unavailable so reader or ums).
   `nix/c908-bitmanip-probe.nix` pattern) showing `MAEE=0`, and the kernel
   booting to the shell with the compositor running.
 - Recovery: put the previous `fw_jump_add_uboot_head.bin` back.
+
+## Stage a: what the host build found (2026-10-30)
+
+Findings from porting, all from reading the upstream tag and building it:
+
+- Upstream's dwc2 gadget driver already carries the bind-time `dr_mode`
+  guard that this project's 2022.10 patches 0002/0003 added, so with
+  `usb0` `dr_mode = "peripheral"` and `usb1` `dr_mode = "host"` the
+  host/gadget collision that blanked USB host under 2022.10 needs no
+  patch. What upstream lacks: the gadget Kconfig is `depends on ARM` and the
+  source includes `asm/mach-types.h` unconditionally; both are lifted for
+  RISC-V (one Kconfig line, one `#ifdef`).
+- The USB PHY is a clean port, not a quirk: Linux 7.3's
+  `drivers/phy/canaan/phy-k230-usb.c` evaluates its field macros to
+  `CTL0 = 0x0033881b` and `CTL1 = 0x005e66a0`, the same constants the vendor
+  U-Boot writes in `harts_early_init` (checked with a script on the host,
+  2026-10-30), and sets the data-line pull-downs on port 1 (host) and clears
+  them on port 0 (device), as the vendor `dwc2.c`/`dwc2_udc_otg.c` hunks do.
+  It is a `UCLASS_PHY` driver on the `canaan,k230-usb-phy` binding at
+  `0x91585000`; the dwc2 host and gadget drivers power it through `phys`.
+- Upstream's `snps_sdhci.c` is TH1520-specific (PHY setup in
+  `set_ios_post`, eMMC-oriented) and has no K230 compatible. Rather than
+  graft the vendor PHY tables onto it, stage a adds a small SD-only driver
+  (`canaan,k230-dwcmshc`, `MMC_SDHCI_K230`) that reproduces what the vendor
+  does for `mmc1`: the programmable-clock-mode bit on every divisor write
+  (a new `SDHCI_QUIRK_FORCE_PROG_CLOCK_MODE`, 3 lines in `sdhci.c`) and the
+  `0x508` byte clear. The eMMC/SDIO controller (`mmc0`, `have-emmc-phy`) is
+  not ported: nothing in the boot path uses it.
+- No clock, reset or pinctrl driver. Peripheral clocks are fixed-clock nodes
+  and pin multiplexing is whatever the unchanged vendor SPL applied from its
+  own device tree (the SPL boots from this SD slot, so those pins are already
+  configured). A later stage b SPL must carry the pin table itself.
+- Cache: upstream selects nothing and leaves the caches off. The port enables
+  I/D cache through the C908 `MHCR`/`MCOR`/`MCCR2`/`MHINT`/`SMPEN` writes and
+  takes range operations from upstream's `SYS_CACHE_THEAD_CMO` (`dcache.cpa`
+  and `dcache.ipa` encodings are identical to the vendor's, checked in the
+  two sources). `cleanup_before_linux()` flushes D-cache, disables both
+  caches, issues `l2cache.ciall` and sets the performance CSRs, the vendor
+  sequence, because upstream's K230 version is empty.
+- `harts_early_init` keeps the vendor's PMP lock (entries 0 and 1 over the
+  PUF/OTP window) behind `CONFIG_K230_PMP_LOCK_OTP`. The vendor OpenSBI 1.4
+  overlay knows to skip locked entries (`sbi_hart_pmp_reserved`); upstream
+  OpenSBI v1.9 does not, and would try to program entries it cannot change.
+  Stage a keeps the lock (OpenSBI 1.4 still follows); stage c must build
+  without it, or port the 80-line PMP-reserved change. Chosen: build without.
+- The splash is Canaan's code unchanged except for this project's existing
+  patches 0004/0005 (staged and applied by `nix/uboot-k230-modern.nix`
+  exactly as `nix/uboot-k230.nix` applies them to 2022.10), plus glue:
+  `common.h` and `sysctl.h` compatibility headers, the GPIO helper
+  (`k230_gpio`), `last_stage_init` as an event hook (it is an event in
+  2026.10), and `ft_board_setup` setting `canaan,stage1-splash`. The
+  framebuffer address comes from `nix/boot-splash.nix` through `extraConfig`.
+- `k230_set_dtb` is ported reduced: it reads `force_dtb`, else `lcd_dtb`,
+  into `$dtb` and saves the environment on change. The vendor's I2C probe of
+  the HDMI/LCD bridges is dropped because every image this repo builds ships
+  `force_dtb` (`nix/sd-image.nix`), which short-circuits the probe.
+- Size: u-boot.bin is 448 122 bytes, about 250 KB gzipped, inside the 1 MiB
+  slot (2022.10's slot used 385 931 bytes including the header).
+- Build: the modern tree builds with nixpkgs' GCC 15.3 with no
+  `-Wno-error=int-conversion` and no compiler pin. The only warnings are an
+  unused function in the vendor `st7701.c`.
+
+Stage c findings: v1.9's `fw_jump.S` has a second knob the 1.4 build did not
+need: `FW_JUMP_FDT_OFFSET` (default `0x2200000`, set in
+`platform/generic/objects.mk`) makes `fw_next_arg1` return
+`_fw_start + 0x2200000` again; it must be emptied on the make command line
+together with `FW_JUMP_FDT_ADDR`, and the derivation asserts `fw_next_arg1`
+compiles to `add a0, a1, zero`. `FW_JUMP_ADDR` resolves to `0x200000` as before
+(disassembly of `fw_next_addr`). The overlay's removal of
+`CONFIG_SERIAL_SEMIHOSTING` from the generic defconfig is kept.
 
 ## Decisions
 

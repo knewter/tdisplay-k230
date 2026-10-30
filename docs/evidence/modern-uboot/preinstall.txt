@@ -1,0 +1,36 @@
+Pre-install read-only capture of the card's boot regions
+========================================================
+Date: 2026-10-30. Evidence class: real board, read-only (SSH to the running
+NixOS system as root; no write to the card; no reboot).
+Commands, each run on the board under the host board lock
+(`flock /tmp/k230-board.lock ssh ... k230 '<command>'`) and streamed to the
+host:
+
+  dd if=/dev/mmcblk1 bs=512K skip=2 count=1      # SPL copy 1,  byte 0x100000
+  dd if=/dev/mmcblk1 bs=512K skip=3 count=1      # SPL copy 2,  byte 0x180000
+  dd if=/dev/mmcblk1 bs=1M   skip=2 count=1      # U-Boot slot, byte 0x200000
+  dd if=/dev/mmcblk1 bs=1M   skip=3 count=1      # environment, byte 0x300000
+  sha256sum /boot/fw_jump_add_uboot_head.bin
+  cat /proc/device-tree/chosen/u-boot,version    # -> 2022.10
+
+Saved to /mnt/MediaVolume/home/jadams/k230-card-backups/stage1-slots-20261030/
+(outside the repository: the environment region contains credentials).
+
+sha256 (full):
+  25521b917baf3c62d03cb84fe283e47042ca88bde614695c13d4c860fed36241  spl-1.5MiB-512K.bin
+  25521b917baf3c62d03cb84fe283e47042ca88bde614695c13d4c860fed36241  spl-1MiB-512K.bin
+  2767348bb2f6b599a325512e3291fce230aa13dd1c12079051523ce6ecd5bdba  uboot-2MiB-1MiB.bin
+  (env-3MiB-1MiB.bin hash withheld with the file; its first 4 bytes
+   bf e8 56 5f are a valid CRC32 header: crc32 of bytes 4..0x1fff = 0x5f56e8bf)
+
+Observations:
+- SPL copies 1 and 2 are byte-identical (25521b91...).
+- The U-Boot slot holds a K230 firmware image (magic `K230`); 385 931 bytes
+  are non-zero, the remaining 662 645 bytes of the 1 MiB window are zero.
+- /boot/fw_jump_add_uboot_head.bin is 270 808 bytes, sha256
+  9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99
+  (the OpenSBI 1.4 pass-through build, docs/evidence/stage1-from-source.txt).
+- Card: /dev/mmcblk1, 15 634 268 160 bytes; p1 /boot 117 440 512, p2 /.
+- /proc/device-tree/chosen contains `canaan,stage1-splash` (the splash
+  handoff the modern U-Boot must reproduce).
+- Kernel 7.3.0-rc5, MemTotal 949 596 kB.

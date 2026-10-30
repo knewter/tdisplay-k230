@@ -36,6 +36,17 @@
         cp ${ubootK230Cpu0IdentityProbe}/spl/u-boot-spl.bin $out/spl/u-boot-spl.bin
       '';
       opensbiK230 = pkgsCross.callPackage ./nix/opensbi-k230.nix { inherit k230Sdk; };
+      ubootK230ModernUpstream = pkgsCross.callPackage ./nix/uboot-k230-modern.nix { inherit k230Sdk; variant = "upstream"; };
+      opensbiK230Modern = pkgsCross.callPackage ./nix/opensbi-k230-modern.nix { };
+      ubootK230Modern = pkgsCross.callPackage ./nix/uboot-k230-modern.nix { inherit k230Sdk; variant = "tdisplay"; };
+      # Stage a: the modern U-Boot proper behind the unchanged vendor-derived
+      # SPL, in the directory layout nix/stage1.nix's packaging reads.
+      ubootK230ModernTrial = pkgsCross.callPackage ./nix/uboot-k230-modern.nix { inherit k230Sdk; variant = "tdisplay"; textBase = "0x4000000"; };
+      ubootK230ModernWithSpl = pkgs.runCommand "k230-modern-uboot-with-vendor-spl" { } ''
+        mkdir -p $out/spl
+        cp ${ubootK230Modern}/u-boot.bin $out/u-boot.bin
+        cp ${ubootK230}/spl/u-boot-spl.bin $out/spl/u-boot-spl.bin
+      '';
       stage1 = pkgs.callPackage ./nix/stage1.nix { inherit k230Sdk ubootK230 opensbiK230; };
 
       # Only under --impure: a directory holding a vendor-compiled u-boot.bin
@@ -912,6 +923,24 @@
         #   nix build .#stage1          the five files the card carries
         k230-sdk-src = k230Sdk;
         uboot-k230 = ubootK230;
+        # the-board-boots-a-modern-u-boot: upstream v2026.10, upstream's own defconfig.
+        uboot-k230-modern-upstream = ubootK230ModernUpstream;
+        uboot-k230-modern = ubootK230Modern;
+        # Stage a0: the same U-Boot linked at 0x4000000, for `ext4load` + `go`
+        # from the running 2022.10 U-Boot. No card write of boot firmware.
+        uboot-k230-modern-trial = ubootK230ModernTrial;
+        # The five stage-1 files with the modern U-Boot slot: fn_ug_u-boot.bin
+        # is new, fn_u-boot-spl.bin / env.env / fw_jump* are the .#stage1 bytes.
+        stage1-modern = pkgs.runCommand "k230-stage1-modern" { } ''
+          pk=${stage1.packagingOf { ubootDir = ubootK230ModernWithSpl; name = "k230-stage1-modern-packaging"; }}
+          mkdir -p $out
+          cp $pk/fn_u-boot-spl.bin $pk/fn_ug_u-boot.bin ${stage1.env}/env.env ${stage1.env}/tdisplay.env \
+             ${stage1.fwJump}/fw_jump.bin ${stage1.fwJump}/fw_jump_add_uboot_head.bin $out/
+          (cd $out && sha256sum fn_u-boot-spl.bin fn_ug_u-boot.bin env.env fw_jump.bin fw_jump_add_uboot_head.bin | tee SHA256SUMS)
+          sz=$(stat -c %s $out/fn_ug_u-boot.bin)
+          echo "fn_ug_u-boot.bin: $sz bytes (slot 1048576)"
+          [ "$sz" -lt 1048576 ] || { echo "error: U-Boot slot overflow" >&2; exit 1; }
+        '';
         # Opt-in stage-1 Game of Life U-Boot; build-only until a reviewed
         # install procedure exists. Not part of stage1 or any image.
         uboot-k230-boot-life = ubootK230BootLife;
@@ -925,6 +954,8 @@
           ubootDir = ubootK230Cpu0IdentitySPL;
         };
         opensbi-k230 = opensbiK230;
+        # Stage c: OpenSBI v1.9 + the MAEE quirk (not yet on any card).
+        opensbi-k230-modern = opensbiK230Modern;
         fwJump = stage1.fwJump;
         stage1 = stage1.built;
         # The packaging alone. Over this flake's own U-Boot by default; under

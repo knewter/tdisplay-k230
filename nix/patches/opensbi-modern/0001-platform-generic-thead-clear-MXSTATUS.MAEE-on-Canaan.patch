@@ -1,0 +1,126 @@
+From b2472980d50d65dbc6df993829e4e2b4babda0d5 Mon Sep 17 00:00:00 2001
+From: x <x@x>
+Date: Fri, 30 Oct 2026 10:31:37 -0500
+Subject: [PATCH] platform: generic: thead: clear MXSTATUS.MAEE on Canaan K230
+
+Forward-port of the vendor overlay's quirk; upstream matches
+canaan,kendryte-k230 with the PMU quirk only.
+---
+ platform/generic/include/thead/c9xx_encoding.h   |  1 +
+ platform/generic/include/thead/c9xx_errata.h     |  6 ++++++
+ platform/generic/thead/objects.mk                |  1 +
+ platform/generic/thead/thead-generic.c           | 16 +++++++++++++++-
+ platform/generic/thead/thead_c9xx_disable_maee.c | 16 ++++++++++++++++
+ 5 files changed, 39 insertions(+), 1 deletion(-)
+ create mode 100644 platform/generic/thead/thead_c9xx_disable_maee.c
+
+diff --git a/platform/generic/include/thead/c9xx_encoding.h b/platform/generic/include/thead/c9xx_encoding.h
+index a45b171..f107029 100644
+--- a/platform/generic/include/thead/c9xx_encoding.h
++++ b/platform/generic/include/thead/c9xx_encoding.h
+@@ -3,6 +3,7 @@
+ 
+ /* T-HEAD C9xx M mode CSR.  */
+ #define THEAD_C9XX_CSR_MXSTATUS		0x7c0
++#define THEAD_C9XX_MXSTATUS_MAEE	(_UL(1) << 21)
+ #define THEAD_C9XX_CSR_MHCR		0x7c1
+ #define THEAD_C9XX_CSR_MCOR		0x7c2
+ #define THEAD_C9XX_CSR_MCCR2		0x7c3
+diff --git a/platform/generic/include/thead/c9xx_errata.h b/platform/generic/include/thead/c9xx_errata.h
+index 40c1587..78f0fad 100644
+--- a/platform/generic/include/thead/c9xx_errata.h
++++ b/platform/generic/include/thead/c9xx_errata.h
+@@ -8,7 +8,13 @@
+  */
+ #define THEAD_QUIRK_ERRATA_TLB_FLUSH		BIT(0)
+ #define THEAD_QUIRK_ERRATA_THEAD_PMU		BIT(1)
++/**
++ * Clear MXSTATUS.MAEE so the standard page-table attribute bits mean what
++ * an upstream kernel expects (Canaan K230 C908).
++ */
++#define THEAD_QUIRK_ERRATA_DISABLE_MAEE		BIT(2)
+ 
+ void thead_register_tlb_flush_trap_handler(void);
++void thead_disable_maee(void);
+ 
+ #endif // __RISCV_THEAD_C9XX_ERRATA_H____
+diff --git a/platform/generic/thead/objects.mk b/platform/generic/thead/objects.mk
+index 84f9faf..5f697ae 100644
+--- a/platform/generic/thead/objects.mk
++++ b/platform/generic/thead/objects.mk
+@@ -9,6 +9,7 @@ platform-objs-$(CONFIG_THEAD_C9XX_PMU) += thead/thead_c9xx_pmu.o
+ 
+ platform-objs-$(CONFIG_THEAD_C9XX_ERRATA) += thead/thead_c9xx_tlb_trap_handler.o
+ platform-objs-$(CONFIG_THEAD_C9XX_ERRATA) += thead/thead_c9xx_errata_tlb_flush.o
++platform-objs-$(CONFIG_PLATFORM_THEAD) += thead/thead_c9xx_disable_maee.o
+ 
+ carray-platform_override_modules-$(CONFIG_PLATFORM_THEAD) += thead_generic
+ platform-objs-$(CONFIG_PLATFORM_THEAD) += thead/thead-generic.o
+diff --git a/platform/generic/thead/thead-generic.c b/platform/generic/thead/thead-generic.c
+index fef0871..d3161af 100644
+--- a/platform/generic/thead/thead-generic.c
++++ b/platform/generic/thead/thead-generic.c
+@@ -26,6 +26,14 @@ static int thead_tlb_flush_early_init(bool cold_boot)
+ 	return generic_early_init(cold_boot);
+ }
+ 
++static int thead_maee_early_init(bool cold_boot)
++{
++	/* Every hart: MXSTATUS is per hart. */
++	thead_disable_maee();
++
++	return generic_early_init(cold_boot);
++}
++
+ static int thead_pmu_extensions_init(bool cold_boot)
+ {
+ 	int rc;
+@@ -46,6 +54,8 @@ static int thead_generic_platform_init(const void *fdt, int nodeoff,
+ 
+ 	if (quirks->errata & THEAD_QUIRK_ERRATA_TLB_FLUSH)
+ 		generic_platform_ops.early_init = thead_tlb_flush_early_init;
++	if (quirks->errata & THEAD_QUIRK_ERRATA_DISABLE_MAEE)
++		generic_platform_ops.early_init = thead_maee_early_init;
+ 	if (quirks->errata & THEAD_QUIRK_ERRATA_THEAD_PMU)
+ 		generic_platform_ops.extensions_init = thead_pmu_extensions_init;
+ 
+@@ -56,12 +66,16 @@ static const struct thead_generic_quirks thead_th1520_quirks = {
+ 	.errata = THEAD_QUIRK_ERRATA_TLB_FLUSH | THEAD_QUIRK_ERRATA_THEAD_PMU,
+ };
+ 
++static const struct thead_generic_quirks thead_k230_quirks = {
++	.errata = THEAD_QUIRK_ERRATA_THEAD_PMU | THEAD_QUIRK_ERRATA_DISABLE_MAEE,
++};
++
+ static const struct thead_generic_quirks thead_pmu_quirks = {
+ 	.errata = THEAD_QUIRK_ERRATA_THEAD_PMU,
+ };
+ 
+ static const struct fdt_match thead_generic_match[] = {
+-	{ .compatible = "canaan,kendryte-k230", .data = &thead_pmu_quirks },
++	{ .compatible = "canaan,kendryte-k230", .data = &thead_k230_quirks },
+ 	{ .compatible = "sophgo,cv1800b", .data = &thead_pmu_quirks },
+ 	{ .compatible = "sophgo,cv1812h", .data = &thead_pmu_quirks },
+ 	{ .compatible = "sophgo,sg2000", .data = &thead_pmu_quirks },
+diff --git a/platform/generic/thead/thead_c9xx_disable_maee.c b/platform/generic/thead/thead_c9xx_disable_maee.c
+new file mode 100644
+index 0000000..3a9b472
+--- /dev/null
++++ b/platform/generic/thead/thead_c9xx_disable_maee.c
+@@ -0,0 +1,16 @@
++/*
++ * SPDX-License-Identifier: BSD-2-Clause
++ *
++ * Forward-port of Canaan's K230 OpenSBI 1.4 overlay
++ * (platform/generic/thead/thead_c9xx_disable_maee.c, Yangyu Chen),
++ * which upstream's thead-generic.c lacks for canaan,kendryte-k230.
++ */
++
++#include <sbi/riscv_asm.h>
++#include <thead/c9xx_encoding.h>
++#include <thead/c9xx_errata.h>
++
++void thead_disable_maee(void)
++{
++	csr_clear(THEAD_C9XX_CSR_MXSTATUS, THEAD_C9XX_MXSTATUS_MAEE);
++}

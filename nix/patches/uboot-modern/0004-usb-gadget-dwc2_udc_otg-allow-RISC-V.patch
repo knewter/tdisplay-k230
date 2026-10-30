@@ -1,0 +1,39 @@
+From 51fe9a0b90466d42c2bd03bab9767f8f38fa0d3d Mon Sep 17 00:00:00 2001
+From: x <x@x>
+Date: Fri, 30 Oct 2026 10:12:15 -0500
+Subject: [PATCH 4/6] usb: gadget: dwc2_udc_otg: allow RISC-V
+
+The driver is ARM-only by Kconfig dependency and an unconditional
+asm/mach-types.h include; neither is needed on RISC-V (K230 J3 device mode).
+---
+ drivers/usb/gadget/Kconfig        | 2 +-
+ drivers/usb/gadget/dwc2_udc_otg.c | 2 ++
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
+index e42d5a4369..6c14e98e61 100644
+--- a/drivers/usb/gadget/Kconfig
++++ b/drivers/usb/gadget/Kconfig
+@@ -109,7 +109,7 @@ config USB_GADGET_AT91
+ 
+ config USB_GADGET_DWC2_OTG
+ 	bool "DesignWare USB2.0 HS OTG controller (gadget mode)"
+-	depends on ARM
++	depends on ARM || RISCV
+ 	select USB_GADGET_DUALSPEED
+ 	help
+ 	  The Designware USB2.0 high-speed gadget controller
+diff --git a/drivers/usb/gadget/dwc2_udc_otg.c b/drivers/usb/gadget/dwc2_udc_otg.c
+index 570fed347c..9bab43b6d0 100644
+--- a/drivers/usb/gadget/dwc2_udc_otg.c
++++ b/drivers/usb/gadget/dwc2_udc_otg.c
+@@ -42,7 +42,9 @@
+ #include <asm/unaligned.h>
+ #include <asm/io.h>
+ 
++#ifdef CONFIG_ARM
+ #include <asm/mach-types.h>
++#endif
+ 
+ #include <power/regulator.h>
+ 

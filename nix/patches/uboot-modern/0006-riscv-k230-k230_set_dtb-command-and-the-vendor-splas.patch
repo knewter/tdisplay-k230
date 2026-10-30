@@ -1,0 +1,368 @@
+From b536aa3ec2b6d930b99911e303027aea411cf32b Mon Sep 17 00:00:00 2001
+From: x <x@x>
+Date: Fri, 30 Oct 2026 10:30:23 -0500
+Subject: [PATCH 6/6] riscv: k230: k230_set_dtb command and the vendor splash
+ glue
+
+k230_set_dtb is a reduced port of the vendor command. The RM69A10 splash
+sources are Canaan's, copied in at build time by the Nix derivation; this
+commit carries only the glue: compatibility headers, the GPIO helper, the
+last-stage-init event, the /chosen canaan,stage1-splash property and the
+Kconfig options.
+---
+ board/canaan/k230_canmv/Kconfig             | 37 ++++++++++++
+ board/canaan/k230_canmv/Makefile            |  5 ++
+ board/canaan/k230_canmv/board.c             | 49 ++++++++++++++++
+ board/canaan/k230_canmv/include/common.h    | 18 ++++++
+ board/canaan/k230_canmv/include/sysctl.h    | 17 ++++++
+ board/canaan/k230_canmv/k230_board_common.h |  7 +++
+ board/canaan/k230_canmv/k230_gpio.c         | 62 +++++++++++++++++++++
+ board/canaan/k230_canmv/k230_set_dtb.c      | 61 ++++++++++++++++++++
+ board/canaan/k230_canmv/logo/Makefile       |  6 ++
+ configs/k230_tdisplay_defconfig             |  4 ++
+ 10 files changed, 266 insertions(+)
+ create mode 100644 board/canaan/k230_canmv/include/common.h
+ create mode 100644 board/canaan/k230_canmv/include/sysctl.h
+ create mode 100644 board/canaan/k230_canmv/k230_board_common.h
+ create mode 100644 board/canaan/k230_canmv/k230_gpio.c
+ create mode 100644 board/canaan/k230_canmv/k230_set_dtb.c
+ create mode 100644 board/canaan/k230_canmv/logo/Makefile
+
+diff --git a/board/canaan/k230_canmv/Kconfig b/board/canaan/k230_canmv/Kconfig
+index e793e9993e..078feaa281 100644
+--- a/board/canaan/k230_canmv/Kconfig
++++ b/board/canaan/k230_canmv/Kconfig
+@@ -12,6 +12,43 @@ config SYS_CPU
+ config TEXT_BASE
+ 	default 0x0
+ 
++config CMD_K230_SET_DTB
++	bool "k230_set_dtb: choose the DTB file from the boot partition"
++	depends on CMD_EXT4 && ENV_IS_IN_MMC
++	help
++	  Vendor-compatible command used by this project's `blinux`
++	  environment variable (firmware/stage1/tdisplay.env).
++
++config K230_BARE_DISP_LOGO
++	bool "Light the RM69A10 panel and show /logo.xrgb from U-Boot"
++	select LAST_STAGE_INIT
++	select OF_BOARD_SETUP
++	help
++	  Bare-metal DSI/VO bring-up and splash from Canaan's SDK U-Boot,
++	  patched for the RM69A10 568x1232 panel. Needs the vendor sources
++	  copied in by nix/uboot-k230-modern.nix (board/canaan/k230_canmv/logo).
++
++config K230_BARE_DISP_LOGO_RM69A10
++	bool "RM69A10 568x1232 panel"
++	depends on K230_BARE_DISP_LOGO
++	default y
++
++config K230_BARE_DISP_LOGO_DF
++	bool "df screen"
++	depends on K230_BARE_DISP_LOGO
++
++config K230_BARE_DISP_LOGO_ILI9881
++	bool "ili9881 screen"
++	depends on K230_BARE_DISP_LOGO
++
++config K230_BARE_DISP_LOGO_FB_ADDR
++	hex "Scanout framebuffer address"
++	depends on K230_BARE_DISP_LOGO
++	default 0x10000000
++	help
++	  Must match the reserved-memory node the kernel device tree
++	  declares (nix/boot-splash.nix is the single source).
++
+ config BOARD_SPECIFIC_OPTIONS
+ 	def_bool y
+ 	select CANAAN_K230
+diff --git a/board/canaan/k230_canmv/Makefile b/board/canaan/k230_canmv/Makefile
+index acab631106..588b3c3ad4 100644
+--- a/board/canaan/k230_canmv/Makefile
++++ b/board/canaan/k230_canmv/Makefile
+@@ -2,4 +2,9 @@
+ #
+ # Copyright (c) 2025, Junhui Liu <junhui.liu@pigmoral.tech>
+ 
++subdir-ccflags-y += -I$(srctree)/board/canaan/k230_canmv/include
++ccflags-y += -I$(srctree)/board/canaan/k230_canmv/include
++
+ obj-y += board.o
++obj-$(CONFIG_CMD_K230_SET_DTB) += k230_set_dtb.o
++obj-$(CONFIG_K230_BARE_DISP_LOGO) += k230_gpio.o logo/
+diff --git a/board/canaan/k230_canmv/board.c b/board/canaan/k230_canmv/board.c
+index 7d012df214..5b2cddadb6 100644
+--- a/board/canaan/k230_canmv/board.c
++++ b/board/canaan/k230_canmv/board.c
+@@ -3,3 +3,52 @@
+  * Copyright (c) 2025, Junhui Liu <junhui.liu@pigmoral.tech>
+  */
+ 
++#include <event.h>
++#include <fdt_support.h>
++#include <linux/libfdt.h>
++
++#ifdef CONFIG_K230_BARE_DISP_LOGO
++int k230_display_logo_is_ready(void);
++int k230_display_logo(void);
++
++/*
++ * The vendor tree called last_stage_init() directly; in this U-Boot it is an
++ * event. Runs after the environment is loaded and storage is up, because the
++ * splash reads /logo.xrgb from the boot partition.
++ */
++static int k230_last_stage_init(void)
++{
++	k230_display_logo();
++
++	return 0;
++}
++EVENT_SPY_SIMPLE(EVT_LAST_STAGE_INIT, k230_last_stage_init);
++
++/*
++ * Tell the kernel that stage 1 lit the panel and what is on it: the
++ * `canaan,stage1-splash` property on /chosen, the contract
++ * display/panel and nix/patches/mainline/ read (openspec archive
++ * 2026-10-20-the-mainline-kernel-keeps-the-boot-splash). Cleared when a
++ * reused FDT comes from an attempt that failed.
++ */
++int ft_board_setup(void *blob, struct bd_info *bd)
++{
++	int chosen = fdt_path_offset(blob, "/chosen");
++
++	if (!k230_display_logo_is_ready()) {
++		if (chosen >= 0)
++			fdt_delprop(blob, chosen, "canaan,stage1-splash");
++		return 0;
++	}
++
++	chosen = fdt_find_or_add_subnode(blob, 0, "chosen");
++	if (chosen < 0) {
++		printf("cannot add /chosen for stage-1 splash: %d\n", chosen);
++		return 0;
++	}
++	if (fdt_setprop_empty(blob, chosen, "canaan,stage1-splash"))
++		printf("cannot set stage-1 splash flag\n");
++
++	return 0;
++}
++#endif
+diff --git a/board/canaan/k230_canmv/include/common.h b/board/canaan/k230_canmv/include/common.h
+new file mode 100644
+index 0000000000..2ac6442f0a
+--- /dev/null
++++ b/board/canaan/k230_canmv/include/common.h
+@@ -0,0 +1,18 @@
++/* SPDX-License-Identifier: GPL-2.0+ */
++/*
++ * Compatibility for the vendor splash sources (logo/), which include
++ * <common.h>. U-Boot removed that header; this pulls in what they used.
++ */
++#ifndef __K230_COMMON_COMPAT_H__
++#define __K230_COMMON_COMPAT_H__
++
++#include <config.h>
++#include <command.h>
++#include <cpu_func.h>
++#include <env.h>
++#include <linux/delay.h>
++#include <linux/types.h>
++#include <vsprintf.h>
++#include <asm/io.h>
++
++#endif
+diff --git a/board/canaan/k230_canmv/include/sysctl.h b/board/canaan/k230_canmv/include/sysctl.h
+new file mode 100644
+index 0000000000..d1d520f280
+--- /dev/null
++++ b/board/canaan/k230_canmv/include/sysctl.h
+@@ -0,0 +1,17 @@
++/* SPDX-License-Identifier: GPL-2.0+ */
++/*
++ * The few SoC addresses the vendor splash code (logo/) takes from Canaan's
++ * arch/riscv/cpu/k230/{sysctl,platform}.h, which are not ported.
++ */
++#ifndef __K230_SYSCTL_COMPAT_H__
++#define __K230_SYSCTL_COMPAT_H__
++
++#include <asm/io.h>
++#include <linux/types.h>
++
++#define SYSCTL_CLK_BASE_ADDR	0x91100000U
++#define SYSCTL_RST_BASE_ADDR	0x91101000U
++#define SYSCTL_BOOT_BASE_ADDR	0x91102000U
++#define SYSCTL_PWR_BASE_ADDR	0x91103000U
++
++#endif
+diff --git a/board/canaan/k230_canmv/k230_board_common.h b/board/canaan/k230_canmv/k230_board_common.h
+new file mode 100644
+index 0000000000..dcb368fe56
+--- /dev/null
++++ b/board/canaan/k230_canmv/k230_board_common.h
+@@ -0,0 +1,7 @@
++/* SPDX-License-Identifier: GPL-2.0+ */
++#ifndef __K230_BOARD_COMMON_H__
++#define __K230_BOARD_COMMON_H__
++
++int k230_gpio(char opt, int pin, char *value);
++
++#endif
+diff --git a/board/canaan/k230_canmv/k230_gpio.c b/board/canaan/k230_canmv/k230_gpio.c
+new file mode 100644
+index 0000000000..01029b7e2e
+--- /dev/null
++++ b/board/canaan/k230_canmv/k230_gpio.c
+@@ -0,0 +1,62 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * K230 GPIO helper used by the splash code (panel reset and backlight
++ * enable). Verbatim behaviour of Canaan's SDK U-Boot 2022.10
++ * k230_gpio() (board/canaan/common/k230_board_common.c), including its
++ * data-register write in the 'o' case, which the board's reset sequence
++ * was proven against (docs/evidence/boot-splash*).
++ */
++
++#include <asm/io.h>
++#include <linux/types.h>
++#include <stdio.h>
++#include "k230_board_common.h"
++
++#define GPIO_BASE_ADDR0		0x9140B000UL
++#define GPIO_EXT_PORTA		0x50
++
++#define K230_SET_BIT(val, bit) ((val) | (1 << (bit)))
++#define K230_CLER_BIT(val, bit) ((val) & ~(1 << (bit)))
++#define K230_GET_BIT(val, bit) (((val) >> (bit)) & 1)
++
++int k230_gpio(char opt, int pin, char *value)
++{
++	volatile u32 *gpio_dr = (volatile u32 *)(GPIO_BASE_ADDR0 + pin / 32 * 0x1000);
++	volatile u32 *gpio_ddr = gpio_dr + 1;
++	volatile u32 *gpio_value_in =
++		(volatile u32 *)(GPIO_BASE_ADDR0 + GPIO_EXT_PORTA + pin / 32 * 4);
++	u32 reg_org;
++
++	if (pin > 71)
++		return -1;
++
++	if (opt == 's') {
++		if (!value) {
++			printf("value is NULL\n");
++			return -1;
++		}
++		reg_org = *gpio_dr;
++		if (*value == 0)
++			*gpio_dr = K230_CLER_BIT(reg_org, pin % 32);
++		else
++			*gpio_dr = K230_SET_BIT(reg_org, pin % 32);
++	} else if (opt == 'g') {
++		reg_org = *gpio_value_in;
++		*value = K230_GET_BIT(reg_org, pin % 32);
++	} else if (opt == 'i') {
++		reg_org = *gpio_ddr;
++		*gpio_ddr = K230_CLER_BIT(reg_org, pin % 32);
++	} else if (opt == 'o') {
++		reg_org = *gpio_ddr;
++		*gpio_ddr = K230_SET_BIT(reg_org, pin % 32);
++		if (value && *value)
++			*gpio_dr = K230_SET_BIT(reg_org, pin % 32);
++		else if (value && *value == 0)
++			*gpio_dr = K230_CLER_BIT(reg_org, pin % 32);
++	} else {
++		printf("opt %c is invalid\n", opt);
++		return -1;
++	}
++
++	return 0;
++}
+diff --git a/board/canaan/k230_canmv/k230_set_dtb.c b/board/canaan/k230_canmv/k230_set_dtb.c
+new file mode 100644
+index 0000000000..5635faa37a
+--- /dev/null
++++ b/board/canaan/k230_canmv/k230_set_dtb.c
+@@ -0,0 +1,61 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * `k230_set_dtb`: choose the device-tree file name for the `blinux` boot.
++ *
++ * Reduced port of the vendor command (SDK U-Boot 2022.10
++ * board/canaan/common/k230_board_common.c, do_k230_set_dtb): read the file
++ * named by the first of force_dtb, lcd_dtb that exists on the boot
++ * partition (mmc ${mmc_boot_dev_num}:1) into the `dtb` environment variable
++ * and save the environment if that changed it. This image always ships
++ * force_dtb (nix/sd-image.nix), which short-circuits the vendor's display
++ * probing, so the vendor's I2C probe of the HDMI and LCD bridges and its
++ * hdmi_dtb branch are not ported; lcd_dtb is the vendor's own fallback.
++ */
++
++#include <command.h>
++#include <env.h>
++#include <string.h>
++#include <vsprintf.h>
++
++#define K230_DTB_SCRATCH	0x7f00000UL
++
++static int k230_set_dtb_from(const char *file)
++{
++	char cmd[96];
++	char *name = (char *)K230_DTB_SCRATCH;
++	const char *cur;
++
++	snprintf(cmd, sizeof(cmd), "ext4load mmc ${mmc_boot_dev_num}:1 0x%lx %s",
++		 K230_DTB_SCRATCH, file);
++	memset(name, 0, 512);
++	if (run_command(cmd, 0))
++		return -1;
++
++	name[strcspn(name, "\r\n")] = '\0';
++	cur = env_get("dtb");
++	if (cur && !strcmp(cur, name))
++		return 0;
++
++	if (env_set("dtb", name) || env_save()) {
++		printf("dtb env set error\n");
++		return 1;
++	}
++
++	return 0;
++}
++
++static int do_k230_set_dtb(struct cmd_tbl *cmdtp, int flag, int argc,
++			   char *const argv[])
++{
++	if (!k230_set_dtb_from("force_dtb"))
++		return CMD_RET_SUCCESS;
++	if (!k230_set_dtb_from("lcd_dtb"))
++		return CMD_RET_SUCCESS;
++
++	printf("k230_set_dtb: neither force_dtb nor lcd_dtb is readable\n");
++	return CMD_RET_FAILURE;
++}
++
++U_BOOT_CMD(k230_set_dtb, 1, 0, do_k230_set_dtb,
++	   "set the dtb file name from the boot partition",
++	   "reads force_dtb, else lcd_dtb, into $dtb and saves the environment on change");
+diff --git a/board/canaan/k230_canmv/logo/Makefile b/board/canaan/k230_canmv/logo/Makefile
+new file mode 100644
+index 0000000000..d4ad846c82
+--- /dev/null
++++ b/board/canaan/k230_canmv/logo/Makefile
+@@ -0,0 +1,6 @@
++# SPDX-License-Identifier: GPL-2.0+
++#
++# The C files in this directory are copied from Canaan's SDK U-Boot overlay
++# and patched at build time by nix/uboot-k230-modern.nix; they are not in
++# this tree's git history.
++obj-$(CONFIG_K230_BARE_DISP_LOGO) += k230_logo.o st7701.o display_logo.o
+diff --git a/configs/k230_tdisplay_defconfig b/configs/k230_tdisplay_defconfig
+index 1ff6dc31b1..602d34eca0 100644
+--- a/configs/k230_tdisplay_defconfig
++++ b/configs/k230_tdisplay_defconfig
+@@ -50,3 +50,7 @@ CONFIG_CYCLIC=y
+ # CONFIG_EFI_LOADER is not set
+ CONFIG_CMD_IMPORTENV=y
+ CONFIG_CMD_EXPORTENV=y
++CONFIG_CMD_K230_SET_DTB=y
++CONFIG_K230_BARE_DISP_LOGO=y
++CONFIG_K230_BARE_DISP_LOGO_RM69A10=y
++CONFIG_K230_BARE_DISP_LOGO_FB_ADDR=0x10000000

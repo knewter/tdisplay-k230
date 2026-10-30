@@ -1,0 +1,52 @@
+From 219c4705653ae153c7a2b736c48cae297f531357 Mon Sep 17 00:00:00 2001
+From: x <x@x>
+Date: Fri, 30 Oct 2026 10:31:10 -0500
+Subject: [PATCH] riscv: k230: make the PMP lock before OpenSBI optional
+
+---
+ arch/riscv/cpu/k230/Kconfig |  9 +++++++++
+ arch/riscv/cpu/k230/cpu.c   | 13 +++++++++----
+ 2 files changed, 18 insertions(+), 4 deletions(-)
+
+diff --git a/arch/riscv/cpu/k230/Kconfig b/arch/riscv/cpu/k230/Kconfig
+index 6fd2a966aa..964ea2d8b5 100644
+--- a/arch/riscv/cpu/k230/Kconfig
++++ b/arch/riscv/cpu/k230/Kconfig
+@@ -15,3 +15,12 @@ config CANAAN_K230
+ 	imply SYSRESET_SYSCON
+ 	imply PHY_K230_USB
+ 	imply MMC_SDHCI_K230
++
++config K230_PMP_LOCK_OTP
++	bool "Lock PMP entries 0 and 1 over the PUF/OTP window before OpenSBI"
++	default y
++	help
++	  Canaan's SDK U-Boot locks two read-only PMP entries before handing
++	  over. Only the vendor's OpenSBI overlay knows to leave locked
++	  entries alone; an upstream OpenSBI would fail to program them. Say n
++	  when booting upstream OpenSBI.
+diff --git a/arch/riscv/cpu/k230/cpu.c b/arch/riscv/cpu/k230/cpu.c
+index c0e9711415..ebdf849ea7 100644
+--- a/arch/riscv/cpu/k230/cpu.c
++++ b/arch/riscv/cpu/k230/cpu.c
+@@ -80,11 +80,16 @@ void harts_early_init(void)
+ 	/*
+ 	 * Protect the PUF/OTP window from writes, as the SDK's U-Boot does
+ 	 * outside burn-tool builds: pmpaddr0/1 cover 0x91213000 and
+-	 * 0x91214000, 4 KiB each, locked read-only.
++	 * 0x91214000, 4 KiB each, locked read-only. Only for an OpenSBI that
++	 * skips locked entries: the vendor's 1.4 overlay does (its
++	 * sbi_hart_pmp_reserved()), upstream's does not and would try to
++	 * program entries it cannot change.
+ 	 */
+-	csr_write(pmpaddr0, 0x24484dff);
+-	csr_write(pmpaddr1, 0x244851ff);
+-	csr_write(pmpcfg0, 0x9999);
++	if (IS_ENABLED(CONFIG_K230_PMP_LOCK_OTP)) {
++		csr_write(pmpaddr0, 0x24484dff);
++		csr_write(pmpaddr1, 0x244851ff);
++		csr_write(pmpcfg0, 0x9999);
++	}
+ 
+ 	/* SD0 controller: host voltage stable, card write-protect override. */
+ 	writel(readl((void __iomem *)SD0_CTRL) |

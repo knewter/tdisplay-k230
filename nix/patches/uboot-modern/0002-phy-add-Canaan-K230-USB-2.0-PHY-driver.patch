@@ -1,0 +1,167 @@
+From 65f83f0caab159de99db352e2b33aaeb1c7efade Mon Sep 17 00:00:00 2001
+From: x <x@x>
+Date: Fri, 30 Oct 2026 10:12:14 -0500
+Subject: [PATCH 2/6] phy: add Canaan K230 USB 2.0 PHY driver
+
+Port of Linux drivers/phy/canaan/phy-k230-usb.c to the U-Boot PHY uclass.
+---
+ drivers/phy/Kconfig        |   7 +++
+ drivers/phy/Makefile       |   1 +
+ drivers/phy/phy-k230-usb.c | 118 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 126 insertions(+)
+ create mode 100644 drivers/phy/phy-k230-usb.c
+
+diff --git a/drivers/phy/Kconfig b/drivers/phy/Kconfig
+index 89d84df96a..b2c1047b31 100644
+--- a/drivers/phy/Kconfig
++++ b/drivers/phy/Kconfig
+@@ -154,6 +154,13 @@ config STI_USB_PHY
+ 	  used by USB2 and USB3 Host controllers available on
+ 	  STiH407 SoC families.
+ 
++config PHY_K230_USB
++	bool "Canaan K230 USB 2.0 PHY"
++	depends on PHY
++	help
++	  Support for the USB 2.0 PHY control block of the Canaan K230 SoC
++	  (HiSysConfig USB control/test registers).
++
+ config PHY_RCAR_GEN2
+ 	bool "Renesas R-Car Gen2 USB PHY"
+ 	depends on PHY && RCAR_GEN2
+diff --git a/drivers/phy/Makefile b/drivers/phy/Makefile
+index e46c362878..2774dc3408 100644
+--- a/drivers/phy/Makefile
++++ b/drivers/phy/Makefile
+@@ -22,6 +22,7 @@ obj-$(CONFIG_PHY_SANDBOX) += sandbox-phy.o
+ obj-$(CONFIG_$(PHASE_)PIPE3_PHY) += ti-pipe3-phy.o
+ obj-$(CONFIG_AM654_PHY) += phy-ti-am654.o
+ obj-$(CONFIG_STI_USB_PHY) += sti_usb_phy.o
++obj-$(CONFIG_PHY_K230_USB) += phy-k230-usb.o
+ obj-$(CONFIG_PHY_RCAR_GEN2) += phy-rcar-gen2.o
+ obj-$(CONFIG_PHY_RCAR_GEN3) += phy-rcar-gen3.o
+ obj-$(CONFIG_PHY_STM32_USBPHYC) += phy-stm32-usbphyc.o
+diff --git a/drivers/phy/phy-k230-usb.c b/drivers/phy/phy-k230-usb.c
+new file mode 100644
+index 0000000000..b6d4fc3b1d
+--- /dev/null
++++ b/drivers/phy/phy-k230-usb.c
+@@ -0,0 +1,118 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Canaan K230 USB 2.0 PHY.
++ *
++ * Port of the Linux driver drivers/phy/canaan/phy-k230-usb.c (Jiayu Du,
++ * merged for v7.3) onto U-Boot's PHY uclass. Binding:
++ * Documentation/devicetree/bindings/phy/canaan,k230-usb-phy.yaml (one reg
++ * window at the HiSysConfig block, #phy-cells = <1>, the cell is the port
++ * index). The control words are the same ones Canaan's SDK U-Boot writes
++ * from harts_early_init(): CTL0 0x33881b, CTL1 0x5e66a0, which is what the
++ * Linux field macros evaluate to.
++ */
++
++#include <dm.h>
++#include <generic-phy.h>
++#include <asm/io.h>
++#include <dm/device_compat.h>
++#include <linux/bitops.h>
++
++#define K230_USB_PHY_PORTS	2
++
++static const struct {
++	u32 test;
++	u32 ctl;
++} k230_usb_phy_regs[K230_USB_PHY_PORTS] = {
++	{ 0x70, 0xb0 },
++	{ 0x90, 0xb8 },
++};
++
++#define CTL0_OFFSET		0x00
++#define CTL1_OFFSET		0x04
++#define TEST_CTL3_OFFSET	0x0c
++
++#define USB_IDPULLUP0		BIT(4)
++#define USB_DMPULLDOWN0		BIT(8)
++#define USB_DPPULLDOWN0		BIT(9)
++
++#define K230_PHY_CTL0_VAL	0x0033881b
++#define K230_PHY_CTL1_VAL	0x005e66a0
++
++struct k230_usb_phy_priv {
++	void __iomem *base;
++};
++
++static int k230_usb_phy_xlate(struct phy *phy, struct ofnode_phandle_args *args)
++{
++	if (args->args_count != 1 || args->args[0] >= K230_USB_PHY_PORTS)
++		return -EINVAL;
++
++	phy->id = args->args[0];
++
++	return 0;
++}
++
++static int k230_usb_phy_power_on(struct phy *phy)
++{
++	struct k230_usb_phy_priv *priv = dev_get_priv(phy->dev);
++	void __iomem *base = priv->base;
++	u32 val;
++
++	writel(K230_PHY_CTL0_VAL, base + k230_usb_phy_regs[phy->id].ctl + CTL0_OFFSET);
++	writel(K230_PHY_CTL1_VAL, base + k230_usb_phy_regs[phy->id].ctl + CTL1_OFFSET);
++
++	val = readl(base + k230_usb_phy_regs[phy->id].test + TEST_CTL3_OFFSET);
++	val |= USB_IDPULLUP0;
++	/* Port 1 is the host port: pull the data lines down. */
++	if (phy->id == 1)
++		val |= USB_DMPULLDOWN0 | USB_DPPULLDOWN0;
++	else
++		val &= ~(USB_DMPULLDOWN0 | USB_DPPULLDOWN0);
++	writel(val, base + k230_usb_phy_regs[phy->id].test + TEST_CTL3_OFFSET);
++
++	return 0;
++}
++
++static int k230_usb_phy_power_off(struct phy *phy)
++{
++	struct k230_usb_phy_priv *priv = dev_get_priv(phy->dev);
++	void __iomem *base = priv->base;
++	u32 val;
++
++	val = readl(base + k230_usb_phy_regs[phy->id].test + TEST_CTL3_OFFSET);
++	val &= ~(USB_DMPULLDOWN0 | USB_DPPULLDOWN0);
++	writel(val, base + k230_usb_phy_regs[phy->id].test + TEST_CTL3_OFFSET);
++
++	return 0;
++}
++
++static int k230_usb_phy_probe(struct udevice *dev)
++{
++	struct k230_usb_phy_priv *priv = dev_get_priv(dev);
++
++	priv->base = dev_read_addr_ptr(dev);
++	if (!priv->base)
++		return -EINVAL;
++
++	return 0;
++}
++
++static const struct phy_ops k230_usb_phy_ops = {
++	.of_xlate = k230_usb_phy_xlate,
++	.power_on = k230_usb_phy_power_on,
++	.power_off = k230_usb_phy_power_off,
++};
++
++static const struct udevice_id k230_usb_phy_ids[] = {
++	{ .compatible = "canaan,k230-usb-phy" },
++	{ }
++};
++
++U_BOOT_DRIVER(k230_usb_phy) = {
++	.name = "k230_usb_phy",
++	.id = UCLASS_PHY,
++	.of_match = k230_usb_phy_ids,
++	.ops = &k230_usb_phy_ops,
++	.probe = k230_usb_phy_probe,
++	.priv_auto = sizeof(struct k230_usb_phy_priv),
++};
