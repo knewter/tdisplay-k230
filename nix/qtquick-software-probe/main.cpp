@@ -87,6 +87,8 @@ int main(int argc, char **argv) {
   std::setvbuf(stdout, nullptr, _IOFBF, 1 << 16);
   const unsigned long long startMs = nowMs();
   QGuiApplication app(argc, argv);
+  // The wrapper renames the binary (.qtquick-software-probe-wrapped); pin the Wayland app_id.
+  QGuiApplication::setDesktopFileName(QStringLiteral("qtquick-software-probe"));
   std::fprintf(stderr, "qtquick-probe qt=%s platform=%s quick_backend=%s negative=%d\n",
                qVersion(), QGuiApplication::platformName().toUtf8().constData(),
                qgetenv("QT_QUICK_BACKEND").constData(), negative ? 1 : 0);

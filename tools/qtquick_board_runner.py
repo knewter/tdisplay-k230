@@ -44,7 +44,10 @@ class System:
         self.python = sys.executable
 
     def run(self, argv, timeout=30, check=False):
-        res = subprocess.run(argv, text=True, capture_output=True, timeout=timeout)
+        try:
+            res = subprocess.run(argv, text=True, capture_output=True, timeout=timeout)
+        except subprocess.TimeoutExpired:
+            return 124, ""
         if check and res.returncode:
             raise RuntimeError(f"{argv[0]} exited {res.returncode}: {res.stderr.strip()[:200]}")
         return res.returncode, res.stdout
@@ -259,7 +262,7 @@ class Arm:
     def find_window(self):
         app = self.spec["app_id"]
         for w in self.tree_windows():
-            if w.get("app_id") == app:
+            if w.get("app_id") == app or w.get("name") == app:
                 r = w["rect"]
                 return {"x": r["x"], "y": r["y"], "w": r["width"], "h": r["height"], "id": w.get("id"),
                         "floating": w.get("type") == "floating_con", "focused": bool(w.get("focused"))}
@@ -267,7 +270,7 @@ class Arm:
 
     def capture(self, name):
         path = self.dir / f"{name}.png"
-        rc, _ = self.s.run(self.s.shell_env(["grim", "-o", "DSI-1", str(path)]), timeout=40)
+        rc, _ = self.s.run(self.s.shell_env(["grim", "-o", "DSI-1", str(path)]), timeout=90)
         ok = rc == 0 and self.s.exists(path)
         self.record["captures"].append({"name": name, "file": f"{name}.png" if ok else None,
                                         "window": self.find_window(), "mono_s": round(self.s.mono(), 3),
