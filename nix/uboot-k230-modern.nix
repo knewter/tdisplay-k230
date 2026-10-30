@@ -55,7 +55,15 @@ in
   # patches stay byte-identical to the ones the shipped stage 1 builds with;
   # only the .c/.h files are taken. Their glue (Makefile, compatibility
   # headers, event hook, Kconfig) is in nix/patches/uboot-modern/.
-  postPatch = lib.optionalString tdisplay ''
+  #
+  # patchShebangs first, with --build: nixpkgs' buildUBoot postPatch does the
+  # same, but in a riscv64 cross build the default (host) variant finds no
+  # interpreter and leaves scripts/check-local-export on /usr/bin/env, which
+  # then fails in the sandbox (first build, 2026-10-30). Setting postPatch
+  # here replaces nixpkgs' version, so it is repeated.
+  postPatch = ''
+    patchShebangs --build tools scripts
+  '' + lib.optionalString tdisplay ''
     stage=$(mktemp -d)
     mkdir -p $stage/board/canaan/common $stage/arch/riscv/cpu/k230
     cp -r ${overlay}/board/canaan/common/logo $stage/board/canaan/common/
