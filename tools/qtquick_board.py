@@ -78,7 +78,7 @@ def run_remote(py, kind, spec, out_dir, label):
     ssh(f"cat > {spec_path}", stdin=json.dumps(spec))
     remote = f"{shlex.quote(py)} {REMOTE}/runner.py {kind} --spec {spec_path}"
     t0 = time.time()
-    res = locked(SSH + [remote], timeout=int(spec["deadline_s"]) + 120)
+    res = locked(SSH + [remote], timeout=900 + int(spec["deadline_s"]) + 120)
     outcome = {"label": label, "id": spec["id"], "kind": kind, "returncode": res.returncode,
                "wall_s": round(time.time() - t0, 1), "stdout": res.stdout.strip()[-400:],
                "stderr": res.stderr.strip()[-300:], "utc": dt.datetime.now(dt.timezone.utc).strftime("%H:%M:%SZ")}
