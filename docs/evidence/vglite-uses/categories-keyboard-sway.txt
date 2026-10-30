@@ -1,0 +1,25 @@
+## sway: total 7518 ms
+      3035 ms  40.4%  OVER composite into output (pixman composite_over*_0565)
+      1558 ms  20.7%  rotation (k230_turn_*)
+      1090 ms  14.5%  other user code
+      1050 ms  14.0%  kernel (all [k] leaf frames)
+       628 ms   8.4%  RGB565 blit/copy into output (k230_rgb565_blit)
+        70 ms   0.9%  pixman combine/fetch (OVER/bilinear image blit, client)
+        55 ms   0.7%  buffer copy / memset (memcpy, memmove, memset)
+        25 ms   0.3%  path/rect/gradient fill (cairo/tiny-skia fill, rasterise)
+         5 ms   0.1%  text/glyph (pango, harfbuzz, freetype, cairo glyphs)
+## foot:render:1: total 322 ms
+       191 ms  59.4%  kernel (all [k] leaf frames)
+        65 ms  20.3%  other user code
+        60 ms  18.8%  path/rect/gradient fill (cairo/tiny-skia fill, rasterise)
+         5 ms   1.6%  buffer copy / memset (memcpy, memmove, memset)
+## foot: total 246 ms
+       116 ms  46.9%  other user code
+       106 ms  42.9%  kernel (all [k] leaf frames)
+        15 ms   6.1%  text/glyph (pango, harfbuzz, freetype, cairo glyphs)
+         5 ms   2.0%  buffer copy / memset (memcpy, memmove, memset)
+         5 ms   2.0%  path/rect/gradient fill (cairo/tiny-skia fill, rasterise)
+## k230-keyboard-g: total 166 ms
+       116 ms  69.7%  other user code
+        40 ms  24.2%  kernel (all [k] leaf frames)
+        10 ms   6.1%  path/rect/gradient fill (cairo/tiny-skia fill, rasterise)

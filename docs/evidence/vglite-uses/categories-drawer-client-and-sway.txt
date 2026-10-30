@@ -1,0 +1,19 @@
+## sway: total 3925 ms
+      1136 ms  28.9%  rotation (k230_turn_*)
+      1116 ms  28.4%  OVER composite into output (pixman composite_over*_0565)
+       623 ms  15.9%  RGB565 blit/copy into output (k230_rgb565_blit)
+       588 ms  15.0%  kernel (all [k] leaf frames)
+       457 ms  11.7%  other user code
+         5 ms   0.1%  buffer copy / memset (memcpy, memmove, memset)
+## k230-shell-rust: total 2121 ms
+       930 ms  43.8%  path/rect/gradient fill (cairo/tiny-skia fill, rasterise)
+       357 ms  16.8%  kernel (all [k] leaf frames)
+       307 ms  14.5%  other user code
+       271 ms  12.8%  buffer copy / memset (memcpy, memmove, memset)
+       231 ms  10.9%  text/glyph (pango, harfbuzz, freetype, cairo glyphs)
+        25 ms   1.2%  pixman combine/fetch (OVER/bilinear image blit, client)
+## curl: total 251 ms
+       181 ms  72.0%  other user code
+        35 ms  14.0%  kernel (all [k] leaf frames)
+        25 ms  10.0%  path/rect/gradient fill (cairo/tiny-skia fill, rasterise)
+        10 ms   4.0%  buffer copy / memset (memcpy, memmove, memset)

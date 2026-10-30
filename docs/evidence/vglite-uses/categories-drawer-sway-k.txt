@@ -1,0 +1,7 @@
+## sway: total 2854 ms
+       849 ms  29.8%  OVER composite into output (pixman composite_over*_0565)
+       819 ms  28.7%  rotation (k230_turn_*)
+       462 ms  16.2%  kernel (all [k] leaf frames)
+       422 ms  14.8%  RGB565 blit/copy into output (k230_rgb565_blit)
+       286 ms  10.0%  other user code
+        15 ms   0.5%  buffer copy / memset (memcpy, memmove, memset)
