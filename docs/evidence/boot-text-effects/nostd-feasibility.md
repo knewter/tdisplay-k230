@@ -77,7 +77,7 @@ and is unusable here). Doubles are then software: `compiler_builtins` supplies
 `__adddf3`, `__muldf3` and friends, and IEEE basic operations are correctly rounded either way,
 which is why the frames match. Enabling the FPU in stage 1 (setting `mstatus.FS`, saving FP
 state around `bootm`) would be faster and is a firmware change this proposal does not take.
-Speed on the C908 in soft float is **UNVERIFIED**; the bench below measures it.
+Speed on the C908 in soft float: the same object code, run as a Linux static executable on the board, costs 32 ms for all 138 frames of `wipe` and at worst 3.08 ms per frame (`beams`) over the 37 effects (`board-engine-bench.txt`; every effect's frames equal the std ttfx's). That is Linux with caches on; U-Boot's cache state is <!-- UNVERIFIED: not measured in U-Boot; if its data cache is off the figures could be an order of magnitude worse. -->.
 
 ## Size
 
@@ -184,7 +184,7 @@ and is recorded in the task list, not claimed here.
 
 - QEMU user mode proves the machine code computes the same frames. It says nothing about
   speed, caches, U-Boot's relocation, or the arena. `bench.c` is a Linux-hosted static executable
-  of the same objects: running it on the board gives C908 soft-float timing per frame; that is task 4.3.
+  of the same objects: running it on the board gave the C908 timings above (task 2.8); the cost inside U-Boot is task 4.3.
 - The upstream patch has not been offered upstream; it is written to be (std CLI unchanged,
   its test suite passes, features default to the old behaviour).
 - ttfx's `thread_local!` visual pool leaks by design (`&'static` visuals); a boot run is finite and the arena

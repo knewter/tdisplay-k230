@@ -1,0 +1,18 @@
+# std ttfx dump hashes: packaged riscv64 build on the board vs host build, seed 3, 35x38, 30 fps, K230 banner
+# evidence class: board process run (manual ssh on the running system), not a boot observation
+# board ttfx: the .#ttfx store path the exhibition uses (sha256 prefix b4f243018ed5cb98); host: nix build .#ttfx-host
+# wall_ms includes the pipe into sha256sum and ssh startup
+# run 2026-10-30T15:16:31Z
+# board: Linux 7.3.0-rc5 riscv64
+49mnsl2si30m1l4fxdx2h114myv3anjf-nixos-system-nixos-26.11.20260919.20b1ddd
+1
+b4f243018ed5cb98
+# columns: effect host_sha256 board_sha256 equal board_wall_ms board_user_ms board_bytes
+beams 3396e615eb4cd6f34f10ee645dbeedf6ef9b5a6b1e1e76f6cdbafbbe0e44f3d2 3396e615eb4cd6f34f10ee645dbeedf6ef9b5a6b1e1e76f6cdbafbbe0e44f3d2 yes wall_ms=809
+wipe f9f22146b45582e1e3463123d0c1be01f89caff6a7473fe91f179136716bf8a1 f9f22146b45582e1e3463123d0c1be01f89caff6a7473fe91f179136716bf8a1 yes wall_ms=173
+expand a364c5bcdec3ef67167b1aae6290e6cdc44bc502ecdac9a15a195c30f229923e a364c5bcdec3ef67167b1aae6290e6cdc44bc502ecdac9a15a195c30f229923e yes wall_ms=75
+middleout 8548ecac9ae8ea6df67bb6d15254d4555d475dde086b7ed29fe4f2756fe01170 8548ecac9ae8ea6df67bb6d15254d4555d475dde086b7ed29fe4f2756fe01170 yes wall_ms=75
+decrypt 3c408cd28a9cfc323a8e7dabeeaa2ee4164449bf03f1e827e0ce4e84b3b7bac1 3c408cd28a9cfc323a8e7dabeeaa2ee4164449bf03f1e827e0ce4e84b3b7bac1 yes wall_ms=188
+matrix 417ff8c8fc0cf2ff1a11fa15f07ec6c73d9872ca6f6f8c1b385ff2510690eabf 417ff8c8fc0cf2ff1a11fa15f07ec6c73d9872ca6f6f8c1b385ff2510690eabf yes wall_ms=922
+rings f3def2219f8144bc0c58408107279e144c95356dce4380e2be11fb3eb0f6a249 f3def2219f8144bc0c58408107279e144c95356dce4380e2be11fb3eb0f6a249 yes wall_ms=577
+thunderstorm 4e562998ed73cf03599b1a644a4518483860e1b408e99f8662466b9f69b2a1e8 4e562998ed73cf03599b1a644a4518483860e1b408e99f8662466b9f69b2a1e8 yes wall_ms=224

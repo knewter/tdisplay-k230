@@ -263,7 +263,7 @@ the effect to completion, then load (adds the animation's length to boot, a few 
 1 to 4 MiB and calls `ttfx_fw_next` plus a draw between chunks, so each frame costs
 one frame's compute, not a stall. The ext4 reads in the recorded boot took 1.8 s for the 27 MB initrd
 alone. Either way the engine is single-threaded and U-Boot's own work waits while a frame computes.
-The cost of a frame in soft float on the C908 is <!-- UNVERIFIED: not measured; `nix/ttfx-boot/bench/bench.c` run on the board gives it per effect (task 4.3). -->.
+The cost of a frame in soft float on the C908, measured as a Linux static executable with caches on, is under 3.1 ms for every effect on the 35x38 grid (`board-engine-bench.txt`), a tenth of a 30 fps frame period; inside U-Boot it is <!-- UNVERIFIED: not measured in U-Boot, whose data cache may be off (task 4.3). -->.
 
 **D13. How the engine is built for U-Boot.** The patch is written to go upstream: default features
 keep the std CLI and its tests; `--no-default-features --features nostd` is the engine on `core` +
@@ -319,8 +319,8 @@ peaks under 4 MiB, so the first install can use the pool as it is.
   `bootm`, and the default is a few seconds.
 - [Startup modeset glitches] -> the player reuses the owner's recipe; the
   handoff defect work stays with `display/boot-splash`.
-- [Soft-float speed on the C908 is unknown] -> the engine bench runs on the board before any stage 1
-  decision; if a frame costs more than the frame period, the glue steps the engine more than once per
+- [Soft-float speed inside U-Boot is unmeasured] -> under Linux it is 0.2 to 3.1 ms a frame; the bench is
+  repeated from the first stage 1 console run before any decision; if a frame costs more than the frame period, the glue steps the engine more than once per
   displayed frame or the default effect is chosen from the cheaper ones, and the replay fallback stays.
 - [libm differs from glibc in some last bit] -> 0 of 148 host and 0 of 37 firmware comparisons differed;
   the cell-grid hash at the continuation frame catches it, and Linux then replays from frame 0. Running

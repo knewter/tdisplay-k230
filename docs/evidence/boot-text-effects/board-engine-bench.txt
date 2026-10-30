@@ -1,0 +1,52 @@
+# engine bench on the board (static soft-float rv64imac executable of the firmware staticlib, Linux-hosted)
+# run 2026-10-30T15:17:30Z; bench sha256 23884af40b6277d0
+Linux 7.3.0-rc5 riscv64
+1
+isa		: rv64imafdcv_zicbom_zicbop_zicboz_zicntr_zicsr_zifencei_zihpm_zaamo_zalrsc_zfh_zfhmin_zca_zcd_zba_zbb_zbc_zbs_zve32f_zve32x_zve64d_zve64f_zve64x_zvfh_zvfhmin_svpbmt
+mmu		: sv39
+uarch		: thead,c908
+ 10:17:31  up   0:38,  1 user,  load average: 0.42, 0.29, 0.18
+# effect frames bytes fnv ms (seed 3, 35x38, 30 fps, K230 banner, 48 MiB mmap arena)
+beams frames=321 bytes=6671273 fnv=0x3d307348 ms=990
+binarypath frames=842 bytes=3955187 fnv=0xf68d0f71 ms=699
+blackhole frames=894 bytes=3545914 fnv=0xb8252605 ms=523
+bouncyballs frames=417 bytes=1782998 fnv=0x4ff8ad94 ms=131
+bubbles frames=521 bytes=1928812 fnv=0x1ed306be ms=214
+burn frames=324 bytes=1892030 fnv=0xb5810977 ms=225
+colorshift frames=528 bytes=2935222 fnv=0x666d65db ms=234
+crumble frames=430 bytes=1890150 fnv=0x36c0ee8e ms=274
+decrypt frames=753 bytes=3708382 fnv=0xd2f76168 ms=216
+errorcorrect frames=274 bytes=1530438 fnv=0x788bc9ca ms=43
+expand frames=50 bytes=208700 fnv=0xa6ee264d ms=62
+fireworks frames=1211 bytes=4395020 fnv=0x3663c865 ms=494
+highlight frames=129 bytes=731918 fnv=0x18c69d6c ms=32
+laseretch frames=494 bytes=2431192 fnv=0x928871c8 ms=643
+matrix frames=1452 bytes=28021246 fnv=0x4589ff9a ms=956
+middleout frames=94 bytes=421921 fnv=0xcd9cab90 ms=51
+orbittingvolley frames=1387 bytes=5163561 fnv=0x6d57ab1e ms=135
+overflow frames=57 bytes=893068 fnv=0x5d225b85 ms=40
+pour frames=256 bytes=1058455 fnv=0x7939909c ms=80
+print frames=308 bytes=1384401 fnv=0x919fa86a ms=45
+rain frames=235 bytes=1005421 fnv=0xa166a4c5 ms=142
+randomsequence frames=241 bytes=965567 fnv=0x0a80ef7c ms=38
+rings frames=1398 bytes=6007299 fnv=0x0eacebc0 ms=1442
+scattered frames=120 bytes=630337 fnv=0x6f385c52 ms=73
+slice frames=176 bytes=690482 fnv=0x0c4ecd94 ms=174
+slide frames=110 bytes=489119 fnv=0x5e65790a ms=55
+smoke frames=180 bytes=5794590 fnv=0x46e7411f ms=243
+spotlights frames=601 bytes=3382137 fnv=0x36ada642 ms=1033
+spray frames=337 bytes=1510832 fnv=0xfbae1d38 ms=90
+swarm frames=3655 bytes=12972142 fnv=0xbd612cfb ms=571
+sweep frames=220 bytes=5206655 fnv=0xa35c9f79 ms=306
+synthgrid frames=629 bytes=9839229 fnv=0xd827450e ms=435
+thunderstorm frames=623 bytes=3811363 fnv=0xcaaf234b ms=730
+unstable frames=250 bytes=1297226 fnv=0x45334d9d ms=137
+vhstape frames=687 bytes=3225867 fnv=0x2cb9c484 ms=578
+waves frames=512 bytes=2849673 fnv=0x2ebeae89 ms=373
+wipe frames=138 bytes=552473 fnv=0x5c54b47a ms=32
+# cleanup done: /var/tmp/fw-bench and /var/tmp/K230.txt removed
+
+# comparison, host: every line above compared with the std ttfx (nix build .#ttfx-host, a host build of 14ed274) over the same text, seed and canvas:
+#   37 of 37 effects equal in frame count, byte count and FNV-1a of all frame bytes; worst cost 3.08 ms per frame (beams)
+# Limits: this is the firmware object code run as a Linux static executable on the C908 (MMU and caches on, system allocator replaced by the arena,
+# one online CPU shared with the running shell). It is NOT U-Boot: stage 1 may run with caches off or a different clock, which would change these times.
