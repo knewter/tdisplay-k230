@@ -114,3 +114,14 @@ Limits: profiles are 2026-10-22 builds (`z1basiwi`, `g2yjvzv4`), landscape, inje
 touch, and have since changed; category shares are by symbol name from sampled
 stacks; the rotation timing log is rate-limited (117 lines per 30 s), so it is a
 sample of frames, not every frame.
+
+## Addendum 2026-10-30: rank 1 measured standalone
+
+[`../vglite-turn/README.md`](../vglite-turn/README.md): on the mainline board the
+GPU full-frame turn saves the estimated CPU (4.0 ms CPU -> 0.2 ms) but takes
+18.9 ms wall against 4.4 ms for the CPU turn; the estimate of about 2 ms wall was
+wrong by 9x (the same-size GPU copy is 2.6 ms, so the rotation itself is slow).
+The net-per-frame table above should be read with that wall cost: rank 1 is a CPU
+saving paid for with a frame of latency and a GPU-bound pipeline, and it showed a
+destination cache hazard. Ranks 2 and 3 do not rotate and are not affected by this
+number, but they inherit the cache-protocol question.

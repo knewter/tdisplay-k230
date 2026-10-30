@@ -1,0 +1,39 @@
+# run at 2026-10-30T14:47:04Z boot_id 0b49504f-2d64-4acf-a62e-d95281ae4cc6 uname 7.3.0-rc5
+# system /nix/store/49mnsl2si30m1l4fxdx2h114myv3anjf-nixos-system-nixos-26.11.20260919.20b1ddd
+# bench /nix/store/59vvqwy2bykb9qq4x883xpb5456pfrbd-k230-vglite-turn-bench-riscv64-unknown-linux-gnu-0-1104236db4d1e47873bd68924f912747b820228c/bin/k230-vglite-turn-bench
+# load before
+0.33 0.59 0.46 1/167 1799
+1 
+insmod rc=0
+TURN_BENCH_BEGIN
+TURN_BENCH_CONFIG transform=3 src=1232x568 dst=568x1232 padded_storage_width=576 reps=40
+TURN_BENCH_DUMB pitch=1152 size=1419264
+TURN_BENCH_SOURCE stride=2464
+TURN_BENCH_CHECK gpu_vs_cpu_turn bad_rows=0 of 1232 first_bad_row=-1
+TURN_BENCH mode=cpu_heap round=1 reps=40 wall_ns_per_frame=4425409 cpu_ns_per_frame=4090560 submit_ns=0 finish_ns=0
+TURN_BENCH mode=cpu_dumb round=1 reps=40 wall_ns_per_frame=4462344 cpu_ns_per_frame=4081877 submit_ns=0 finish_ns=0
+TURN_BENCH mode=gpu_dirty_source round=1 reps=40 wall_ns_per_frame=18904314 cpu_ns_per_frame=217775 submit_ns=112437 finish_ns=18791876
+TURN_BENCH mode=gpu_clean_source round=1 reps=40 wall_ns_per_frame=18847556 cpu_ns_per_frame=176599 submit_ns=74443 finish_ns=18773113
+TURN_BENCH mode=cpu_heap round=2 reps=40 wall_ns_per_frame=4331232 cpu_ns_per_frame=4064607 submit_ns=0 finish_ns=0
+TURN_BENCH mode=cpu_dumb round=2 reps=40 wall_ns_per_frame=4490997 cpu_ns_per_frame=4102148 submit_ns=0 finish_ns=0
+TURN_BENCH mode=gpu_dirty_source round=2 reps=40 wall_ns_per_frame=18924121 cpu_ns_per_frame=215627 submit_ns=129652 finish_ns=18794468
+TURN_BENCH mode=gpu_clean_source round=2 reps=40 wall_ns_per_frame=18845752 cpu_ns_per_frame=177407 submit_ns=74631 finish_ns=18771120
+TURN_BENCH mode=cpu_heap round=3 reps=40 wall_ns_per_frame=4810923 cpu_ns_per_frame=4084880 submit_ns=0 finish_ns=0
+TURN_BENCH mode=cpu_dumb round=3 reps=40 wall_ns_per_frame=4284275 cpu_ns_per_frame=4054920 submit_ns=0 finish_ns=0
+TURN_BENCH mode=gpu_dirty_source round=3 reps=40 wall_ns_per_frame=18909649 cpu_ns_per_frame=214591 submit_ns=111889 finish_ns=18797760
+TURN_BENCH mode=gpu_clean_source round=3 reps=40 wall_ns_per_frame=18843247 cpu_ns_per_frame=175962 submit_ns=74741 finish_ns=18768506
+TURN_BENCH mode=gpu_landscape_copy_control round=1 reps=40 wall_ns_per_frame=2608149 cpu_ns_per_frame=153462 submit_ns=67621 finish_ns=2540527
+TURN_BENCH mode=gpu_landscape_copy_control round=2 reps=40 wall_ns_per_frame=2610513 cpu_ns_per_frame=157411 submit_ns=74747 finish_ns=2535765
+TURN_BENCH mode=gpu_landscape_copy_control round=3 reps=40 wall_ns_per_frame=2590954 cpu_ns_per_frame=151439 submit_ns=66600 finish_ns=2524354
+TURN_BENCH_END pass
+bench-exit=0
+rmmod rc=0
+irq135 lines: 0
+0
+0
+[  473.802381] gc8000ul 90800000.gpu: VG-Lite GPU registered as /dev/vg_lite (major 235, irq 89)
+[  489.783379] gc8000ul 90800000.gpu: VG-Lite GPU registered as /dev/vg_lite (major 235, irq 89)
+[  497.110691] gc8000ul 90800000.gpu: VG-Lite GPU registered as /dev/vg_lite (major 235, irq 89)
+[  504.269564] gc8000ul 90800000.gpu: VG-Lite GPU registered as /dev/vg_lite (major 235, irq 89)
+active
+active

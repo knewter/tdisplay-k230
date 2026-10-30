@@ -1,0 +1,5 @@
+cpu_heap                       n=12 wall=4.376ms cpu=4.013ms submit=0.000ms finish=0.000ms
+cpu_dumb                       n=12 wall=4.356ms cpu=4.013ms submit=0.000ms finish=0.000ms
+gpu_dirty_source               n=12 wall=18.912ms cpu=0.215ms submit=0.118ms finish=18.791ms
+gpu_clean_source               n=12 wall=18.856ms cpu=0.178ms submit=0.075ms finish=18.779ms
+gpu_landscape_copy_control     n=12 wall=2.593ms cpu=0.153ms submit=0.067ms finish=2.526ms

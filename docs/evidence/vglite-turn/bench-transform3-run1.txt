@@ -1,0 +1,26 @@
+# run at 2026-10-30T14:45:58Z boot_id 0b49504f-2d64-4acf-a62e-d95281ae4cc6 uname 7.3.0-rc5
+# system /nix/store/49mnsl2si30m1l4fxdx2h114myv3anjf-nixos-system-nixos-26.11.20260919.20b1ddd
+# bench /nix/store/lzywc3nyk3z6q8534cvxp4mxi8k7y07b-k230-vglite-turn-bench-riscv64-unknown-linux-gnu-0-1104236db4d1e47873bd68924f912747b820228c/bin/k230-vglite-turn-bench
+# load before
+0.11 0.64 0.47 1/168 1669
+1 
+insmod rc=0
+TURN_BENCH_FAIL GPU turn differs from CPU turn
+TURN_BENCH_BEGIN
+TURN_BENCH_CONFIG transform=3 src=1232x568 dst=568x1232 padded_storage_width=576 reps=40
+TURN_BENCH_DUMB pitch=1152 size=1419264
+TURN_BENCH_SOURCE stride=2464
+TURN_BENCH_CHECK gpu_vs_cpu_turn bad_rows=1 of 1232 first_bad_row=0
+TURN_BENCH_CHECK_ROW y=0 bad_pixels=320 first_bad_x=0
+TURN_BENCH_END failure
+bench-exit=1
+rmmod rc=0
+irq135 lines: 0
+0
+0
+[  435.519363] gc8000ul 90800000.gpu: VG-Lite GPU registered as /dev/vg_lite (major 235, irq 89)
+[  436.599976] gc8000ul 90800000.gpu: VG-Lite GPU registered as /dev/vg_lite (major 235, irq 89)
+[  437.458390] gc8000ul 90800000.gpu: VG-Lite GPU registered as /dev/vg_lite (major 235, irq 89)
+[  438.317501] gc8000ul 90800000.gpu: VG-Lite GPU registered as /dev/vg_lite (major 235, irq 89)
+active
+active
