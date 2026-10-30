@@ -101,3 +101,7 @@ grid; a camera/operator observation of the stage-1 frames and the pause (task
 2.3, camera not usable in this session, so an operator video: boot with the
 camera running, `tools/capture-boot-camera` or the operator's own phone, then
 the transcript). None of this is claimed here.
+
+## Update 2026-10-30: first board trial
+
+The opt-in U-Boot was installed (slot-only, direct readback verified) and booted Linux normally with the animation dormant. A second reboot with console input sent from before the reset hung the board in an early-init panic loop; cause and fix are in `uboot-cyclic.md` ("Board hang of 2026-10-30"). The fixed build needs a fresh install approval. Interrupt autoboot only after the banner is seen, with one keypress.

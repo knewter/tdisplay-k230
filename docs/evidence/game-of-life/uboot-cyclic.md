@@ -162,3 +162,20 @@ Serial capture of `k230_life` and of a normal boot with `boot_life=1` showing
 the `cyclic stopped at generation N after M callbacks, mean X us, max Y us`
 line; boot time with and without the animation measured from the serial
 timestamps; and a camera or operator view of the frames. None exists.
+
+## Board hang of 2026-10-30 and its cause (source analysis; fix not yet run on the board)
+
+What was observed (serial console, `ucon.py`; the transcript is not committed because it can also hold other board output): the first reboot after installing the opt-in U-Boot (cyclic build, `boot_life` unset) booted normally. A second reboot, made with `\r` written to the console every 50 ms from before the reset, printed the identical SPL lines (`imge: uboot load to 0 ... len=5efc5` / `len=bc590`), then no `U-Boot 2022.10` banner, then `Could not initialize timer (err -19)` 8 804 times in 120 s; afterwards the console was silent and SSH timed out.
+
+Cause, by reading the tree that was built:
+
+1. `include/watchdog.h` (our hunk) made every `WATCHDOG_RESET()` call `cyclic_run()`. That macro is reachable before relocation: `__serial_getc` calls it whenever the UART driver returns `-EAGAIN` (`drivers/serial/serial-uclass.c`), `fgetc()` calls it on every poll (`common/console.c`), and `udelay()` calls it (`lib/time.c`).
+2. `cyclic_run()` first read `cyclic_head`. For U-Boot proper, `.bss` is not cleared until `relocate_code` -> `clear_bss` (`arch/riscv/cpu/start.S`), which runs after `board_init_f`. Before that, `cyclic_head` and `cyclic_busy` hold whatever DRAM held, and a warm reboot keeps DRAM contents.
+3. A non-zero `cyclic_head` made `cyclic_run()` call `get_ticks()`, which panics when `gd->timer` is not yet set: exactly the message observed (`lib/time.c`, `dm_timer_init()` failing with -ENODEV). `panic()` itself calls `udelay()`, which calls `WATCHDOG_RESET()` again: the 8 804-line loop.
+4. Why it appeared only once: the dormant first boot had no console input, so no early `WATCHDOG_RESET()` ran (the macro was `{}` in the old U-Boot, and `cyclic_run()` is only reached from it). With input during early init the path ran, and `.bss` contents decided whether the panic fired. This also explains why the old U-Boot never hung under the same `\r`/space hammering (`tools/splash-uboot-session.py`, `docs/evidence/mainline-boot-splash/board/uboot-hold-poke-serial-excerpt.txt`): there `WATCHDOG_RESET()` expands to nothing.
+
+That early console input is the trigger is the coordinator's hypothesis; the uninitialised `.bss` read is the mechanism the source shows. Neither has been reproduced on the board: this is a source-level conclusion.
+
+Fix (in the tree, not yet installed): `cyclic_run()` now returns immediately unless `gd->flags & GD_FLG_RELOC` (set by `initr_reloc`, after `clear_bss`) and `gd->timer` is set. No state is read before that. A full local cross build of `u-boot.bin` with the fix succeeds (not a nix build, not evidence of boot).
+
+Rule for any producer that hooks `WATCHDOG_RESET`: that macro runs in pre-relocation code; a hook may not read `.bss`/`.data` state, call `get_ticks()`, or call anything that needs the DM timer until relocated. Test procedure while the fix is unproven on hardware: interrupt autoboot with a single keypress sent only after the `U-Boot 2022.10` banner appears, never with input before it.

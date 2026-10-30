@@ -3,6 +3,9 @@
 #include <common.h>
 #include <time.h>
 #include <cyclic.h>
+#include <asm/global_data.h>
+
+DECLARE_GLOBAL_DATA_PTR;
 
 static struct cyclic_info *cyclic_head;
 static bool cyclic_busy;
@@ -42,6 +45,18 @@ void cyclic_run(void)
 	struct cyclic_info *c, *next;
 	uint64_t now;
 
+	/*
+	 * WATCHDOG_RESET() is reachable long before relocation (a serial getc that
+	 * returns -EAGAIN, console fgetc, udelay).  Before relocate_code() clears
+	 * .bss, cyclic_head and cyclic_busy are whatever the DRAM held (a warm
+	 * reboot keeps it), and a non-NULL cyclic_head sends us into get_ticks()
+	 * before the driver-model timer exists, which panics ("Could not
+	 * initialize timer (err -19)") in a loop.  Do nothing until the code is
+	 * relocated, .bss is clean and the timer device is up.
+	 * (2026-10-30 board hang, docs/evidence/game-of-life/uboot-cyclic.md.)
+	 */
+	if (!(gd->flags & GD_FLG_RELOC) || !gd->timer)
+		return;
 	if (!cyclic_head || cyclic_busy)
 		return;
 	cyclic_busy = true;
