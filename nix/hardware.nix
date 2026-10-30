@@ -41,13 +41,7 @@ let
   k230SpeakerTest = pkgs.callPackage ./k230-speaker-test.nix { };
 in
 {
-  imports = [ ./panel-console.nix ./root-growth-service.nix ];
-
-  # the-boot-shows-a-computational-game-of-life: Linux continues the stage-1
-  # Game of Life from the state record in the splash reservation (validated
-  # against /chosen/canaan,life-instance; any failure draws the deterministic
-  # default).  Off by default; the static logo owner is unchanged without it.
-  options.k230.bootLife.enable = lib.mkEnableOption "the early-Linux Game of Life continuation in the splash owner";
+  imports = [ ./panel-console.nix ./root-growth-service.nix ./boot-life-options.nix ];
   # Build the actual board closure against the tested RVV Pixman recipe.
   # Its hwprobe gate retains scalar dispatch when the kernel omits V or
   # PIXMAN_DISABLE=rvv is set. The overlay is board-only; QEMU keeps its
