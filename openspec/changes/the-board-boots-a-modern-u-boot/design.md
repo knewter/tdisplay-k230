@@ -219,6 +219,21 @@ Findings from porting, all from reading the upstream tag and building it:
   `-Wno-error=int-conversion` and no compiler pin. The only warnings are an
   unused function in the vendor `st7701.c`.
 
+Game of Life carry-forward (task 2.6; read-only look at the other worktree,
+`.claude/worktrees/agent-a01598cc868d1ff20`, nothing edited): its
+`nix/uboot-k230-life/k230_boot_life.c` calls `cyclic_register(&info, cb,
+delay_us, name)`, `cyclic_unregister()` and a `void cb(struct cyclic_info *)`
+callback, the same shape as U-Boot's native API, and its hand-written
+`k230_cyclic.c`/`cyclic.h` are a minimal back-port of exactly that. On this
+tree the back-port files are simply not carried (`CONFIG_CYCLIC=y` is in
+`k230_tdisplay_defconfig`, `cmd/cyclic` is built), the callback stays
+unchanged, and the module's only remaining dependency is the vendor splash's
+framebuffer symbols, which this tree provides at the same scanout address
+(`nix/boot-splash.nix`). Native cyclic runs from `schedule()`, which the
+console and `ums` loops call, so the animation continues at the prompt as
+the back-port's design intends. Wiring it in is that change's task once it
+lands on `master`; this change does not build `boot_frame.*`.
+
 Stage c findings: v1.9's `fw_jump.S` has a second knob the 1.4 build did not
 need: `FW_JUMP_FDT_OFFSET` (default `0x2200000`, set in
 `platform/generic/objects.mk`) makes `fw_next_arg1` return
