@@ -1,0 +1,22 @@
+# host tests for the k230-textfx player (file-backed mode), 2026-10-30T14:21:12Z
+# evidence class: host build/test only; the DRM path is not exercised
+# ttfx: cargo build of 14ed274 (x86-64)
+
+test_a_broken_child_is_an_error (__main__.PlayerTests.test_a_broken_child_is_an_error) ... ok
+test_a_failing_child_is_an_error (__main__.PlayerTests.test_a_failing_child_is_an_error) ... ok
+test_argument_vector_matches_the_python_tool (__main__.PlayerTests.test_argument_vector_matches_the_python_tool) ... ok
+test_continuation_reaches_the_same_final_surface (__main__.PlayerTests.test_continuation_reaches_the_same_final_surface) ... ok
+test_pacing_follows_the_frame_rate (__main__.PlayerTests.test_pacing_follows_the_frame_rate) ... ok
+test_surface_hashes_match_independent_renderer (__main__.PlayerTests.test_surface_hashes_match_independent_renderer) ... ok
+test_wrong_hash_refuses_and_replays_from_the_start (__main__.PlayerTests.test_wrong_hash_refuses_and_replays_from_the_start) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 3.976s
+
+OK
+
+## module is inert when off: daily system derivation, before and after this change
+before (44cc90c4) /nix/store/hlzchxmh4w6j4f6z7npjnw5v2xbhz327-nixos-system-nixos-26.11.20260919.20b1ddd.drv
+after  (working tree) /nix/store/hlzchxmh4w6j4f6z7npjnw5v2xbhz327-nixos-system-nixos-26.11.20260919.20b1ddd.drv
+attribute: nixosConfigurations.k230-mainline-drm-shell-landscape-hdmi.config.system.build.toplevel.drvPath
+k230.bootTextEffects.enable=true evaluates; ExecStart = /nix/store/h70j627vwzisdga074z9hb8q7zh5b2rz-k230-textfx-start

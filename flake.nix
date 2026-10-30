@@ -242,6 +242,7 @@
           specialArgs.k230Kernel = self.nixosConfigurations.k230-mainline-drm-trial.config.boot.kernelPackages;
           modules = [
             ./nix/touch-trackpad-service.nix
+            ./nix/textfx-service.nix
             ({ config, pkgs, ... }: {
               # The RTL8189FTV module with the 7.3 port patch, built against
               # this variant's own kernel (CFG80211=m); same load and service
@@ -463,6 +464,8 @@
         # Same revision built for the build host: the boot text-effects tools
         # and tests (tools/textfx_frames.py) run it to generate frames.
         ttfx-host = pkgs.callPackage ./nix/ttfx.nix { };
+        # Live ttfx player for the boot text effects (nix/textfx).
+        k230-textfx = pkgsCross.callPackage ./nix/textfx { };
         # Font source for tools/gen-textfx-font.py and tests/test_textfx.py
         # (share/fonts/unifont.bdf); the boot text-effects glyph table is
         # generated from it.
