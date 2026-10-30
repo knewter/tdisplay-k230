@@ -9,8 +9,8 @@ stdenv.mkDerivation {
   # as paths, not as inputs, so the qtbase hook does not see two Qt ABIs.
   cmakeFlags = let host = buildPackages.qt6Packages; in [
     "-DQT_HOST_PATH=${host.qtbase}"
-    "-DQt6QmlTools_DIR=${host.qtdeclarative.dev}/lib/cmake/Qt6QmlTools"
-    "-DQt6ShaderTools_DIR=${host.qtshadertools.dev}/lib/cmake/Qt6ShaderTools"
+    "-DQt6QmlTools_DIR=${host.qtdeclarative}/lib/cmake/Qt6QmlTools"
+    "-DQt6ShaderTools_DIR=${host.qtshadertools}/lib/cmake/Qt6ShaderTools"
   ];
   buildInputs = with qt6Packages; [ qtbase qtdeclarative qtwayland ];
   # The wrapper fixes the renderer: software scene graph on the Wayland QPA,
