@@ -610,6 +610,7 @@
         k230-vglite-validation = pkgsCross.callPackage ./nix/vglite-validation.nix { };
         # Standalone CPU-vs-GPU output-turn benchmark (the-compositor-rotates-scanout-on-the-gpu 1.1).
         k230-vglite-turn-bench = pkgsCross.callPackage ./nix/vglite-turn-bench.nix { };
+        k230-vglite-fill-bench = pkgsCross.callPackage ./nix/vglite-fill-bench.nix { };
 
         # The board device tree, compiled WITHOUT the kernel, so that
         # iterating on the panel's DCS init sequence costs seconds instead
