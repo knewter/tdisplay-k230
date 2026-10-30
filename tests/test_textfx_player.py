@@ -117,11 +117,11 @@ class PlayerTests(unittest.TestCase):
 
     # ---- a hand-off record instead of arguments ----
     @staticmethod
-    def payload(seed, cols, rows, fps, last, cell_hash, engine, text_hash, text_id, effect, flags=0):
+    def payload(seed, cols, rows, fps, last, cell_hash, engine, text_hash, text_id, effect, flags=0, orientation=0):
         return (seed.to_bytes(8, "little") + cols.to_bytes(2, "little") + rows.to_bytes(2, "little")
                 + fps.to_bytes(2, "little") + flags.to_bytes(2, "little") + last.to_bytes(4, "little")
                 + cell_hash.to_bytes(4, "little") + engine.to_bytes(4, "little") + text_hash.to_bytes(4, "little")
-                + text_id.to_bytes(2, "little") + (0).to_bytes(2, "little") + effect.encode().ljust(24, b"\0"))
+                + text_id.to_bytes(2, "little") + orientation.to_bytes(2, "little") + effect.encode().ljust(24, b"\0"))
 
     def record_run(self, payload, *extra, texts=True):
         rec = self.dir / "record.bin"
@@ -175,6 +175,36 @@ class PlayerTests(unittest.TestCase):
         self.assertEqual(p.returncode, 0, p.stderr)
         self.assertIn("continuing after frame 10", p.stderr)
         self.assertEqual(self.hashes(p.stdout)[11][0], TF.grid_hash(frames[11]))
+
+    def test_landscape_option_draws_the_turned_picture(self):
+        last = 137
+        _, frames, _ = TF.build_sequence(TTFX, T.BANNER, "wipe", 3, 77, 17, FPS, None, [])
+        p, _ = self.run_player("--no-pace", "--orientation", "landscape", "--hash-frames", str(len(frames) - 1))
+        got = self.hashes(p.stdout)[len(frames) - 1]
+        self.assertEqual(got[0], TF.grid_hash(frames[-1]))
+        self.assertEqual(got[1], TF.fnv1a(T.render(frames[-1], self.glyphs, "xrgb", True)))
+
+    def test_record_orientation_selects_landscape_and_its_grid(self):
+        text = self.banner.read_bytes()
+        _, frames, _ = TF.build_sequence(TTFX, text, "wipe", 3, 77, 17, FPS, None, [])
+        pay = self.payload(3, 77, 17, FPS, 20, TF.grid_hash(frames[20]), 0, TF.fnv1a(text), 0xFFFF, "wipe", orientation=1)
+        last = len(frames) - 1
+        p = self.record_run(pay, "--hash-frames", str(last), texts=False)
+        self.assertEqual(p.returncode, 0, p.stderr)
+        self.assertIn("continuing after frame 20", p.stderr)
+        self.assertEqual(self.hashes(p.stdout)[last][1], TF.fnv1a(T.render(frames[last], self.glyphs, "xrgb", True)))
+
+    def test_an_orientation_that_differs_from_the_record_plays_from_the_start_in_that_orientation(self):
+        text = self.banner.read_bytes()
+        _, fp, _ = TF.build_sequence(TTFX, text, "wipe", 3, 35, 38, FPS, None, [])
+        _, fl, _ = TF.build_sequence(TTFX, text, "wipe", 3, 77, 17, FPS, None, [])
+        pay = self.payload(3, 35, 38, FPS, 20, TF.grid_hash(fp[20]), 0, TF.fnv1a(text), 0xFFFF, "wipe", orientation=0)
+        p = self.record_run(pay, "--orientation", "landscape", "--hash-frames", "0,%d" % (len(fl) - 1), texts=False)
+        self.assertEqual(p.returncode, 0, p.stderr)
+        self.assertIn("the record says portrait: not continuing", p.stderr)
+        got = self.hashes(p.stdout)
+        self.assertEqual(got[0][0], TF.grid_hash(fl[0]))
+        self.assertEqual(got[len(fl) - 1][1], TF.fnv1a(T.render(fl[-1], self.glyphs, "xrgb", True)))
 
     def test_a_malformed_record_is_refused(self):
         p = self.record_run(b"short")
@@ -236,10 +266,10 @@ class LinkedEngineTests(unittest.TestCase):
             self.assertEqual(outs[0], outs[1], effect)
 
     def test_record_continuation_with_the_linked_engine(self):
-        text = [e for e in self.texts.read_bytes().split(b"%%\n") if e.strip()][2]
+        text = [e for e in self.texts.read_bytes().split(b"%%\n") if e.strip()][1]
         _, frames, _ = TF.build_sequence(TTFX, text, "middleout", 9, COLS, ROWS, FPS, None, [])
         last = len(frames) - 1
-        pay = PlayerTests.payload(9, COLS, ROWS, FPS, 30, TF.grid_hash(frames[30]), 7, TF.fnv1a(text), 2, "middleout")
+        pay = PlayerTests.payload(9, COLS, ROWS, FPS, 30, TF.grid_hash(frames[30]), 7, TF.fnv1a(text), 1, "middleout")
         rec = Path(self.tmp.name) / "r.bin"
         rec.write_bytes(pay)
         p = self.run_it("--engine", "lib", "--record-payload", str(rec), "--texts", str(self.texts), "--engine-id", "7",

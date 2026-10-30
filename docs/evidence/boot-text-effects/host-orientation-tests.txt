@@ -1,0 +1,16 @@
+# host tests after the orientation work, 2026-10-30T16:31:54Z; evidence class: host build/test
+== test_textfx_frames
+Ran 9 tests in 1.297s
+OK
+== test_textfx
+Ran 5 tests in 3.435s
+OK
+== test_textfx_record
+Ran 6 tests in 0.200s
+OK
+== test_textfx_player
+Ran 18 tests in 19.036s
+OK
+== test_check_boot_textfx_memory
+Ran 10 tests in 2.028s
+OK

@@ -72,6 +72,9 @@ struct opts {
 	const char *record_payload, *texts;
 	uint32_t engine_id; /* 0 = do not compare with the record */
 	bool engine_lib;    /* frames from the linked engine rather than a ttfx child */
+	bool landscape;     /* picture is the 1232x568 landscape of Sway's transform 270 */
+	bool orientation_given; /* --orientation was given: it overrides the record's */
+	bool dims_given;    /* --cols/--rows were given: do not take the orientation's default grid */
 	bool no_pace, print_command, idle;
 	long max_frames;
 	long hash_frames[MAX_HASH_FRAMES];
@@ -588,6 +591,14 @@ static int usage(const char *argv0)
 	return 2;
 }
 
+static void default_dims(struct opts *o)
+{
+	if (!o->dims_given) {
+		o->cols = o->landscape ? PANEL_H / (TFX_GLYPH_W * o->scale) : 35;  /* 77 or 35 at scale 2 */
+		o->rows = o->landscape ? PANEL_W / (TFX_GLYPH_H * o->scale) : 38;  /* 17 or 38 */
+	}
+}
+
 static int parse_opts(int argc, char **argv, struct opts *o)
 {
 	*o = (struct opts){ .cols = 35, .rows = 38, .fps = 30, .scale = 2, .skip = -1,
@@ -605,8 +616,15 @@ static int parse_opts(int argc, char **argv, struct opts *o)
 		else if (!strcmp(a, "--banner") && v) { o->banner = v; ++i; }
 		else if (!strcmp(a, "--effect") && v) { o->effect = v; ++i; }
 		else if (!strcmp(a, "--seed") && v) { o->seed = strtoull(v, NULL, 10); ++i; }
-		else if (!strcmp(a, "--cols") && v) { o->cols = (unsigned)atoi(v); ++i; }
-		else if (!strcmp(a, "--rows") && v) { o->rows = (unsigned)atoi(v); ++i; }
+		else if (!strcmp(a, "--cols") && v) { o->cols = (unsigned)atoi(v); o->dims_given = true; ++i; }
+		else if (!strcmp(a, "--rows") && v) { o->rows = (unsigned)atoi(v); o->dims_given = true; ++i; }
+		else if (!strcmp(a, "--orientation") && v) {
+			if (!strcmp(v, "landscape")) o->landscape = true;
+			else if (!strcmp(v, "portrait")) o->landscape = false;
+			else return -1;
+			o->orientation_given = true;
+			++i;
+		}
 		else if (!strcmp(a, "--fps") && v) { o->fps = (unsigned)atoi(v); ++i; }
 		else if (!strcmp(a, "--scale") && v) { o->scale = (unsigned)atoi(v); ++i; }
 		else if (!strcmp(a, "--skip") && v) { o->skip = atol(v); ++i; }
@@ -647,7 +665,9 @@ static int parse_opts(int argc, char **argv, struct opts *o)
 	}
 	if ((!o->ttfx && !o->engine_lib) || !o->scale || !o->fps || (!o->record_payload && (!o->banner || !o->effect)))
 		return -1;
-	if (o->cols * TFX_GLYPH_W * o->scale > PANEL_W || o->rows * TFX_GLYPH_H * o->scale > PANEL_H)
+	default_dims(o);
+	if (o->cols * TFX_GLYPH_W * o->scale > (o->landscape ? PANEL_H : PANEL_W) ||
+	    o->rows * TFX_GLYPH_H * o->scale > (o->landscape ? PANEL_W : PANEL_H))
 		return -1;
 	if (o->skip >= 0 && !o->expect_hash)
 		return -1;
@@ -705,6 +725,17 @@ static int resolve_inputs(struct opts *o)
 		o->cols = d.cols;
 		o->rows = d.rows;
 		o->fps = d.fps;
+		if (o->orientation_given && o->landscape != (d.orientation == TFX_REC_ORIENT_LANDSCAPE)) {
+			say("orientation %s was asked for, the record says %s: not continuing",
+			    o->landscape ? "landscape" : "portrait", d.orientation ? "landscape" : "portrait");
+			trust = false;
+			if (!o->dims_given) {
+				o->dims_given = false;
+				default_dims(o);
+			}
+		} else {
+			o->landscape = d.orientation == TFX_REC_ORIENT_LANDSCAPE;
+		}
 		if (o->engine_id && d.engine_id != o->engine_id) {
 			say("record engine id 0x%08x != this build's 0x%08x: not continuing", d.engine_id, o->engine_id);
 			trust = false;
@@ -802,10 +833,15 @@ int main(int argc, char **argv)
 		say("grid does not fit");
 		return 1;
 	}
-	surf = (struct tfx_surface){ .scale = o.scale,
-				     .x0 = (PANEL_W - o.cols * TFX_GLYPH_W * o.scale) / 2,
-				     .y0 = (PANEL_H - o.rows * TFX_GLYPH_H * o.scale) / 2,
-				     .width = PANEL_W, .height = PANEL_H };
+	{
+		unsigned lw = o.landscape ? PANEL_H : PANEL_W, lh = o.landscape ? PANEL_W : PANEL_H;
+
+		surf = (struct tfx_surface){ .scale = o.scale,
+					     .x0 = (lw - o.cols * TFX_GLYPH_W * o.scale) / 2,
+					     .y0 = (lh - o.rows * TFX_GLYPH_H * o.scale) / 2,
+					     .width = lw, .height = lh,
+					     .rot = o.landscape ? TFX_ROT_LANDSCAPE : TFX_ROT_NONE };
+	}
 	if (o.drm) {
 #ifdef TEXTFX_NO_DRM
 		say("built without DRM");

@@ -74,13 +74,24 @@ int tfx_parse_frame(struct tfx_grid *g, const uint8_t *buf, size_t len,
 /* ---- drawing ---- */
 enum tfx_fmt { TFX_XRGB8888 = 0, TFX_RGB565 = 1 };
 
+/*
+ * Orientation of the picture on the native scanout.  TFX_ROT_NONE draws the
+ * picture as is (portrait panel).  TFX_ROT_LANDSCAPE draws a landscape picture
+ * the way the shell's Sway `transform 270` shows one: logical pixel (lx, ly) of a
+ * W x H picture lands at native pixel (ly, W - 1 - lx) of an H x W buffer.  That is
+ * the mapping the repo's landscape touch calibration records (logical (x, y) is
+ * panel (y, 1232 - x), docs/evidence/panel-landscape/README.md).
+ */
+enum tfx_rot { TFX_ROT_NONE = 0, TFX_ROT_LANDSCAPE = 1 };
+
 struct tfx_surface {
-	void *pixels;
-	size_t stride_bytes;
-	unsigned width, height; /* pixels */
+	void *pixels;           /* the NATIVE buffer */
+	size_t stride_bytes;    /* of the native buffer */
+	unsigned width, height; /* LOGICAL picture size in pixels (1232x568 when landscape) */
 	enum tfx_fmt fmt;
 	unsigned scale;  /* glyph pixel is scale x scale device pixels, >= 1 */
-	unsigned x0, y0; /* top-left of cell (0,0) */
+	unsigned x0, y0; /* top-left of cell (0,0) in the logical picture */
+	enum tfx_rot rot;
 };
 
 /* Draw one cell over a black background; cells outside the surface are clipped. */
@@ -88,7 +99,7 @@ void tfx_draw_cell(const struct tfx_grid *g, unsigned idx, const struct tfx_surf
 void tfx_draw_all(const struct tfx_grid *g, const struct tfx_surface *s);
 /* Clear the whole surface to black. */
 void tfx_clear(const struct tfx_surface *s);
-/* FNV-1a over the visible pixels row by row (width * bytes-per-pixel each). */
+/* FNV-1a over the native buffer row by row (native width * bytes-per-pixel each). */
 uint32_t tfx_surface_hash(const struct tfx_surface *s);
 
 /* 1 if the font has a glyph for cp, else 0 (the fallback box is drawn). */

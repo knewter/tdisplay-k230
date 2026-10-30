@@ -50,8 +50,44 @@ def load_bdf(path):
 FALLBACK = [0x00, 0x00, 0x00, 0x7E, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x7E, 0x00, 0x00]
 
 
-def render(cells, glyphs, fmt):
-    """Independent renderer: returns the visible surface bytes for the panel."""
+def render(cells, glyphs, fmt, landscape=False):
+    """Independent renderer: returns the native 568x1232 buffer for the panel.
+
+    Landscape draws a 1232x568 picture and turns it as Sway's transform 270 does: logical
+    (lx, ly) lands at native (ly, 1232 - 1 - lx), the mapping of the repo's landscape touch
+    calibration (docs/evidence/panel-landscape/README.md).
+    """
+    if landscape:
+        cols, rows = 77, 17
+        lw, lh = PANEL_H, PANEL_W
+        bpp = 4 if fmt == "xrgb" else 2
+        x0 = (lw - cols * 16) // 2
+        y0 = (lh - rows * 32) // 2
+        native = bytearray(PANEL_W * PANEL_H * bpp)
+
+        def px(r, g, b):
+            if fmt == "xrgb":
+                return bytes((b, g, r, 0))
+            v = ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3)
+            return bytes((v & 0xFF, v >> 8))
+
+        for cy in range(rows):
+            for gy in range(16):
+                for cx in range(cols):
+                    cp, r, g, b = cells[cy * cols + cx]
+                    bits = 0 if cp == 0x20 else glyphs.get(cp, FALLBACK)[gy]
+                    on = px(r, g, b)
+                    for gx in range(8):
+                        if not bits & (0x80 >> gx):
+                            continue
+                        for sy in range(SCALE):
+                            for sx in range(SCALE):
+                                lx = x0 + cx * 16 + gx * SCALE + sx
+                                ly = y0 + cy * 32 + gy * SCALE + sy
+                                nx, ny = ly, lw - 1 - lx
+                                o = (ny * PANEL_W + nx) * bpp
+                                native[o:o + bpp] = on
+        return bytes(native)
     bpp = 4 if fmt == "xrgb" else 2
 
     def px(r, g, b):
@@ -137,6 +173,27 @@ class CTextfxTests(unittest.TestCase):
             self.assertEqual(int(m.group(3), 16), TF.fnv1a(render(self.frames[k], self.glyphs, "565")), k)
             seen += 1
         self.assertEqual(seen, len(self.check))
+
+    def test_landscape_pixels_match_the_independent_renderer(self):
+        d = Path(self.tmp.name)
+        _, frames, data = TF.build_sequence(TTFX, BANNER, "wipe", 3, 77, 17, FPS, None, [])
+        (d / "land.tfxs").write_bytes(data)
+        dump = subprocess.run(TF.ttfx_command(TTFX, "wipe", 3, 77, 17, FPS, None, []), input=BANNER,
+                              capture_output=True, check=True).stdout
+        (d / "land.dump").write_bytes(dump)
+        check = [0, 30, len(frames) - 1]
+        out = subprocess.run([str(d / "harness"), str(d / "land.tfxs"), str(d / "land.dump"), str(SCALE),
+                              ",".join(map(str, check)), "landscape"], capture_output=True, text=True).stdout
+        self.assertNotIn("MISMATCH", out)
+        seen = 0
+        for line in out.splitlines():
+            m = re.match(r"frame (\d+) cell=0x\w+ xrgb=0x([0-9a-f]+) rgb565=0x([0-9a-f]+)", line)
+            if m:
+                k = int(m.group(1))
+                self.assertEqual(int(m.group(2), 16), TF.fnv1a(render(frames[k], self.glyphs, "xrgb", True)), k)
+                self.assertEqual(int(m.group(3), 16), TF.fnv1a(render(frames[k], self.glyphs, "565", True)), k)
+                seen += 1
+        self.assertEqual(seen, len(check))
 
     def test_last_frame_is_not_blank(self):
         self.assertTrue(any(c[0] != 0x20 for c in self.frames[-1]))

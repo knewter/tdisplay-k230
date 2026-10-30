@@ -36,7 +36,7 @@ size_t tfx_rec_encode(const struct tfx_run_desc *d, uint8_t *out, size_t max)
 	wr32(out + 24, d->engine_id);
 	wr32(out + 28, d->text_hash);
 	wr16(out + 32, d->text_id);
-	wr16(out + 34, 0);
+	wr16(out + 34, d->orientation);
 	for (i = 0; i < TFX_REC_EFFECT_LEN; i++)
 		out[36 + i] = (uint8_t)d->effect[i];
 	return TFX_REC_PAYLOAD_BYTES;
@@ -58,9 +58,10 @@ int tfx_rec_decode(struct tfx_run_desc *d, const uint8_t *in, size_t len)
 	d->engine_id = rd32(in + 24);
 	d->text_hash = rd32(in + 28);
 	d->text_id = rd16(in + 32);
+	d->orientation = rd16(in + 34);
 	for (i = 0; i < TFX_REC_EFFECT_LEN; i++)
 		d->effect[i] = (char)in[36 + i];
-	if (!d->cols || !d->rows || !d->fps || !effect_ok(d->effect))
+	if (!d->cols || !d->rows || !d->fps || d->orientation > TFX_REC_ORIENT_LANDSCAPE || !effect_ok(d->effect))
 		return -1;
 	return 0;
 }

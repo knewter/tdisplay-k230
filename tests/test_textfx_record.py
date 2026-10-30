@@ -49,7 +49,7 @@ class RecordTests(unittest.TestCase):
         want = (0x0123456789ABCDEF).to_bytes(8, "little") + (35).to_bytes(2, "little") + (38).to_bytes(2, "little") \
             + (30).to_bytes(2, "little") + (3).to_bytes(2, "little") + (40).to_bytes(4, "little") \
             + (0xDEADBEEF).to_bytes(4, "little") + (0x11223344).to_bytes(4, "little") + (0x55667788).to_bytes(4, "little") \
-            + (2).to_bytes(2, "little") + (0).to_bytes(2, "little") + b"wipe".ljust(24, b"\0")
+            + (2).to_bytes(2, "little") + (1).to_bytes(2, "little") + b"wipe".ljust(24, b"\0")
         self.assertEqual(len(want), 60)
         self.assertEqual(out, want.hex())
 
@@ -82,7 +82,7 @@ class RecordTests(unittest.TestCase):
             n, h, off = line.split()
             self.assertEqual(int(n), len(e))
             self.assertEqual(int(h, 16), TF.fnv1a(e))
-        self.assertGreaterEqual(len(want), 4)
+        self.assertGreaterEqual(len(want), 2)
 
     def test_texts_parse_edge_cases(self):
         for blob, count in ((b"", 0), (b"a\n", 1), (b"a\n%%\nb", 2), (b"%%\n%%\na\n%%", 1), (b"a\n%%\n\n%%\nb\n", 2)):

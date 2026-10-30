@@ -20,14 +20,14 @@ capi = []
 fw = ["capi"]
 # Linked into a hosted C program (the Linux player): std provides the allocator and panic handler.
 hosted = ["capi"]
-# A firmware image carries a few effects. These eight each peak under 4 MiB of heap
-# (docs/evidence/boot-text-effects/nostd-feasibility.md); beams, burn, laseretch, rings and
-# binarypath need 8 to 13 MiB and are left out.
+# The per-boot set the stage 1 firmware carries (coordinator's pick, 2026-10-30; sizes and
+# checks in docs/evidence/boot-text-effects/boot-effect-set.md).  `subset` is the smaller
+# 8-effect set kept for size comparisons.
+boot-set = ["ttfx/effect-beams", "ttfx/effect-decrypt", "ttfx/effect-matrix", "ttfx/effect-middleout",
+            "ttfx/effect-synthgrid", "ttfx/effect-rain", "ttfx/effect-waves", "ttfx/effect-wipe"]
 subset = ["ttfx/effect-wipe", "ttfx/effect-middleout", "ttfx/effect-expand", "ttfx/effect-slide",
           "ttfx/effect-errorcorrect", "ttfx/effect-print", "ttfx/effect-decrypt", "ttfx/effect-scattered"]
 
-# rlib only: the freestanding staticlib is built with `cargo rustc --crate-type staticlib`
-# (it needs the `fw` feature for the allocator and panic handler).
 [lib]
 crate-type = ["rlib"]
 

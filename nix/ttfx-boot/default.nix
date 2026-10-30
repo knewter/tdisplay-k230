@@ -12,7 +12,7 @@
 # compiler under RUSTC_BOOTSTRAP=1), offline: cargo resolves the whole std workspace, so
 # the vendor directory is the crate's own lock plus the std lock, both through importCargoLock.
 { lib, stdenv, rustc, cargo, rustPlatform, runCommand, writeShellScript, callPackage
-, features ? [ "fw" "subset" ]
+, features ? [ "fw" "boot-set" ]
 }:
 
 let

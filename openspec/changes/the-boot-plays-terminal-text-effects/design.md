@@ -162,7 +162,7 @@ columns, rows and frame rate (u16 each), flags (u16: replay-fallback used, selec
 from an environment override), last frame drawn (u32) and the FNV-1a of that frame's cell
 grid (u32), an engine id (u32, FNV-1a of "ttfx 14ed274 nostd N": a mismatch means the Linux
 side cannot promise identical frames), the effect name (24 bytes, NUL padded), the text id
-(u16 index into the build-time list, 0xFFFF for a text from the environment) and the text hash
+(u16 index into the build-time list, 0xFFFF for a text from the environment), the orientation (u16: 0 portrait, 1 landscape, D15) and the text hash
 (u32 FNV-1a of the text bytes, so Linux detects firmware and system disagreeing about the
 list). Exactly 60 bytes (`TFX_REC_PAYLOAD_BYTES`) in the 8 KiB window. Validation order is Life's: prefix, checksum,
 boot-instance token against `/chosen/canaan,life-instance`, then the source id picks the
@@ -198,21 +198,23 @@ initrd and changes `initrd.uimg`, so it is the gated step. The decision uses a
 boot trace (task 5.1) and carries the player's progress across switch-root in
 `/run`, which systemd preserves.
 
-**D9. Effect and text are product choices, decided from data.** Default text:
-the committed `nix/exhibition/K230.txt` banner (6 rows by 33 columns of box
-drawing), because it already exists, fits the portrait panel at scale 2, and
-is the identity the exhibition uses. Candidates measured on the real 35x38
-grid (seed 3, 30 fps sequence rate, uncompressed delta sequence): `expand` 50
-frames, 6 KB; `middleout` 94, 13 KB; `slide` 110, 20 KB; `wipe` 138, 17 KB;
-`errorcorrect` 274, 19 KB; `beams` 321, 213 KB; `decrypt` 753, 131 KB with the
-429-glyph set. ttfx's frame counts do not depend on the frame rate, so the
-play time is frames divided by the rate chosen for playback (`wipe` is about 2.3
-s at 60 fps). The shortlist for the user: `wipe` or `middleout` for a short
-stage 1 moment, `beams` for a colour sweep (8.5 MiB of heap, so it needs the larger arena of D14), and `decrypt` for the recognisable
-"BIOS decode" look, which is long and glyph-heavy and would be the live
-continuation more than the U-Boot part. Task 2.3 records the final table;
-the pick is the user's. Orientation (banner readable on the portrait scan, or
-rotated for landscape use) is also open.
+**D9. Effect set and text (decided 2026-10-30).** Text: the committed K230 banner (6 rows by 33 columns of box drawing),
+which fits both orientations (35x38 cells portrait, 77x17 landscape at scale 2); a second text, `T-DISPLAY K230`, fits both
+too and is in `nix/textfx/texts.txt`. Effects, per the coordinator's pick since the user said "you pick what goes":
+`beams decrypt matrix middleout synthgrid rain waves wipe` (feature `boot-set`). Checked against the three budgets
+(`docs/evidence/boot-text-effects/boot-effect-set.md`):
+- *Code size:* 216 262 bytes of text and 36 280 of rodata, 252 542 bytes in all (`nostd-sizes.txt`-style link of the
+  `fw,boot-set` staticlib), against the 658 919 bytes of slot Life leaves, so 406 KB remain for the font table, glue, the
+  fallback sequences and growth.
+- *Arena:* peak heap over both texts, five seeds and both orientations is 8 552 KiB (`beams`), then `synthgrid` 6 243,
+  `waves` 4 043, `decrypt` 3 271; all under the 16 352 KiB limit of D14.
+- *Frame time:* on the C908 as a Linux static executable, every one of the eight costs at most 1.96 ms a frame (`beams`) in both
+  orientations and both texts (`board-boot-set-bench.txt`, `boot-effect-set.md`), a tenth of a 30 fps period; inside U-Boot it is unmeasured (D12).
+No effect was swapped. The durations are long: at 30 fps `matrix` runs 32 to 48 s, `decrypt` up to 27 s and `synthgrid`
+21 s, `waves` 17 s, `beams` 12 s, `rain` 6 to 8 s, `wipe` 4.6 s and `middleout` 3 s. That suits a hand-off across a boot in which the logo
+otherwise sits for over 80 s, and Linux continues the run; but only the first seconds happen in U-Boot, so the effects that
+read well in a few seconds (`wipe`, `middleout`, `rain`, `beams`) are what a person sees complete in stage 1, and the others
+are seen mid-run, then continued. The Linux player's CPU use at 30 fps (6.9 ms a frame for `beams`) is the other cost.
 
 **D10. Relationship to Game of Life.** The user has decided (2026-10-30): Life first, text effects
 after, and eventually a per-boot choice between them. That is option B below; A and C are kept
@@ -310,6 +312,48 @@ cyclic step budget. That U-Boot's caches are really on when the step runs is
 <!-- UNVERIFIED: no MHCR read at the K230# prompt; the stage 1 console run (task 4.2) prints the frame period it achieves. -->.
 A cache-off estimate was therefore not needed; if the first console run shows frame costs more than ten
 times higher, the step budget is re-derived from that run before anything is enabled by default.
+
+**D15. Orientation follows the keyboard base (user decision, 2026-10-30).** "should orient like a phone if no keyboard,
+rotated for keyboard default if keyboard": portrait when no keyboard base is attached, the landscape the shell uses with
+the base when one is.
+*What the system knows today.* Nothing in `/boot` says whether the base is attached. The base's chips sit on hardware I2C4
+(IO46 SCL, IO47 SDA, function 3, 100 kHz): XL9555 expander 0x20, TCA8418 keypad 0x34, BQ27220 gauge 0x55, BQ25896 charger
+0x6B (`docs/evidence/keyboard-base/probe/README.md`), and LILYGO's own firmware detects the base by probing those four
+(`Detected 6B:yes 55:yes 34:yes 20:yes on I2C4 SDA47/SCL46`, same file). Linux binds the TCA8418 at `keypad@34` on
+`i2c@91409000` and the keyboard daemon waits for its input device, checking every 10 s when it is absent
+(`nix/keyboard-base/keyboard_based.py`). `hdmi_dtb`, `lcd_dtb` and `force_dtb` are 17-byte files naming a DTB; they are
+not about the keyboard. They are, however, chosen by a live probe: `k230_set_dtb` in the overlay's
+`board/canaan/common/k230_board_common.c:537-543` runs `dm_i2c_probe` on bus 3 for the LCD at 0x38 and the HDMI bridge at
+0x3b (this also settles the question left UNVERIFIED in `docs/research/hdmi-hotplug.md`: the selection is live, from source
+we build). The shell's landscape is today a build-time choice (`k230.shell.panelTransform = "270"` in the landscape
+profiles), not a function of the base; shell rotation on attach is not implemented here.
+*The stage 1 probe.* Before it draws, stage 1 asks I2C4 whether 0x6B and 0x20 answer, with `dm_i2c_probe` (U-Boot's own
+`i2c probe` semantics, the precedent two screens up in the same file): the DesignWare driver sends the chip address, a
+register-pointer byte 0 and reads one byte (`designware_i2c.c` `designware_i2c_probe_chip`, 2022.10). No register content is
+written on the base: pointer 0 is the BQ25896's REG00 and the XL9555's input port 0. The keypad (0x34) is deliberately not
+probed, because its read side effects through an unknown pointer are not established. Both must answer within a bounded time
+(the driver's own byte and stop timeouts, and a 100 ms budget around the pair); a refusal, a timeout, a bus that cannot be
+brought up, or any error means portrait. Getting there takes a U-Boot DT patch, not a driver: the overlay's `k230.dtsi`
+already defines `i2c4` (disabled, no alias; only `i2c3` has one), so the patch adds the alias, enables the node, muxes IO46
+and IO47 to function 3 with the pull-ups Linux's `i2c4_pins` uses, and releases the controller from reset and opens its
+clock the way stage 1 does for I2C3 <!-- UNVERIFIED: the I2C3 reset and clock release in the vendor stage 1 code was not located; whether I2C4's is already open by default is unknown. -->.
+These are SoC-side writes, none to the base. With the base absent the pads float and the probe is expected to NACK or time
+out <!-- UNVERIFIED: the base-absent boot has never been done (display/keyboard spec), so the bus behaviour with nothing attached is not observed. -->.
+*Carrying it.* The result is the record's orientation field (D5): 0 portrait, 1 landscape.
+*Rendering.* Landscape is a 1232x568 picture on a grid of 77 columns by 17 rows (scale 2; 16x32 pixel cells, 1232x544
+used, centred), turned into the native 568x1232 scanout as Sway's `transform 270` does: logical (lx, ly) lands at native
+(ly, 1231 - lx). That mapping is the one the repo's landscape touch calibration records (logical (x, y) is panel
+(y, 1232 - x), `docs/evidence/panel-landscape/README.md`, injected and operator-confirmed on the glass), not a guess from
+the words "clockwise" and "counterclockwise", which the repo's own descriptions use inconsistently. `textfx/textfx.c`
+implements it (`TFX_ROT_LANDSCAPE`) and `tests/test_textfx.py` checks it against an independent renderer; whether it
+reads upright for a person at the keyboard is a glass observation <!-- UNVERIFIED: no frame of the rotated animation has been seen on the panel; the camera is not used. -->.
+*Linux.* The player's orientation is, in order: an explicit option (tests); the shell's rotation state (the running
+output's transform, or the system's configured `panelTransform`, since that is what the next frame will be); the record's
+orientation; a Linux-side probe for the bound TCA8418; portrait. A choice that differs from the record's means the record's
+canvas does not apply, so the player logs it and plays from frame 0 in the chosen orientation (`tests/test_textfx_player.py`).
+That makes a stage 1 "portrait" followed by a landscape shell a visible change at the hand-off, which is the cost of the
+shell not rotating by itself; the follow-up that would remove it (rotation of the shell when the base attaches) is outside
+this change.
 
 ## Rejected
 

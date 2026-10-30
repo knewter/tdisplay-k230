@@ -57,6 +57,38 @@ is on the source-built U-Boot, not on the system.
 - **WHEN** `tfx_effect`, `tfx_text` and `tfx_seed` are set at the `K230#` prompt before `boot`
 - **THEN** stage 1 plays exactly that effect, text and seed, and the record carries them
 
+### Requirement: The picture is oriented by the keyboard base
+
+Stage 1 SHALL, before it draws, probe the keyboard base on its I2C bus without writing any register content
+on it, and SHALL draw the animation in portrait if the base does not answer within a bounded time or any
+error occurs, and in the shell's landscape orientation if it does. It SHALL record the orientation, and Linux
+SHALL continue in the orientation the shell will display, or from frame 0 in that orientation if it differs from
+the record's. The stage 1 side is source-built firmware; the Linux side is the system.
+
+*Grounding (2026-10-30): the base's chips and LILYGO's detection are in `docs/evidence/keyboard-base/probe/README.md`;
+the landscape mapping is the repo's touch calibration; the renderer is tested on the host. The probe itself has not
+run on the board.*
+
+#### Scenario: Base detached <!-- UNVERIFIED: the base-absent boot has never been done. -->
+
+- **WHEN** the board boots without the keyboard base
+- **THEN** the animation is drawn in portrait and the record says portrait
+
+#### Scenario: Base attached <!-- UNVERIFIED: requires the installed stage 1 build with the I2C4 probe. -->
+
+- **WHEN** the board boots clipped into the keyboard base
+- **THEN** the animation is drawn in landscape, upright for a person at the keyboard, and the record says landscape
+
+#### Scenario: The probe fails
+
+- **WHEN** the bus cannot be brought up or an error occurs during the probe
+- **THEN** the animation is drawn in portrait and the boot continues
+
+#### Scenario: Rendering the landscape picture
+
+- **WHEN** a landscape frame is drawn on the host
+- **THEN** logical pixel (x, y) of the 1232x568 picture is at native pixel (y, 1231 - x) and the surface hash equals an independent renderer's
+
 ### Requirement: A failing engine falls back to a pre-rendered sequence
 
 If the engine cannot start or fails before drawing its first frame (no arena, an

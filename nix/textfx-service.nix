@@ -18,6 +18,10 @@ let
   banner = ./exhibition/K230.txt;
   # Continuation inputs, written by whatever reads the stage 1 record
   # (task 5.2): "skip=<frame> hash=<0x cell-grid hash>".  Absent = frame 0.
+  orientationArg =
+    if cfg.orientation != "auto" then cfg.orientation
+    else if (config.k230.shell.panelTransform or "normal") != "normal" then "landscape"
+    else null;
   start = pkgs.writeShellScript "k230-textfx-start" ''
     args=
     if [ -r /run/k230-textfx/continue ]; then
@@ -27,7 +31,8 @@ let
     exec ${lib.getExe player} \
       --engine ${cfg.engine} ${lib.optionalString (cfg.engine == "child") "--ttfx ${ttfx}/bin/ttfx"} --banner ${cfg.banner} \
       --effect ${cfg.effect} --seed ${toString cfg.seed} --fps ${toString cfg.fps} \
-      --cols ${toString cfg.cols} --rows ${toString cfg.rows} --scale ${toString cfg.scale} \
+      ${lib.optionalString (orientationArg != null) "--orientation ${orientationArg}"} \
+      ${lib.optionalString (cfg.cols != null) "--cols ${toString cfg.cols}"} ${lib.optionalString (cfg.rows != null) "--rows ${toString cfg.rows}"} --scale ${toString cfg.scale} \
       --drm --ready-file /run/k230-textfx/state --idle \
       --stats-file /run/k230-textfx/stats $args \
       ${lib.optionalString (cfg.extraArgs != [ ]) "-- ${lib.escapeShellArgs cfg.extraArgs}"}
@@ -40,8 +45,17 @@ in
     effect = lib.mkOption { type = lib.types.str; default = "wipe"; description = "ttfx effect name."; };
     seed = lib.mkOption { type = lib.types.ints.unsigned; default = 3; description = "ttfx seed; must match the stage 1 sequence."; };
     fps = lib.mkOption { type = lib.types.ints.positive; default = 30; };
-    cols = lib.mkOption { type = lib.types.ints.positive; default = 35; };
-    rows = lib.mkOption { type = lib.types.ints.positive; default = 38; };
+    cols = lib.mkOption { type = lib.types.nullOr lib.types.ints.positive; default = null; description = "Canvas columns; null takes the orientation's grid (35 portrait, 77 landscape)."; };
+    rows = lib.mkOption { type = lib.types.nullOr lib.types.ints.positive; default = null; description = "Canvas rows; null takes the orientation's grid (38 portrait, 17 landscape)."; };
+    orientation = lib.mkOption {
+      type = lib.types.enum [ "auto" "portrait" "landscape" ];
+      default = "auto";
+      description = ''
+        The rule of design D15: portrait with no keyboard base, the shell's landscape with it. auto:
+        a shell configured with a rotated panel (panelTransform 270) wins, because that is what the
+        next frame will be; otherwise the stage 1 record's orientation, then portrait.
+      '';
+    };
     scale = lib.mkOption { type = lib.types.ints.positive; default = 2; };
     banner = lib.mkOption { type = lib.types.path; default = banner; description = "Text the effect animates."; };
     extraArgs = lib.mkOption { type = lib.types.listOf lib.types.str; default = [ ]; description = "Extra ttfx effect arguments."; };

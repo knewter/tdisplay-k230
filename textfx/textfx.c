@@ -292,7 +292,15 @@ static unsigned bytes_per_pixel(enum tfx_fmt f)
 static void put_pixel(const struct tfx_surface *s, unsigned x, unsigned y,
 		      uint8_t r, uint8_t g, uint8_t b)
 {
-	uint8_t *p = (uint8_t *)s->pixels + (size_t)y * s->stride_bytes;
+	uint8_t *p;
+
+	if (s->rot == TFX_ROT_LANDSCAPE) {
+		unsigned nx = y, ny = s->width - 1u - x;
+
+		x = nx;
+		y = ny;
+	}
+	p = (uint8_t *)s->pixels + (size_t)y * s->stride_bytes;
 
 	if (s->fmt == TFX_RGB565) {
 		uint16_t v = (uint16_t)(((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3));
@@ -359,10 +367,11 @@ void tfx_clear(const struct tfx_surface *s)
 uint32_t tfx_surface_hash(const struct tfx_surface *s)
 {
 	uint32_t h = TFX_FNV_INIT;
-	unsigned y;
+	unsigned y, nw = s->rot == TFX_ROT_LANDSCAPE ? s->height : s->width;
+	unsigned nh = s->rot == TFX_ROT_LANDSCAPE ? s->width : s->height;
 
-	for (y = 0; y < s->height; y++)
+	for (y = 0; y < nh; y++)
 		h = tfx_fnv1a((const uint8_t *)s->pixels + (size_t)y * s->stride_bytes,
-			      (size_t)s->width * bytes_per_pixel(s->fmt), h);
+			      (size_t)nw * bytes_per_pixel(s->fmt), h);
 	return h;
 }

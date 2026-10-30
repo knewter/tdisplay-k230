@@ -4,7 +4,7 @@
  * parser reach the same cell grid for every frame, and prints the hashes of
  * the grid and of the rendered surface at the requested frames.
  *
- *   textfx_harness <seq.tfxs> <dump.bin> <scale> <frame,frame,...|all>
+ *   textfx_harness <seq.tfxs> <dump.bin> <scale> <frame,frame,...|all> [landscape]
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -61,8 +61,11 @@ int main(int argc, char **argv)
 	static uint8_t r5[PANEL_W * PANEL_H * 2u];
 	struct tfx_surface sx, si, s5;
 
-	if (argc != 5)
+	unsigned land;
+
+	if (argc != 5 && argc != 6)
 		return 2;
+	land = argc == 6 && !strcmp(argv[5], "landscape");
 	sb = slurp(argv[1], &slen);
 	db = slurp(argv[2], &dlen);
 	if (!sb || !db || tfx_seq_open(&seq, sb, slen)) {
@@ -72,9 +75,14 @@ int main(int argc, char **argv)
 	scale = (unsigned)atoi(argv[3]);
 	tfx_grid_init(&ga, seq.cols, seq.rows);
 	tfx_grid_init(&gb, seq.cols, seq.rows);
-	sx = (struct tfx_surface){ xr, PANEL_W * 4u, PANEL_W, PANEL_H, TFX_XRGB8888, scale,
-				   (PANEL_W - seq.cols * TFX_GLYPH_W * scale) / 2,
-				   (PANEL_H - seq.rows * TFX_GLYPH_H * scale) / 2 };
+	{
+		unsigned lw = land ? PANEL_H : PANEL_W, lh = land ? PANEL_W : PANEL_H;
+
+		sx = (struct tfx_surface){ xr, PANEL_W * 4u, lw, lh, TFX_XRGB8888, scale,
+					   (lw - seq.cols * TFX_GLYPH_W * scale) / 2,
+					   (lh - seq.rows * TFX_GLYPH_H * scale) / 2,
+					   land ? TFX_ROT_LANDSCAPE : TFX_ROT_NONE };
+	}
 	si = sx;
 	si.pixels = inc;
 	s5 = sx;

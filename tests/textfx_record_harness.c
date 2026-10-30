@@ -13,7 +13,7 @@
 int main(int argc, char **argv)
 {
 	if (argc >= 2 && !strcmp(argv[1], "codec")) {
-		struct tfx_run_desc d = { 0x0123456789abcdefull, 35, 38, 30, 3, 40, 0xdeadbeefu, 0x11223344u, 0x55667788u, 2, "wipe" }, e;
+		struct tfx_run_desc d = { 0x0123456789abcdefull, 35, 38, 30, 3, 40, 0xdeadbeefu, 0x11223344u, 0x55667788u, 2, 1, "wipe" }, e;
 		uint8_t buf[TFX_REC_PAYLOAD_BYTES + 4];
 		size_t n = tfx_rec_encode(&d, buf, sizeof buf);
 		unsigned i;
@@ -24,7 +24,7 @@ int main(int argc, char **argv)
 		if (tfx_rec_decode(&e, buf, n) || e.seed != d.seed || e.cols != d.cols || e.rows != d.rows ||
 		    e.fps != d.fps || e.flags != d.flags || e.last_frame != d.last_frame ||
 		    e.cell_hash != d.cell_hash || e.engine_id != d.engine_id || e.text_hash != d.text_hash ||
-		    e.text_id != d.text_id || strcmp(e.effect, d.effect))
+		    e.text_id != d.text_id || e.orientation != d.orientation || strcmp(e.effect, d.effect))
 			return 1;
 		return tfx_rec_decode(&e, buf, n - 1) == 0; /* a short payload must be refused */
 	}

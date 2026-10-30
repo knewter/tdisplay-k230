@@ -1,0 +1,19 @@
+# the coordinator's per-boot set: peak heap KiB (max over the 2 texts of nix/textfx/texts.txt x seeds 1,2,3,7,11) and frame counts (min-max), 30 fps
+# counting allocator on the host, no_std engine of nix/ttfx-boot, example 'mem'
+# orientation effect peak_KiB frames_min-frames_max seconds_at_30fps_max
+portrait beams 8552 280-321 10.7
+portrait decrypt 3271 481-815 27.2
+portrait matrix 1388 1226-1452 48.4
+portrait middleout 1566 78-94 3.1
+portrait synthgrid 6243 628-629 21.0
+portrait rain 1612 126-237 7.9
+portrait waves 4043 492-512 17.1
+portrait wipe 1188 138-138 4.6
+landscape beams 8417 295-348 11.6
+landscape decrypt 3260 481-815 27.2
+landscape matrix 1384 882-977 32.6
+landscape middleout 1555 78-94 3.1
+landscape synthgrid 5891 665-665 22.2
+landscape rain 1597 66-170 5.7
+landscape waves 4032 492-512 17.1
+landscape wipe 1177 138-138 4.6

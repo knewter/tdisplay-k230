@@ -6,10 +6,3 @@
 ╚═╝  ╚═╝╚══════╝╚═════╝  ╚═════╝ 
 %%
 T-DISPLAY K230
-%%
-  T-Display
-     K230
-%%
-NixOS on RISC-V
-C908 x2  1.6 GHz
-RM69A10 AMOLED

@@ -1,0 +1,38 @@
+# engine bench of the per-boot set on the board, both orientations (static soft-float rv64imac executable of the firmware staticlib, Linux-hosted)
+# run 2026-10-30T16:29:10Z; bench sha256 23884af40b6277d0
+Linux 7.3.0-rc5 riscv64
+1
+# orientation text effect frames bytes fnv ms (seed 3, 30 fps)
+portrait K230 beams frames=321 bytes=6671273 fnv=0x3d307348 ms=630
+portrait K230 decrypt frames=753 bytes=3708382 fnv=0xd2f76168 ms=215
+portrait K230 matrix frames=1452 bytes=28021246 fnv=0x4589ff9a ms=1157
+portrait K230 middleout frames=94 bytes=421921 fnv=0xcd9cab90 ms=51
+portrait K230 synthgrid frames=629 bytes=9839229 fnv=0xd827450e ms=448
+portrait K230 rain frames=235 bytes=1005421 fnv=0xa166a4c5 ms=144
+portrait K230 waves frames=512 bytes=2849673 fnv=0x2ebeae89 ms=366
+portrait K230 wipe frames=138 bytes=552473 fnv=0x5c54b47a ms=32
+portrait T2 beams frames=313 bytes=6267432 fnv=0xaccd78c2 ms=608
+portrait T2 decrypt frames=587 bytes=959206 fnv=0x423928e7 ms=36
+portrait T2 matrix frames=1442 bytes=27701962 fnv=0xedb3265f ms=934
+portrait T2 middleout frames=78 bytes=128729 fnv=0x716880bc ms=11
+portrait T2 synthgrid frames=629 bytes=9015262 fnv=0x897042df ms=435
+portrait T2 rain frames=140 bytes=230363 fnv=0xeb3c61b1 ms=22
+portrait T2 waves frames=492 bytes=822960 fnv=0xc41424d9 ms=47
+portrait T2 wipe frames=138 bytes=213024 fnv=0x19f016b8 ms=12
+landscape K230 beams frames=316 bytes=6082999 fnv=0x6516557d ms=597
+landscape K230 decrypt frames=753 bytes=3676756 fnv=0xc463353c ms=223
+landscape K230 matrix frames=962 bytes=14411542 fnv=0x908f18ab ms=610
+landscape K230 middleout frames=94 bytes=417973 fnv=0x444bac52 ms=51
+landscape K230 synthgrid frames=665 bytes=7863748 fnv=0x4ddbc268 ms=381
+landscape K230 rain frames=170 bytes=690930 fnv=0xab47f480 ms=78
+landscape K230 waves frames=512 bytes=2828169 fnv=0xc59c7819 ms=360
+landscape K230 wipe frames=138 bytes=546677 fnv=0x7df5bfd4 ms=33
+landscape T2 beams frames=308 bytes=5718856 fnv=0x978018a5 ms=566
+landscape T2 decrypt frames=587 bytes=934552 fnv=0x6bec4bf5 ms=40
+landscape T2 matrix frames=935 bytes=14074113 fnv=0x4b48c565 ms=589
+landscape T2 middleout frames=78 bytes=125499 fnv=0x6978fefe ms=10
+landscape T2 synthgrid frames=665 bytes=6970164 fnv=0x526b5d81 ms=385
+landscape T2 rain frames=73 bytes=116542 fnv=0x5814eaeb ms=13
+landscape T2 waves frames=492 bytes=802296 fnv=0x916db7a5 ms=39
+landscape T2 wipe frames=138 bytes=207228 fnv=0x245068ca ms=12
+# cleanup done

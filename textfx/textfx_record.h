@@ -13,7 +13,8 @@
  *   20 u32 cell-grid hash of that frame (tfx_grid_hash)
  *   24 u32 engine id        28 u32 text hash (FNV-1a of the text bytes)
  *   32 u16 text id (index into the build-time list, 0xffff = from the environment)
- *   34 u16 reserved (0)     36 char effect[24], NUL padded
+ *   34 u16 orientation (0 portrait, 1 landscape: see enum tfx_rot)
+ *   36 char effect[24], NUL padded
  */
 #ifndef TEXTFX_RECORD_H
 #define TEXTFX_RECORD_H
@@ -25,6 +26,11 @@
 #define TFX_REC_EFFECT_LEN 24u
 #define TFX_REC_TEXT_ENV 0xffffu
 
+/* Orientation of the picture on the panel, decided by stage 1 from the keyboard base:
+ * portrait with no base, the landscape of the shell's `transform 270` with one. */
+#define TFX_REC_ORIENT_PORTRAIT 0u
+#define TFX_REC_ORIENT_LANDSCAPE 1u
+
 #define TFX_REC_FLAG_REPLAY 0x0001u   /* stage 1 played the pre-rendered fallback */
 #define TFX_REC_FLAG_OVERRIDE 0x0002u /* effect, text or seed came from the environment */
 
@@ -33,6 +39,7 @@ struct tfx_run_desc {
 	uint16_t cols, rows, fps, flags;
 	uint32_t last_frame, cell_hash, engine_id, text_hash;
 	uint16_t text_id;
+	uint16_t orientation; /* TFX_REC_ORIENT_* */
 	char effect[TFX_REC_EFFECT_LEN];
 };
 

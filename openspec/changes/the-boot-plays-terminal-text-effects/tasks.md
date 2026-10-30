@@ -29,6 +29,11 @@
 - [x] 2.9 The engine arena: a fixed free DRAM range for the stage 1 engine, a checker against the real boot layout, and the heap margin rule (D14). Proof: `python3 -I tests/test_check_boot_textfx_memory.py` (10 tests) and `python3 tools/check-boot-textfx-memory.py --dtb <board dtb> --size Image=42752512 --size initrd.uimg=27328407 --size fw_jump_add_uboot_head.bin=270808 --size bootargs.txt=198 --size dtb=19308 --heap-peaks docs/evidence/boot-text-effects/nostd-heap-peaks.txt` (host check against the DTB the board boots, read-only from `/boot`).
   Done 2026-10-30 (host): arena `0x18000000..0x1a000000` is clear of every interval, `RESULT: OK`; all 37 effects peak at or under 13 430 KiB against a 16 352 KiB limit. `docs/evidence/boot-text-effects/arena-memory-map.txt`. The live U-Boot and bootm placement comes from `docs/evidence/stage1-memory-map.md`; the kernel's CMA position under the current mainline kernel is not re-measured, and stage 1 does not depend on it.
 
+- [x] 2.10 Orientation in the renderer, the record and the player: landscape is the 1232x568 picture of Sway's `transform 270` turned into the native scanout, `(lx, ly)` to `(ly, 1231 - lx)`; the record carries the orientation; the player takes `--orientation` and follows the record's, refusing a continuation across orientations. Proof: `python3 -I tests/test_textfx.py` (landscape pixel hashes against an independent renderer), `python3 -I tests/test_textfx_record.py`, `python3 -I tests/test_textfx_player.py` (host).
+  Done 2026-10-30 (host build/test only): the mapping comes from the repo's landscape touch calibration (`docs/evidence/panel-landscape/README.md`); 5 + 6 + 18 tests pass. No frame of the rotated animation has been seen on the panel.
+- [x] 2.11 The per-boot effect set `beams decrypt matrix middleout synthgrid rain waves wipe` and the text list (K230 banner, `T-DISPLAY K230`), checked for code size, arena and frame time in both orientations. Proof: `docs/evidence/boot-text-effects/boot-effect-set.md` (host link, host allocator counts, board bench).
+  Done 2026-10-30: 252 542 bytes of engine, worst peak 8 552 KiB, worst frame 1.96 ms on the C908 (board process run, Linux, not U-Boot); 32 of 32 streams equal the std ttfx's; no effect swapped.
+
 ## 3. Early-Linux live player
 
 - [x] 3.1 `k230-textfx` player (C, `nix/textfx/`), a Nix derivation linking the same `no_std` engine as stage 1 (`nix/ttfx-boot/hosted.nix`; the std ttfx child remains as `--engine child`, a test oracle), and a NixOS option that is off by default: runs the engine in process (D4), skips to a frame given on the command line after checking its cell-grid hash, paces at the sequence frame rate, renders cell deltas, supports `--output-file` (no DRM) and the splash owner's ready-file/`SIGUSR1` protocol. Proof: `nix build .#k230-textfx` (target build, laptop claim; built 2026-10-30 from the committed tree: `k230-textfx-riscv64-unknown-linux-gnu-0.1` with `k230-ttfx-boot-hosted`, 1.4 MB, the binary that ran on the board in task 3.2) and `tests/test_textfx_player.py` (15 host tests including the linked engine against the child, frame for frame, all passing 2026-10-30).
@@ -40,15 +45,18 @@
 
 - [ ] 4.1 Add the text-effects frame source (source id 2) to the generic stage 1 loop once `src/boot_frame.h` is on `master`: the engine library linked in, the effect/text/seed selection of D11, the replay fallback of D1b, and the record of D5. Proof: `nix build .#uboot-k230-boot-textfx` (laptop claim). Writing it to a board is task 4.2.
 - [ ] 4.2 Install the stage 1 build by the plan in `design.md`, verify readback and a console transcript of one `K230#` run (with and without `tfx_*` overrides, and with the engine forced to fail so the fallback runs), and keep the rollback. Not started: **HARD STOP**, requires the operator's go-ahead and board reservation.
+- [ ] 4.4 Stage 1 detects the keyboard base before drawing (D15): enable `i2c4` in the stage 1 device tree with an alias, mux IO46 and IO47 to function 3, open its reset and clock, and `dm_i2c_probe` 0x6B and 0x20 with a bounded time; both answering means landscape, anything else portrait; record the orientation. Proof: `nix build .#uboot-k230-boot-textfx` (laptop claim), then a console transcript on the board with the base attached and one with it detached (hardware claim; stays open until both exist). Not started: **HARD STOP**, firmware write.
 - [ ] 4.3 Decide how stage 1 animates while U-Boot loads (D12) from the cyclic-framework research on the Life branch and the engine bench of 2.8, and run each engine step on a private stack (D14: the engine needs 24 KiB, `board-engine-stack.txt`). Proof: a design note and the frame period achieved in the 4.2 transcript.
 
 ## 5. Placement in Linux and handoff (waits for the operator)
 
 - [ ] 5.1 Decide and measure the earliest practical start (rootfs unit versus initrd unit) from a boot trace, and write the exact change to kernel-adjacent files in `design.md`. Not started: initrd or bootargs changes are a **HARD STOP**.
 - [ ] 5.2 Enable the player at boot, hand the display to the shell, and record the journal timing. Proof: serial/journal transcript under `docs/evidence/boot-text-effects/` (boot observation).
+- [ ] 5.3 The Linux orientation rule of D15 (option, shell rotation state, record, bound-TCA8418 probe, portrait) in the unit or the player. Proof: a host test of the rule over its inputs and a board process run with the base attached. Not started.
 
 ## 6. Physical proof (stays open)
 
+- [ ] 6.2 Film the animation in both orientations: base detached (portrait) and attached (landscape), checking that the banner reads upright for the person holding the device. **Physical**; the webcam is not used without the operator's say-so.
 - [ ] 6.1 Film a power-on or warm boot showing the stage 1 sequence, the pause, the live continuation and the shell's first frame, with the film aligned to kernel time. Verify with a committed film and frame timings. **Physical**; the webcam is not used for this change without the operator's say-so.
 
 ## 7. Review
