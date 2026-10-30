@@ -28,6 +28,12 @@ APP_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
 MAX_REQUEST = 4096
 MAX_RESPONSE = 128 * 1024
 PRIORITIES = {"ordinary": 0, "important": 1, "critical": 2}
+MAX_ACTIONS = 2
+ACTION_KEY_LIMIT = 64
+ACTION_LABEL_LIMIT = 40
+# Why an app's event closed, in the org.freedesktop.Notifications numbering.
+# Reason 3 (the app closed it) is the adaptor's own; the broker never sees it.
+CLOSED_EXPIRED, CLOSED_DISMISSED = 1, 2
 
 
 def text(value, limit):
@@ -60,18 +66,45 @@ def delegated(data, source):
     return {"id": "app:" + app_id, "name": name, "icon": icon, "app": True}
 
 
+def parse_actions(raw):
+    """An app's offered actions: a short list of {key, label}, both printable
+    text. Anything else is dropped; the shade draws at most MAX_ACTIONS."""
+    result = []
+    for row in raw if isinstance(raw, list) else []:
+        if not isinstance(row, dict):
+            continue
+        key = text(row.get("key"), ACTION_KEY_LIMIT)
+        label = " ".join(text(row.get("label"), ACTION_LABEL_LIMIT).split())
+        if key and label:
+            result.append({"key": key, "label": label})
+    return result[:MAX_ACTIONS]
+
+
 class History:
     def __init__(self, clock=time.monotonic, wall=time.time, action=None):
         self.clock, self.wall = clock, wall
         self.action = action or (lambda target, execute=False: False)
         self.events = OrderedDict()
         self.sequence = 0
+        # What the delegate (the D-Bus adaptor) is told about its apps' events:
+        # {"event": "closed", "tag", "reason"} and {"event": "action", "tag",
+        # "key"}. The server loop drains it to subscribers; `listeners` is how
+        # many there are, so an action is never taken with nobody to hear it.
+        self.outbox = []
+        self.listeners = 0
+
+    def closed(self, event, reason):
+        """An event left the history without the app asking: tell the app."""
+        if event["source_id"].startswith("app:") and event["tag"]:
+            self.outbox.append({"event": "closed", "tag": event["tag"], "reason": reason})
+            del self.outbox[:-256]
 
     def prune(self):
         now = self.clock()
         for identity, event in list(self.events.items()):
             if not event["ongoing"] and now - event["received"] >= 3600:
                 del self.events[identity]
+                self.closed(event, CLOSED_EXPIRED)
 
     def emit(self, data, source):
         self.prune()
@@ -96,7 +129,7 @@ class History:
                                    if not event["ongoing"]), None)
                 if disposable is None:
                     return {"state": "failed", "error": "history-full"}
-                del self.events[disposable]
+                self.closed(self.events.pop(disposable), CLOSED_EXPIRED)
             self.sequence += 1
             identity = self.sequence
         target = data.get("target") if trusted and not app else None
@@ -109,6 +142,7 @@ class History:
                  "private": data.get("private", True) is not False or not trusted or app,
                  "ongoing": trusted and not app and priority == "critical" and data.get("ongoing") is True,
                  "breakthrough": bool(trusted and not app and priority in ("important", "critical")),
+                 "actions": parse_actions(data.get("actions")) if app else [],
                  "tag": tag, "target": target, "received": self.clock(),
                  "timestamp": int(self.wall()), "error": None}
         self.events[identity] = event
@@ -119,6 +153,7 @@ class History:
         result = {key: event[key] for key in
                   ("id", "source", "icon", "summary", "body", "priority", "timestamp", "error")}
         result["dismissible"] = not event["ongoing"]
+        result["actions"] = [row["label"] for row in event["actions"]]
         result["action_available"] = event["target"] is not None and self.action(event["target"])
         return result
 
@@ -158,6 +193,9 @@ class History:
                     return {"state": "dismissed"}
             return {"state": "failed", "error": "event-gone"}
         if operation == "dismiss-all":
+            for row in self.events.values():
+                if not row["ongoing"]:
+                    self.closed(row, CLOSED_DISMISSED)
             self.events = OrderedDict((key, row) for key, row in self.events.items() if row["ongoing"])
             return {"state": "dismissed", "remaining": len(self.events)}
         identity = data.get("id")
@@ -168,7 +206,20 @@ class History:
             if event["ongoing"]:
                 return {"state": "failed", "error": "critical-retained"}
             del self.events[identity]
+            self.closed(event, CLOSED_DISMISSED)
             return {"state": "dismissed"}
+        if operation == "invoke":
+            # The person tapped one of the app's own actions: the app hears
+            # which, then the event closes as a dismissal, as other servers do.
+            index = data.get("index")
+            if type(index) is not int or not 0 <= index < len(event["actions"]):
+                return {"state": "failed", "error": "no-such-action"}
+            if not self.listeners:
+                return {"state": "failed", "error": "app-unavailable", "retry": True}
+            self.outbox.append({"event": "action", "tag": event["tag"], "key": event["actions"][index]["key"]})
+            del self.events[identity]
+            self.closed(event, CLOSED_DISMISSED)
+            return {"state": "invoked"}
         if operation == "action":
             if event["target"] is None or not self.action(event["target"], execute=True):
                 event["error"] = "Target unavailable"
@@ -281,6 +332,7 @@ def serve(path, trusted):
     listener.setblocking(False)
     selector.register(listener, selectors.EVENT_READ, None)
     clients = {}
+    subscribers = set()  # the delegate's long-lived connections, see "subscribe"
     running = True
 
     def stop(signum, frame):
@@ -292,7 +344,22 @@ def serve(path, trusted):
     def close(client):
         selector.unregister(client)
         clients.pop(client, None)
+        subscribers.discard(client)
         client.close()
+
+    def deliver():
+        """Push queued close and action notices to the subscribed delegate."""
+        history.listeners = len(subscribers)
+        pending, history.outbox = history.outbox, []
+        for message in pending:
+            payload = json.dumps(message, separators=(",", ":")).encode() + b"\n"
+            for client in list(subscribers):
+                try:
+                    if client.send(payload) != len(payload):
+                        close(client)
+                except OSError:
+                    close(client)
+        history.listeners = len(subscribers)
 
     try:
         while running:
@@ -308,11 +375,24 @@ def serve(path, trusted):
                     continue
                 client, state = key.fileobj, key.data
                 try:
+                    if client in subscribers:
+                        # Nothing is expected from a subscriber; EOF ends it.
+                        if not client.recv(MAX_REQUEST):
+                            close(client)
+                        continue
                     if state["response"] is not None:
                         written = client.send(state["response"])
                         state["response"] = state["response"][written:]
                         if not state["response"]:
-                            close(client)
+                            if state.get("subscribe"):
+                                # Only one adaptor listens: a restarted one replaces the old.
+                                for old in list(subscribers):
+                                    close(old)
+                                clients.pop(client, None)
+                                subscribers.add(client)
+                                selector.modify(client, selectors.EVENT_READ, state)
+                            else:
+                                close(client)
                         continue
                     chunk = client.recv(MAX_REQUEST + 1)
                     state["data"] += chunk
@@ -326,7 +406,15 @@ def serve(path, trusted):
                     if (isinstance(data, dict) and data.get("operation") == "history"
                             and any(row["target"] for row in history.events.values())):
                         actions.refresh()
-                    result = history.request(data, source)
+                    if isinstance(data, dict) and data.get("operation") == "subscribe":
+                        # Only the delegate hears about apps' events.
+                        if source and source.get("delegate"):
+                            state["subscribe"] = True
+                            result = {"state": "subscribed"}
+                        else:
+                            result = {"state": "failed", "error": "not-the-delegate"}
+                    else:
+                        result = history.request(data, source)
                     state["response"] = json.dumps(result, separators=(",", ":")).encode() + b"\n"
                     selector.modify(client, selectors.EVENT_WRITE, state)
                 except (OSError, ValueError, KeyError, TypeError):
@@ -334,6 +422,8 @@ def serve(path, trusted):
             for client, state in list(clients.items()):
                 if time.monotonic() >= state["deadline"]:
                     close(client)
+            history.prune()  # an expiry is told to its app when it happens
+            deliver()
     finally:
         for client in list(clients):
             close(client)
@@ -363,7 +453,7 @@ def call(path, request):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("operation", choices=["serve", "history", "emit", "dismiss", "dismiss-all", "action"])
+    parser.add_argument("operation", choices=["serve", "history", "emit", "dismiss", "dismiss-all", "action", "invoke"])
     parser.add_argument("id", nargs="?", type=int)
     parser.add_argument("--socket", type=Path, default=Path(os.environ.get("K230_NOTIFICATION_SOCKET", "/run/shell-notifications/events.sock")))
     parser.add_argument("--trusted", type=Path)
@@ -371,6 +461,7 @@ def main():
     parser.add_argument("--body", default="")
     parser.add_argument("--tag", default="")
     parser.add_argument("--priority", choices=PRIORITIES, default="ordinary")
+    parser.add_argument("--index", type=int, default=0, help="invoke: which of the app's actions")
     args = parser.parse_args()
     if args.operation == "serve":
         trusted = normalize_trusted(json.loads(args.trusted.read_text())) if args.trusted else {}
@@ -379,7 +470,7 @@ def main():
     try:
         result = call(args.socket, {"operation": args.operation, "id": args.id,
                                    "summary": args.summary, "body": args.body,
-                                   "tag": args.tag, "priority": args.priority})
+                                   "tag": args.tag, "priority": args.priority, "index": args.index})
     except (OSError, ValueError):
         result = {"state": "unavailable", "error": "notification-service-unavailable"}
     print(json.dumps(result, separators=(",", ":")))

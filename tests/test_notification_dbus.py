@@ -137,6 +137,29 @@ class Adapting(unittest.TestCase):
         self.assertFalse(self.adaptor.close(identity))
         self.assertFalse(self.adaptor.close(9999))
 
+    def test_actions_are_forwarded_as_key_label_rows(self):
+        self.adaptor.notify("Calc", 0, "", "Done", "", ["default", "Body", "open", "Open", "snooze", "Snooze", "x", "Third"], {}, -1)
+        self.assertEqual(self.sent[0]["actions"], [{"key": "open", "label": "Open"}, {"key": "snooze", "label": "Snooze"}])
+        self.adaptor.notify("Calc", 0, "", "Done", "", ["odd"], {}, -1)
+        self.assertNotIn("actions", self.sent[1])
+        self.assertIn("actions", adaptor.CAPABILITIES)
+
+    def test_broker_notices_become_the_specification_signals(self):
+        identity = self.notify()
+        self.assertEqual(self.adaptor.broker_notice({"event": "action", "tag": f"dbus-{identity}", "key": "open"}),
+                         ("ActionInvoked", "us", (identity, "open")))
+        self.assertEqual(self.adaptor.broker_notice({"event": "closed", "tag": f"dbus-{identity}", "reason": 2}),
+                         ("NotificationClosed", "uu", (identity, 2)))
+        # Said once; a later close from the app is then not a known id.
+        self.assertIsNone(self.adaptor.broker_notice({"event": "closed", "tag": f"dbus-{identity}", "reason": 1}))
+        self.assertFalse(self.adaptor.close(identity))
+        other = self.notify()
+        self.assertEqual(self.adaptor.broker_notice({"event": "closed", "tag": f"dbus-{other}", "reason": 1})[2], (other, 1))
+        third = self.notify()
+        for bad in ({"event": "closed", "tag": f"dbus-{third}", "reason": 3}, {"event": "x"}, {"tag": "timer"}, [], None,
+                    {"event": "action", "tag": "dbus-999", "key": "a"}, {"event": "action", "tag": f"dbus-{third}", "key": 5}):
+            self.assertIsNone(self.adaptor.broker_notice(bad), bad)
+
     def test_broker_down_still_returns_an_id(self):
         def down(request):
             raise ConnectionRefusedError()
@@ -217,6 +240,109 @@ class Integration(unittest.TestCase):
                     process.wait(timeout=3)
                     if process.stdout:
                         process.stdout.close()
+
+
+@unittest.skipUnless(shutil.which("dbus-daemon") and importlib.util.find_spec("jeepney"), "needs dbus-daemon and jeepney")
+class SignalIntegration(unittest.TestCase):
+    """The app hears NotificationClosed (1, 2, 3) and ActionInvoked on a private bus."""
+
+    def setUp(self):
+        from jeepney import DBusAddress, MatchRule, message_bus, new_method_call
+        from jeepney.io.blocking import open_dbus_connection
+        self.new_method_call = new_method_call
+        directory = tempfile.TemporaryDirectory(prefix="k230-nd-")
+        self.addCleanup(directory.cleanup)
+        root = Path(directory.name)
+        self.sock = root / "events.sock"
+        trusted = root / "trusted.json"
+        trusted.write_text(json.dumps({f"{sys.executable} {ROOT / 'tools/notification_dbus.py'}": DELEGATE}))
+        bus = subprocess.Popen(["dbus-daemon", "--session", "--nofork", "--print-address=1", f"--address=unix:path={root}/bus"],
+                               stdout=subprocess.PIPE, text=True)
+        self.addCleanup(self.stop, bus)
+        address = bus.stdout.readline().strip()
+        self.addCleanup(bus.stdout.close)
+        center = subprocess.Popen([sys.executable, str(ROOT / "tools/notification_center.py"), "serve",
+                                   "--socket", str(self.sock), "--trusted", str(trusted)])
+        self.addCleanup(self.stop, center)
+        for _ in range(100):
+            try:
+                broker.call(self.sock, {"operation": "history"})
+                break
+            except (OSError, ValueError):
+                time.sleep(.05)
+        self.addCleanup(self.stop, subprocess.Popen([sys.executable, str(ROOT / "tools/notification_dbus.py"),
+                                                     "--bus", address, "--socket", str(self.sock)]))
+        self.target = DBusAddress("/org/freedesktop/Notifications", "org.freedesktop.Notifications", "org.freedesktop.Notifications")
+        deadline = time.monotonic() + 5
+        while True:
+            try:
+                self.client = open_dbus_connection(bus=address)
+                self.addCleanup(self.client.close)
+                reply = self.client.send_and_get_reply(new_method_call(self.target, "GetCapabilities"), timeout=1)
+                if reply.header.message_type.name == "method_return":
+                    break
+                self.client.close()
+                raise OSError("name not owned yet")
+            except Exception:
+                if time.monotonic() > deadline:
+                    self.fail("adaptor did not own the name")
+                time.sleep(.05)
+        self.client.send_and_get_reply(message_bus.AddMatch(MatchRule(type="signal", interface="org.freedesktop.Notifications")), timeout=3)
+        # The adaptor subscribes to the broker on its own thread: wait until
+        # an action is accepted, then discard the signals that probe made.
+        for _ in range(100):
+            self.notify(["k", "K"])
+            row = self.newest()
+            if broker.call(self.sock, {"operation": "invoke", "id": row["id"], "index": 0}).get("error") != "app-unavailable":
+                break
+            broker.call(self.sock, {"operation": "dismiss", "id": row["id"]})
+            time.sleep(.05)
+        try:
+            while True:
+                self.client.receive(timeout=.3)
+        except TimeoutError:
+            pass
+
+    @staticmethod
+    def stop(process):
+        process.terminate()
+        process.wait(timeout=3)
+
+    def notify(self, actions):
+        message = self.new_method_call(self.target, "Notify", "susssasa{sv}i", ("Calc", 0, "", "Done", "body", actions, {}, -1))
+        return self.client.send_and_get_reply(message, timeout=3).body[0]
+
+    def signal(self):
+        while True:
+            message = self.client.receive(timeout=3)
+            if message.header.message_type.name == "signal":
+                return message.header.fields[3], message.body
+
+    def newest(self):
+        return broker.call(self.sock, {"operation": "history"})["events"][0]
+
+    def test_the_person_dismissing_is_reason_two(self):
+        identity = self.notify([])
+        self.assertEqual(broker.call(self.sock, {"operation": "dismiss", "id": self.newest()["id"]})["state"], "dismissed")
+        self.assertEqual(self.signal(), ("NotificationClosed", (identity, 2)))
+
+    def test_the_app_closing_it_is_reason_three_and_only_once(self):
+        identity = self.notify([])
+        self.client.send_and_get_reply(self.new_method_call(self.target, "CloseNotification", "u", (identity,)), timeout=3)
+        self.assertEqual(self.signal(), ("NotificationClosed", (identity, 3)))
+        self.assertEqual(broker.call(self.sock, {"operation": "history"})["count"], 0)
+
+    def test_a_tapped_action_reaches_the_app_with_its_key(self):
+        identity = self.notify(["default", "Body", "open", "Open", "snooze", "Snooze"])
+        row = self.newest()
+        self.assertEqual(row["actions"], ["Open", "Snooze"])
+        self.assertEqual(broker.call(self.sock, {"operation": "invoke", "id": row["id"], "index": 1})["state"], "invoked")
+        self.assertEqual(self.signal(), ("ActionInvoked", (identity, "snooze")))
+        self.assertEqual(self.signal(), ("NotificationClosed", (identity, 2)))
+
+    def test_the_server_advertises_actions(self):
+        reply = self.client.send_and_get_reply(self.new_method_call(self.target, "GetCapabilities"), timeout=3)
+        self.assertEqual(reply.body[0], ["body", "actions"])
 
 
 if __name__ == "__main__":
