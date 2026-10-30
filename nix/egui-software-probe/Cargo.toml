@@ -1,0 +1,17 @@
+[package]
+name = "egui-software-probe"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Opt-in egui client that rasterises on the CPU and presents through wl_shm"
+
+[dependencies]
+libc = "0.2"
+egui = { version = "=0.34.1", default-features = false, features = ["default_fonts"] }
+egui_software_backend = { version = "=0.0.3", default-features = false, features = ["std"] }
+wayland-client = "0.31"
+wayland-protocols = { version = "0.32", features = ["client", "unstable"] }
+
+[profile.release]
+opt-level = 3
+debug = false

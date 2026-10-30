@@ -459,6 +459,8 @@
         qtquick-software-probe = pkgsCross.callPackage ./nix/qtquick-software-probe/default.nix { };
         # Opt-in wl_shm client with the same scene and gestures: the matched baseline.
         qtquick-shm-baseline = pkgsCross.callPackage ./nix/qtquick-shm-baseline/default.nix { };
+        # Opt-in egui client: CPU rasteriser into wl_shm, the same scene as the Qt probe.
+        egui-software-probe = pkgsCross.callPackage ./nix/egui-software-probe/default.nix { };
         # Standalone pinned helper package; no theme service enters the normal
         # image until generation/rollback and physical gates pass.
         omarchy-theme-tools = pkgsCross.callPackage ./nix/omarchy-theme-tools { };

@@ -1,0 +1,804 @@
+diff --git a/conformance/tests/block_imp.rs b/conformance/tests/block_imp.rs
+index bea8095..fb373b8 100644
+--- a/conformance/tests/block_imp.rs
++++ b/conformance/tests/block_imp.rs
+@@ -115,7 +115,7 @@ fn many_block_methods() {
+ /// (On x86_64 the address takes the first argument register, and the
+ /// block's flags would have to say so, which block2's blocks don't.)
+ #[test]
+-#[cfg(not(target_arch = "x86_64"))]
++#[cfg(not(any(target_arch = "x86_64", target_arch = "riscv64")))]
+ fn block_returning_a_large_struct() {
+     #[repr(C)]
+     #[derive(Clone, Copy, Debug, PartialEq)]
+diff --git a/conformance/tests/msgsend.rs b/conformance/tests/msgsend.rs
+index 87b67ce..a9b6e05 100644
+--- a/conformance/tests/msgsend.rs
++++ b/conformance/tests/msgsend.rs
+@@ -2,6 +2,12 @@
+ //! signature, as code written against the C API does.
+ 
+ use objc2::ffi;
++
++#[cfg(target_arch = "riscv64")]
++unsafe extern "C-unwind" {
++    /// riscv64's entry for structs returned in memory (the address takes a0).
++    fn objc_msgSend_stret();
++}
+ use objc2::rc::Retained;
+ use objc2::runtime::{AnyObject, NSObject, NSObjectProtocol, Sel};
+ use objc2::{AnyThread, ClassType, DefinedClass, define_class, msg_send, sel};
+@@ -90,7 +96,12 @@ fn objc_msg_send_returning_a_large_struct() {
+         let f: unsafe extern "C-unwind" fn() = ffi::objc_msgSend_stret;
+         unsafe { std::mem::transmute(f) }
+     };
+-    #[cfg(not(target_arch = "x86_64"))]
++    #[cfg(target_arch = "riscv64")]
++    let wide: unsafe extern "C-unwind" fn(*mut AnyObject, Sel, i64) -> Wide = {
++        let f: unsafe extern "C-unwind" fn() = objc_msgSend_stret;
++        unsafe { std::mem::transmute(f) }
++    };
++    #[cfg(not(any(target_arch = "x86_64", target_arch = "riscv64")))]
+     let wide: unsafe extern "C-unwind" fn(*mut AnyObject, Sel, i64) -> Wide = msg_send_fn();
+     assert_eq!(unsafe { wide(receiver, sel!(wide:), 7) }, Wide([7, 8, 9, 10, 100]));
+ }
+@@ -178,7 +189,12 @@ fn objc_msg_send_hits_the_cache() {
+             >(fpret),
+         )
+     };
+-    #[cfg(not(target_arch = "x86_64"))]
++    #[cfg(target_arch = "riscv64")]
++    let wide: unsafe extern "C-unwind" fn(*mut AnyObject, Sel, i64) -> Wide = {
++        let f: unsafe extern "C-unwind" fn() = objc_msgSend_stret;
++        unsafe { std::mem::transmute(f) }
++    };
++    #[cfg(not(any(target_arch = "x86_64", target_arch = "riscv64")))]
+     let wide: unsafe extern "C-unwind" fn(*mut AnyObject, Sel, i64) -> Wide = msg_send_fn();
+     for i in 0..100 {
+         assert_eq!(unsafe { wide(receiver, sel!(wide:), i) }, Wide([i, i + 1, i + 2, i + 3, 100]));
+diff --git a/conformance/tests/proxy.rs b/conformance/tests/proxy.rs
+index 1bcdd8a..5322272 100644
+--- a/conformance/tests/proxy.rs
++++ b/conformance/tests/proxy.rs
+@@ -205,7 +205,15 @@ fn proxies_forward_what_they_do_not_implement() {
+         let f: unsafe extern "C-unwind" fn() = ffi::objc_msgSend_stret;
+         unsafe { std::mem::transmute(f) }
+     };
+-    #[cfg(not(target_arch = "x86_64"))]
++    #[cfg(target_arch = "riscv64")]
++    let wide: unsafe extern "C-unwind" fn(Id, Sel, i64) -> Wide = {
++        unsafe extern "C-unwind" {
++            fn objc_msgSend_stret();
++        }
++        let f: unsafe extern "C-unwind" fn() = objc_msgSend_stret;
++        unsafe { std::mem::transmute(f) }
++    };
++    #[cfg(not(any(target_arch = "x86_64", target_arch = "riscv64")))]
+     let wide: unsafe extern "C-unwind" fn(Id, Sel, i64) -> Wide = send();
+     assert_eq!(unsafe { wide(p, sel!(wide:), 7) }, Wide { v: [7, 8, 9, 10, 11] });
+     assert_eq!(logged(&proxy), ["value", "point:", "wide:"]);
+diff --git a/crates/sidestep-runtime/src/block_imp.rs b/crates/sidestep-runtime/src/block_imp.rs
+index 779d3e8..c05c223 100644
+--- a/crates/sidestep-runtime/src/block_imp.rs
++++ b/crates/sidestep-runtime/src/block_imp.rs
+@@ -42,13 +42,17 @@ use crate::{Bool, Imp, NO, YES};
+ type Id = *mut Object;
+ 
+ /// Each stub and each data slot takes 16 bytes.
++#[cfg(not(target_arch = "riscv64"))]
+ const STRIDE: usize = 16;
++/// riscv64's stub is five instructions.
++#[cfg(target_arch = "riscv64")]
++const STRIDE: usize = 32;
+ 
+ /// A block's flags: the block returns a struct through memory, which only
+ /// counts with `BLOCK_HAS_SIGNATURE`.
+-#[cfg(target_arch = "x86_64")]
++#[cfg(any(target_arch = "x86_64", target_arch = "riscv64"))]
+ const BLOCK_USE_STRET: i32 = 1 << 29;
+-#[cfg(target_arch = "x86_64")]
++#[cfg(any(target_arch = "x86_64", target_arch = "riscv64"))]
+ const BLOCK_HAS_SIGNATURE: i32 = 1 << 30;
+ 
+ /// Which way a stub moves the arguments.
+@@ -56,7 +60,7 @@ const BLOCK_HAS_SIGNATURE: i32 = 1 << 30;
+ enum Kind {
+     Plain,
+     /// x86_64 only: the method returns a struct in memory.
+-    #[cfg_attr(not(target_arch = "x86_64"), allow(dead_code))]
++    #[cfg_attr(not(any(target_arch = "x86_64", target_arch = "riscv64")), allow(dead_code))]
+     Stret,
+ }
+ 
+@@ -95,6 +99,30 @@ fn template(kind: Kind, region: usize) -> [u8; STRIDE] {
+             stub[i * 4..i * 4 + 4].copy_from_slice(&word.to_le_bytes());
+         }
+     }
++    #[cfg(target_arch = "riscv64")]
++    {
++        // Plain: mv a1, a0; auipc t0, hi; ld a0, lo(t0); ld t1, 16(a0); jr t1.
++        // Stret (the address in a0, so self is in a1): mv a2, a1; ...; ld a1.
++        // The auipc is 4 bytes in, so the slot is `region - 4` from it.
++        let off = (region - 4) as i64;
++        let hi = (off + 0x800) >> 12;
++        let lo = off - (hi << 12);
++        let (moved, block) = match kind {
++            Kind::Plain => (10u32, 11u32), // moves a0 into a1; block into a0
++            Kind::Stret => (11u32, 12u32), // moves a1 into a2; block into a1
++        };
++        let (src, dst, blk) = (moved, block, moved);
++        let words: [u32; 5] = [
++            (src << 15) | (dst << 7) | 0x13, // addi dst, src, 0
++            ((hi as u32) << 12) | (5 << 7) | 0x17, // auipc t0, hi
++            (((lo as u32) & 0xfff) << 20) | (5 << 15) | (3 << 12) | (blk << 7) | 0x03, // ld blk, lo(t0)
++            (16 << 20) | (blk << 15) | (3 << 12) | (6 << 7) | 0x03, // ld t1, 16(blk)
++            (6 << 15) | 0x67,                // jalr x0, 0(t1)
++        ];
++        for (i, word) in words.iter().enumerate() {
++            stub[i * 4..i * 4 + 4].copy_from_slice(&word.to_le_bytes());
++        }
++    }
+     #[cfg(target_arch = "x86_64")]
+     {
+         // The rip-relative load ends 10 bytes in.
+@@ -264,8 +292,19 @@ unsafe fn sync_instruction_cache(code: *const u8, len: usize) {
+     }
+ }
+ 
++/// riscv64: ask the kernel to flush every hart's instruction cache.
++///
++/// # Safety
++/// `code` must point to `len` readable bytes.
++#[cfg(target_arch = "riscv64")]
++unsafe fn sync_instruction_cache(code: *const u8, len: usize) {
++    // SAFETY: the `riscv_flush_icache` system call (259) takes an address
++    // range and flags.
++    unsafe { libc::syscall(259, code.addr(), code.addr() + len, 0usize) };
++}
++
+ /// x86 keeps instruction fetch coherent with stores.
+-#[cfg(not(target_arch = "aarch64"))]
++#[cfg(not(any(target_arch = "aarch64", target_arch = "riscv64")))]
+ unsafe fn sync_instruction_cache(_code: *const u8, _len: usize) {}
+ 
+ /// An implementation that calls `block` with the receiver and the
+@@ -286,7 +325,7 @@ pub unsafe extern "C-unwind" fn imp_implementationWithBlock(block: Id) -> Option
+     Some(unsafe { std::mem::transmute::<usize, Imp>(imp) })
+ }
+ 
+-#[cfg(target_arch = "x86_64")]
++#[cfg(any(target_arch = "x86_64", target_arch = "riscv64"))]
+ fn stub_kind(block: *mut c_void) -> Kind {
+     // SAFETY: a block's flags follow its isa.
+     let flags = unsafe { block.cast::<i32>().add(2).read() };
+@@ -294,7 +333,7 @@ fn stub_kind(block: *mut c_void) -> Kind {
+     if flags & stret == stret { Kind::Stret } else { Kind::Plain }
+ }
+ 
+-#[cfg(not(target_arch = "x86_64"))]
++#[cfg(not(any(target_arch = "x86_64", target_arch = "riscv64")))]
+ fn stub_kind(_block: *mut c_void) -> Kind {
+     Kind::Plain
+ }
+diff --git a/crates/sidestep-runtime/src/call.rs b/crates/sidestep-runtime/src/call.rs
+index e7ab089..06b7130 100644
+--- a/crates/sidestep-runtime/src/call.rs
++++ b/crates/sidestep-runtime/src/call.rs
+@@ -66,20 +66,32 @@ pub struct Registers {
+     _pad: u64,
+ }
+ 
++/// The argument registers, laid out as the forwarding trampoline saves
++/// them: a0-a7, then fa0-fa7 in 16-byte slots of which the low 8 bytes
++/// are the register.
++#[cfg(target_arch = "riscv64")]
++#[repr(C, align(16))]
++pub struct Registers {
++    gpr: [u64; 8],
++    fpr: [[u8; 16]; 8],
++}
++
++#[cfg(target_arch = "riscv64")]
++const _: () = assert!(size_of::<Registers>() == 192 && std::mem::offset_of!(Registers, fpr) == 64);
+ #[cfg(target_arch = "aarch64")]
+ const _: () = assert!(size_of::<Registers>() == 208 && std::mem::offset_of!(Registers, fpr) == 80);
+ #[cfg(target_arch = "x86_64")]
+ const _: () = assert!(size_of::<Registers>() == 192 && std::mem::offset_of!(Registers, gpr) == 128);
+ 
+ /// How many integer and floating-point registers carry arguments.
+-#[cfg(target_arch = "aarch64")]
++#[cfg(any(target_arch = "aarch64", target_arch = "riscv64"))]
+ const GPR_ARGS: u8 = 8;
+ #[cfg(target_arch = "x86_64")]
+ const GPR_ARGS: u8 = 6;
+ const FPR_ARGS: u8 = 8;
+ 
+ /// The registers a return value comes back in: on x86_64, rax and rdx.
+-#[cfg(target_arch = "aarch64")]
++#[cfg(any(target_arch = "aarch64", target_arch = "riscv64"))]
+ const GPR_RETURN: [u8; 2] = [0, 1];
+ #[cfg(target_arch = "x86_64")]
+ const GPR_RETURN: [u8; 2] = [6, 2];
+@@ -88,7 +100,7 @@ const GPR_RETURN: [u8; 2] = [6, 2];
+ /// x8, or on x86_64 rdi, the hidden first argument.
+ #[cfg(target_arch = "aarch64")]
+ const INDIRECT_RESULT: u8 = 8;
+-#[cfg(target_arch = "x86_64")]
++#[cfg(any(target_arch = "x86_64", target_arch = "riscv64"))]
+ const INDIRECT_RESULT: u8 = 0;
+ 
+ #[cfg(target_arch = "x86_64")]
+@@ -471,6 +483,12 @@ unsafe fn store(regs: &mut Registers, stack: *mut u8, piece: &Piece, src: *const
+             let mut reg = [0u8; 16];
+             // SAFETY: a register piece is at most 16 bytes.
+             unsafe { reg.as_mut_ptr().copy_from_nonoverlapping(src, len) };
++            // RISC-V keeps a float in a double-width register NaN-boxed:
++            // all ones above it, or the callee reads a NaN.
++            #[cfg(target_arch = "riscv64")]
++            if len == 4 {
++                reg[4..8].fill(0xff);
++            }
+             regs.fpr[i as usize] = reg;
+         }
+         Loc::Stack(at) => {
+@@ -872,6 +890,167 @@ impl Layout {
+     }
+ }
+ 
++/// RISC-V's hard-float calling convention (LP64D): the leaves of `ty`
++/// when it passes in floating-point registers, as a `float`, `double` or
++/// struct of one or two scalars at least one of which is a `float` or
++/// `double` and the other a floating-point value or an integer of at most
++/// 8 bytes, with arrays and nested structs flattened. `(offset, is float,
++/// size)` for each.
++#[cfg(target_arch = "riscv64")]
++fn float_leaves(ty: &Ty) -> Option<Vec<(usize, bool, u8)>> {
++    if ty.size() > 16 {
++        return None;
++    }
++    let mut leaves = Vec::new();
++    ty.leaves(0, &mut leaves, 2)?;
++    let flat: Vec<(usize, bool, u8)> = leaves
++        .into_iter()
++        .map(|(at, leaf)| match leaf {
++            Leaf::Float(n) => (at, true, n),
++            Leaf::Int(n) => (at, false, n),
++        })
++        .collect();
++    let ok = !flat.is_empty()
++        && flat.iter().any(|&(_, f, n)| f && n <= 8)
++        && flat.iter().all(|&(_, _, n)| n <= 8);
++    ok.then_some(flat)
++}
++
++/// How a scalar integer extends on RISC-V: to 32 bits by its own
++/// signedness, then sign-extended to 64, so an `unsigned int` is
++/// sign-extended too.
++#[cfg(target_arch = "riscv64")]
++fn riscv_ext(ty: &Ty) -> Ext {
++    match *ty {
++        Ty::Int { size: 4, .. } => Ext::Sign,
++        Ty::Int { size, signed } if size < 4 => {
++            if signed {
++                Ext::Sign
++            } else {
++                Ext::Zero
++            }
++        }
++        _ => Ext::None,
++    }
++}
++
++#[cfg(target_arch = "riscv64")]
++impl Layout {
++    /// A pointer-sized value: the next integer register, or a stack slot.
++    fn word(&mut self) -> Loc {
++        if self.gprs < GPR_ARGS {
++            self.gprs += 1;
++            Loc::Gpr(self.gprs - 1)
++        } else {
++            let at = self.stack;
++            self.stack += 8;
++            Loc::Stack(at as u32)
++        }
++    }
++
++    /// The LP64D rules for one argument: floating-point values and small
++    /// floating-point structs in fa registers when enough remain (else as
++    /// integers), other values of up to 16 bytes in one or two integer
++    /// registers (a pair starting at an even register for 16-byte
++    /// alignment; when only the last register remains, the first word in
++    /// it and the second on the stack), larger ones by address.
++    fn argument(&mut self, ty: &Ty) -> Passing {
++        let (size, align) = (ty.size(), ty.align());
++        if size == 0 {
++            return Passing::Nothing;
++        }
++        if let Some(flat) = float_leaves(ty) {
++            let floats = flat.iter().filter(|l| l.1).count() as u8;
++            let ints = flat.len() as u8 - floats;
++            if self.fprs + floats <= FPR_ARGS && self.gprs + ints <= GPR_ARGS {
++                let list: Vec<Piece> = flat
++                    .iter()
++                    .map(|&(at, is_float, n)| {
++                        let loc = if is_float {
++                            self.fprs += 1;
++                            Loc::Fpr(self.fprs - 1)
++                        } else {
++                            self.gprs += 1;
++                            Loc::Gpr(self.gprs - 1)
++                        };
++                        Piece { loc, offset: at as u32, len: n as u32, ext: Ext::None }
++                    })
++                    .collect();
++                return pieces(&list);
++            }
++        }
++        if size > 16 {
++            self.indirect += size.next_multiple_of(16);
++            return Passing::Indirect(self.word());
++        }
++        let words = size.div_ceil(8) as u8;
++        if align == 16 {
++            self.gprs = self.gprs.next_multiple_of(2);
++        }
++        let ext = riscv_ext(ty);
++        if self.gprs + words <= GPR_ARGS {
++            let list: Vec<Piece> = (0..words)
++                .map(|i| Piece {
++                    loc: Loc::Gpr(self.gprs + i),
++                    offset: 8 * i as u32,
++                    len: (size - 8 * i as usize).min(8) as u32,
++                    ext,
++                })
++                .collect();
++            self.gprs += words;
++            return pieces(&list);
++        }
++        if words == 2 && self.gprs == GPR_ARGS - 1 {
++            let at = self.stack;
++            self.stack += 8;
++            let list = [
++                Piece { loc: Loc::Gpr(self.gprs), offset: 0, len: 8, ext: Ext::None },
++                Piece { loc: Loc::Stack(at as u32), offset: 8, len: (size - 8) as u32, ext: Ext::None },
++            ];
++            self.gprs = GPR_ARGS;
++            return pieces(&list);
++        }
++        self.gprs = GPR_ARGS;
++        self.on_stack(size, align, ext)
++    }
++
++    /// The return value: as an argument would be passed, but in a0 and a1
++    /// or fa0 and fa1, anything larger through the address in a0, a hidden
++    /// first argument.
++    fn return_value(&mut self, ty: &Ty) -> Passing {
++        let size = ty.size();
++        if size == 0 {
++            return Passing::Nothing;
++        }
++        if let Some(flat) = float_leaves(ty) {
++            let (mut floats, mut ints) = (0usize, 0usize);
++            let list: Vec<Piece> = flat
++                .iter()
++                .map(|&(at, is_float, n)| {
++                    let loc = if is_float {
++                        floats += 1;
++                        Loc::Fpr(floats as u8 - 1)
++                    } else {
++                        ints += 1;
++                        Loc::Gpr(GPR_RETURN[ints - 1])
++                    };
++                    Piece { loc, offset: at as u32, len: n as u32, ext: Ext::None }
++                })
++                .collect();
++            return pieces(&list);
++        }
++        if size > 16 {
++            self.gprs = 1;
++            return Passing::Indirect(Loc::Gpr(INDIRECT_RESULT));
++        }
++        let ext = riscv_ext(ty);
++        let list: Vec<Piece> = (0..size.div_ceil(8))
++            .map(|i| Piece { loc: Loc::Gpr(GPR_RETURN[i]), offset: 8 * i as u32, len: (size - 8 * i).min(8) as u32, ext })
++            .collect();
++        pieces(&list)
++    }
++}
++
+ /// The System V classes of an eightbyte.
+ #[cfg(target_arch = "x86_64")]
+ #[derive(Clone, Copy, PartialEq, Eq)]
+@@ -1092,6 +1271,79 @@ std::arch::global_asm!(
+     ".size sidestep_invoke, . - sidestep_invoke",
+ );
+ 
++// The frame: ra, s0 and s1, with s0 as the frame's base so the stack
++// arguments can take any room below it. s1 keeps the block across the call.
++#[cfg(target_arch = "riscv64")]
++std::arch::global_asm!(
++    ".option push",
++    ".option arch, +d",
++    ".text",
++    ".p2align 2",
++    ".globl sidestep_invoke",
++    ".hidden sidestep_invoke",
++    ".type sidestep_invoke, @function",
++    "sidestep_invoke:",
++    ".cfi_startproc",
++    "addi sp, sp, -32",
++    ".cfi_def_cfa_offset 32",
++    "sd ra, 24(sp)",
++    ".cfi_offset ra, -8",
++    "sd s0, 16(sp)",
++    ".cfi_offset s0, -16",
++    "sd s1, 8(sp)",
++    ".cfi_offset s1, -24",
++    "addi s0, sp, 32",
++    ".cfi_def_cfa s0, 0",
++    "mv s1, a0",
++    "mv t1, a3",
++    "sub sp, sp, a2",
++    "li t2, 0",
++    "2:",
++    "bgeu t2, a2, 3f",
++    "add t3, a1, t2",
++    "ld t4, 0(t3)",
++    "add t3, sp, t2",
++    "sd t4, 0(t3)",
++    "addi t2, t2, 8",
++    "j 2b",
++    "3:",
++    "fld fa0, 64(s1)",
++    "fld fa1, 80(s1)",
++    "fld fa2, 96(s1)",
++    "fld fa3, 112(s1)",
++    "fld fa4, 128(s1)",
++    "fld fa5, 144(s1)",
++    "fld fa6, 160(s1)",
++    "fld fa7, 176(s1)",
++    "ld a1, 8(s1)",
++    "ld a2, 16(s1)",
++    "ld a3, 24(s1)",
++    "ld a4, 32(s1)",
++    "ld a5, 40(s1)",
++    "ld a6, 48(s1)",
++    "ld a7, 56(s1)",
++    "ld a0, 0(s1)",
++    "jalr t1",
++    "sd a0, 0(s1)",
++    "sd a1, 8(s1)",
++    "fsd fa0, 64(s1)",
++    "fsd fa1, 80(s1)",
++    "addi sp, s0, -32",
++    ".cfi_def_cfa sp, 32",
++    "ld ra, 24(sp)",
++    "ld s1, 8(sp)",
++    "ld s0, 16(sp)",
++    "addi sp, sp, 32",
++    ".cfi_def_cfa_offset 0",
++    ".cfi_restore ra",
++    ".cfi_restore s0",
++    ".cfi_restore s1",
++    "ret",
++    ".cfi_endproc",
++    ".size sidestep_invoke, . - sidestep_invoke",
++    ".option pop",
++);
++
+ // The frame: rbp, rbx and r12, with rbp as the frame's base so the stack
+ // arguments can take any room below it (a multiple of 16, which keeps the
+ // call aligned). rbx keeps the block across the call.
+@@ -1248,6 +1500,30 @@ mod tests {
+         assert_eq!(s.return_value().passing, regs(&[(Fpr(0), 0, 8), (Fpr(1), 8, 8), (Fpr(2), 16, 8), (Fpr(3), 24, 8)]));
+     }
+ 
++    #[test]
++    #[cfg(target_arch = "riscv64")]
++    fn lays_out_riscv64() {
++        use Loc::{Fpr, Gpr, Stack};
++        // Floats and doubles take fa registers; a struct of two floats
++        // takes two; a float and an integer take one of each.
++        assert_eq!(
++            passing("v@:f{F=ff}d{G=fi}"),
++            [regs(&[(Fpr(0), 0, 4)]), regs(&[(Fpr(1), 0, 4), (Fpr(2), 4, 4)]), regs(&[(Fpr(3), 0, 8)]), regs(&[(Fpr(4), 0, 4), (Gpr(2), 4, 4)])]
++        );
++        // Three floats are an integer struct, in two registers.
++        assert_eq!(passing("v@:{T=fff}"), [regs(&[(Gpr(2), 0, 8), (Gpr(3), 8, 4)])]);
++        // Larger structs go by address.
++        assert_eq!(passing("v@:{W=[5q]}"), [Passing::Indirect(Gpr(2))]);
++        // A two-word struct when one register is left splits onto the stack.
++        assert_eq!(passing("v@:qqqqq{R=QQ}")[5..], [regs(&[(Gpr(7), 0, 8), (Stack(0), 8, 8)])]);
++        // A struct returned in memory takes a0, so the receiver is in a1.
++        let s = sig("{W=[5q]}@:q");
++        assert_eq!(s.return_value().passing, Passing::Indirect(Gpr(0)));
++        assert_eq!(s.arguments()[0].passing, regs(&[(Gpr(1), 0, 8)]));
++        let s = sig("{M=dq}@:");
++        assert_eq!(s.return_value().passing, regs(&[(Fpr(0), 0, 8), (Gpr(0), 8, 8)]));
++    }
++
+     #[test]
+     #[cfg(target_arch = "x86_64")]
+     fn lays_out_x86_64() {
+diff --git a/crates/sidestep-runtime/src/forward.rs b/crates/sidestep-runtime/src/forward.rs
+index 9ca7a66..e252b02 100644
+--- a/crates/sidestep-runtime/src/forward.rs
++++ b/crates/sidestep-runtime/src/forward.rs
+@@ -54,7 +54,7 @@ type Id = *mut Object;
+ 
+ /// The trampoline, on architectures that have one.
+ pub(crate) fn trampoline() -> Option<Imp> {
+-    #[cfg(any(target_arch = "aarch64", target_arch = "x86_64"))]
++    #[cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "riscv64"))]
+     {
+         unsafe extern "C" {
+             fn sidestep_forward_trampoline();
+@@ -63,7 +63,7 @@ pub(crate) fn trampoline() -> Option<Imp> {
+         // passes the call on to one.
+         Some(unsafe { transmute::<unsafe extern "C" fn(), Imp>(sidestep_forward_trampoline) })
+     }
+-    #[cfg(not(any(target_arch = "aarch64", target_arch = "x86_64")))]
++    #[cfg(not(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "riscv64")))]
+     None
+ }
+ 
+@@ -95,6 +95,8 @@ fn own_forwarding_target(cls: &'static Class) -> Option<Imp> {
+ const STACK_ARGUMENTS: usize = 208;
+ #[cfg(target_arch = "x86_64")]
+ const STACK_ARGUMENTS: usize = 224;
++#[cfg(target_arch = "riscv64")]
++const STACK_ARGUMENTS: usize = 192;
+ 
+ /// The receiver and selector of the message whose registers were saved,
+ /// and the index of the receiver's register.
+@@ -104,7 +106,7 @@ fn message(regs: &mut Registers) -> (usize, Id, Sel) {
+     // write it to first, moving the receiver and selector along by one.
+     // The second argument is either the selector or, in that case, the
+     // receiver, which is never a selector's address.
+-    let at = if cfg!(target_arch = "x86_64") && !selector::is_selector(saved[1]) { 1 } else { 0 };
++    let at = if cfg!(any(target_arch = "x86_64", target_arch = "riscv64")) && !selector::is_selector(saved[1]) { 1 } else { 0 };
+     (at, saved[at] as Id, saved[at + 1] as Sel)
+ }
+ 
+@@ -167,7 +169,7 @@ unsafe fn invoke(regs: &mut Registers, receiver: Id, sel: Sel) -> Imp {
+ /// `NSProxy` implements `-isKindOfClass:` and the like with, as Apple's
+ /// does. Unlike [`trampoline`], it counts as a method.
+ pub(crate) fn invocation_forwarder() -> Option<Imp> {
+-    #[cfg(any(target_arch = "aarch64", target_arch = "x86_64"))]
++    #[cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "riscv64"))]
+     {
+         unsafe extern "C" {
+             fn sidestep_forward_invocation();
+@@ -175,7 +177,7 @@ pub(crate) fn invocation_forwarder() -> Option<Imp> {
+         // SAFETY: only ever called as a method, which it forwards.
+         Some(unsafe { transmute::<unsafe extern "C" fn(), Imp>(sidestep_forward_invocation) })
+     }
+-    #[cfg(not(any(target_arch = "aarch64", target_arch = "x86_64")))]
++    #[cfg(not(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "riscv64")))]
+     None
+ }
+ 
+@@ -260,3 +262,37 @@ crate::trampoline::saving_entry!(
+     call: resolve_invocation,
+     after: [],
+ );
++
++#[cfg(target_arch = "riscv64")]
++std::arch::global_asm!(
++    ".text",
++    ".p2align 2",
++    ".globl sidestep_forward_return",
++    ".hidden sidestep_forward_return",
++    ".type sidestep_forward_return, @function",
++    "sidestep_forward_return:",
++    ".cfi_startproc",
++    "ret",
++    ".cfi_endproc",
++    ".size sidestep_forward_return, . - sidestep_forward_return",
++);
++
++#[cfg(target_arch = "riscv64")]
++crate::trampoline::saving_entry!(
++    name: "sidestep_forward_trampoline",
++    directives: [".hidden sidestep_forward_trampoline"],
++    before: [],
++    setup: ["addi a0, sp, 16"],
++    call: resolve,
++    after: [],
++);
++
++#[cfg(target_arch = "riscv64")]
++crate::trampoline::saving_entry!(
++    name: "sidestep_forward_invocation",
++    directives: [".hidden sidestep_forward_invocation"],
++    before: [],
++    setup: ["addi a0, sp, 16"],
++    call: resolve_invocation,
++    after: [],
++);
+diff --git a/crates/sidestep-runtime/src/message.rs b/crates/sidestep-runtime/src/message.rs
+index 9f34ea4..0ae306f 100644
+--- a/crates/sidestep-runtime/src/message.rs
++++ b/crates/sidestep-runtime/src/message.rs
+@@ -32,7 +32,7 @@ unsafe extern "C-unwind" fn nil_method(_receiver: Id, _sel: Sel) -> Id {
+ /// On x86_64 a message returning a struct in memory passes the address to
+ /// write it to first, so the receiver and selector arrive one register
+ /// later; the second register is then the receiver, never a selector.
+-#[cfg(target_arch = "x86_64")]
++#[cfg(any(target_arch = "x86_64", target_arch = "riscv64"))]
+ unsafe extern "C-unwind" fn unrecognized_selector(first: usize, second: usize, third: usize) {
+     let (receiver, sel) = if selector::is_selector(second) { (first, second) } else { (second, third) };
+     // SAFETY: called as a method, so the receiver is live and the
+@@ -40,7 +40,7 @@ unsafe extern "C-unwind" fn unrecognized_selector(first: usize, second: usize, t
+     unsafe { does_not_recognize(receiver as Id, sel as Sel) }
+ }
+ 
+-#[cfg(not(target_arch = "x86_64"))]
++#[cfg(not(any(target_arch = "x86_64", target_arch = "riscv64")))]
+ unsafe extern "C-unwind" fn unrecognized_selector(receiver: Id, sel: Sel) {
+     // SAFETY: called as a method, so the receiver is live and the
+     // selector valid.
+diff --git a/crates/sidestep-runtime/src/msgsend.rs b/crates/sidestep-runtime/src/msgsend.rs
+index dd606b2..73e9e22 100644
+--- a/crates/sidestep-runtime/src/msgsend.rs
++++ b/crates/sidestep-runtime/src/msgsend.rs
+@@ -101,6 +101,31 @@ crate::trampoline::saving_entry!(
+     consts: [cache = CACHE, home_shift = HOME_SHIFT, address = ADDRESS, slot = SLOT],
+ );
+ 
++// riscv64: no assembly cache probe yet, so every send takes the slow path
++// (`lookup`, which hits the same cache in Rust). objc2 sends with
++// `objc_msg_lookup`, so only C callers see the difference.
++#[cfg(target_arch = "riscv64")]
++crate::trampoline::saving_entry!(
++    name: "objc_msgSend",
++    directives: [],
++    before: ["beqz a0, 1f"],
++    setup: [],
++    call: lookup,
++    after: ["1:", "li a1, 0", "fmv.d.x fa0, zero", "fmv.d.x fa1, zero", "ret"],
++);
++
++// A struct returned in memory takes a0, so the receiver and selector arrive
++// in a1 and a2: x86_64's `objc_msgSend_stret` shape. Nil writes nothing.
++#[cfg(target_arch = "riscv64")]
++crate::trampoline::saving_entry!(
++    name: "objc_msgSend_stret",
++    directives: [],
++    before: ["beqz a1, 1f"],
++    setup: ["mv a0, a1", "mv a1, a2"],
++    call: lookup,
++    after: ["1:", "ret"],
++);
++
+ /// An x86_64 entry point probing the cache for a receiver in `$receiver`
+ /// and a selector in `$sel`. The first slot is probed with r10 and r11
+ /// alone; after a collision, the probe starts again with rax and rbx too,
+@@ -298,6 +323,7 @@ mod tests {
+     /// Cached messages, including ones past a collision in the cache,
+     /// never leave the assembly probe.
+     #[test]
++    #[cfg(any(target_arch = "aarch64", target_arch = "x86_64"))]
+     fn cached_messages_take_the_fast_path() {
+         let sels: Vec<Sel> =
+             (0..200).map(|i| Sel::register(&std::ffi::CString::new(format!("sidestepFast{i}")).unwrap())).collect();
+@@ -342,4 +368,25 @@ mod tests {
+             assert_eq!(misses(|| assert_eq!(unsafe { send(this, sel!(sidestepHalf)) }, 0.5)), 0);
+         }
+     }
++
++    /// riscv64's `objc_msgSend` always takes the slow path, but still
++    /// delivers, and answers a nil receiver with zeros.
++    #[test]
++    #[cfg(target_arch = "riscv64")]
++    fn slow_path_delivers_and_nil_returns_zero() {
++        let sel = Sel::register(c"sidestepRvEcho");
++        let mut builder = ClassBuilder::new(c"SidestepUnitRvSend", NSObject::class()).unwrap();
++        // SAFETY: the signature matches the selector.
++        unsafe { builder.add_method(sel, echo as extern "C-unwind" fn(_, _) -> _) };
++        let cls: &AnyClass = builder.register();
++        let obj: Retained<NSObject> = unsafe { msg_send![cls, new] };
++        let this: *const AnyObject = Retained::as_ptr(&obj).cast();
++        // SAFETY: objc_msgSend called as the method's implementation.
++        let send: unsafe extern "C-unwind" fn(*const AnyObject, Sel) -> Sel =
++            unsafe { std::mem::transmute(objc_msgSend as unsafe extern "C-unwind" fn()) };
++        assert_eq!(unsafe { send(this, sel) }, sel);
++        let nil_send: unsafe extern "C-unwind" fn(*const AnyObject, Sel) -> usize =
++            unsafe { std::mem::transmute(objc_msgSend as unsafe extern "C-unwind" fn()) };
++        assert_eq!(unsafe { nil_send(std::ptr::null(), sel) }, 0);
++    }
+ }
+diff --git a/crates/sidestep-runtime/src/trampoline.rs b/crates/sidestep-runtime/src/trampoline.rs
+index 0473396..276189d 100644
+--- a/crates/sidestep-runtime/src/trampoline.rs
++++ b/crates/sidestep-runtime/src/trampoline.rs
+@@ -156,5 +156,88 @@ macro_rules! saving_entry {
+     };
+ }
+ 
+-#[cfg(any(target_arch = "aarch64", target_arch = "x86_64"))]
++/// riscv64 (LP64D). The frame: ra at sp+0, then a0-a7 at sp+16 and
++/// fa0-fa7 at sp+80, 16-byte slots whose upper halves are unused (so the
++/// block reads as `call::Registers`). The jump goes through t1, which no
++/// argument uses. A nil receiver's `objc_msgSend` branches to label 1
++/// before the frame.
++#[cfg(target_arch = "riscv64")]
++macro_rules! saving_entry {
++    (
++        name: $name:literal,
++        directives: [$($directive:literal),* $(,)?],
++        before: [$($before:expr),* $(,)?],
++        setup: [$($setup:literal),* $(,)?],
++        call: $callee:path,
++        after: [$($after:literal),* $(,)?]
++        $(, consts: [$($cname:ident = $cvalue:expr),* $(,)?])? $(,)?
++    ) => {
++        std::arch::global_asm!(
++            // A module's assembly is assembled for the default features,
++            // so ask for the double-precision registers it saves.
++            ".option push",
++            ".option arch, +d",
++            ".text",
++            ".p2align 2",
++            concat!(".globl ", $name),
++            $($directive,)*
++            concat!(".type ", $name, ", @function"),
++            concat!($name, ":"),
++            ".cfi_startproc",
++            $($before,)*
++            "addi sp, sp, -208",
++            ".cfi_def_cfa_offset 208",
++            "sd ra, 0(sp)",
++            ".cfi_offset ra, -208",
++            "sd a0, 16(sp)",
++            "sd a1, 24(sp)",
++            "sd a2, 32(sp)",
++            "sd a3, 40(sp)",
++            "sd a4, 48(sp)",
++            "sd a5, 56(sp)",
++            "sd a6, 64(sp)",
++            "sd a7, 72(sp)",
++            "fsd fa0, 80(sp)",
++            "fsd fa1, 96(sp)",
++            "fsd fa2, 112(sp)",
++            "fsd fa3, 128(sp)",
++            "fsd fa4, 144(sp)",
++            "fsd fa5, 160(sp)",
++            "fsd fa6, 176(sp)",
++            "fsd fa7, 192(sp)",
++            $($setup,)*
++            "call {callee}",
++            "mv t1, a0",
++            "fld fa0, 80(sp)",
++            "fld fa1, 96(sp)",
++            "fld fa2, 112(sp)",
++            "fld fa3, 128(sp)",
++            "fld fa4, 144(sp)",
++            "fld fa5, 160(sp)",
++            "fld fa6, 176(sp)",
++            "fld fa7, 192(sp)",
++            "ld a0, 16(sp)",
++            "ld a1, 24(sp)",
++            "ld a2, 32(sp)",
++            "ld a3, 40(sp)",
++            "ld a4, 48(sp)",
++            "ld a5, 56(sp)",
++            "ld a6, 64(sp)",
++            "ld a7, 72(sp)",
++            "ld ra, 0(sp)",
++            "addi sp, sp, 208",
++            ".cfi_def_cfa_offset 0",
++            ".cfi_restore ra",
++            "jr t1",
++            $($after,)*
++            ".cfi_endproc",
++            concat!(".size ", $name, ", . - ", $name),
++            ".option pop",
++            callee = sym $callee,
++            $($($cname = const $cvalue,)*)?
++        );
++    };
++}
++
++#[cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "riscv64"))]
+ pub(crate) use saving_entry;
