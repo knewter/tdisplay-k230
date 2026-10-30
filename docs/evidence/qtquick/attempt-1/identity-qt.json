@@ -1,0 +1,86 @@
+{
+  "id": "qtq-3820d48b-ident-qt",
+  "toolkit": "qt",
+  "ok": true,
+  "mapped_graphics_libs": [
+    "libEGL.so.1.1.0",
+    "libGLX.so.0.0.0",
+    "libGLdispatch.so.0.0.0",
+    "libvulkan.so.1.4.357"
+  ],
+  "mapped_qt_libs": [
+    "libQt6Core.so.6.11.2",
+    "libQt6DBus.so.6.11.2",
+    "libQt6Gui.so.6.11.2",
+    "libQt6Network.so.6.11.2",
+    "libQt6OpenGL.so.6.11.2",
+    "libQt6Qml.so.6.11.2",
+    "libQt6QmlMeta.so.6.11.2",
+    "libQt6QmlModels.so.6.11.2",
+    "libQt6QmlWorkerScript.so.6.11.2",
+    "libQt6Quick.so.6.11.2",
+    "libQt6Svg.so.6.11.2",
+    "libQt6WaylandClient.so.6.11.2"
+  ],
+  "effective_env": {
+    "QT_QPA_PLATFORM": "wayland",
+    "QT_QUICK_BACKEND": "software",
+    "QSG_INFO": "1"
+  },
+  "qsg_rhi_backend_inherited": false,
+  "start_line": "{\"e\":\"start\",\"t\":5943602,\"client\":\"qtquick-software-probe\",\"qt\":\"6.11.2\",\"platform\":\"wayland\",\"quick_backend\":\"software\",\"boundary\":\"client_commit\"}",
+  "bound_protocols": [
+    "wl_compositor",
+    "wl_data_device_manager",
+    "wl_fixes",
+    "wl_output",
+    "wl_seat",
+    "wl_shm",
+    "wl_subcompositor",
+    "wp_cursor_shape_manager_v1",
+    "wp_fractional_scale_manager_v1",
+    "wp_viewporter",
+    "xdg_activation_v1",
+    "xdg_wm_base",
+    "zwp_pointer_gestures_v1",
+    "zwp_primary_selection_device_manager_v1",
+    "zwp_tablet_manager_v2",
+    "zwp_text_input_manager_v3",
+    "zxdg_decoration_manager_v1",
+    "zxdg_exporter_v2",
+    "zxdg_output_manager_v1"
+  ],
+  "create_buffer_formats": [
+    "XRGB8888"
+  ],
+  "attach_count": 3,
+  "linux_dmabuf_requests": 0,
+  "wl_drm_requests": 0,
+  "qsg_info_lines": [
+    "Started [systemd-run] /nix/store/j2dd2anwbp2hpfmvm4w6kpsa0qn37zq8-qtquick-software-probe-riscv64-unknown-linux-gnu-0.1/bin/qtquick-software-probe --exit-after-m",
+    "Loading backend software"
+  ],
+  "qsg_info_in_stderr": [
+    "qtquick-probe qt=6.11.2 platform=wayland quick_backend=software negative=0",
+    "[16:17:45.832727] {Default Queue}  -> xdg_toplevel#34.set_title(\"qtquick-software-probe\")"
+  ],
+  "restoration": {
+    "ok": true,
+    "reason": "identity-finally",
+    "id": "qtq-3820d48b-ident-qt",
+    "actions": [
+      "unit-stopped"
+    ],
+    "post": {
+      "sway_pid": "1058",
+      "windows": [
+        "k230-terminal"
+      ],
+      "focused_app_id": "k230-terminal",
+      "focused_con": 5,
+      "shell_active": true,
+      "qtq_units": []
+    },
+    "focus_same_as_before": true
+  }
+}

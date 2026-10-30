@@ -9,10 +9,10 @@
     },
     "qt": {
       "binary": "bin/qtquick-software-probe",
-      "closure_bytes": 1681872192,
+      "closure_bytes": 1681872272,
       "closure_paths": 326,
-      "nar_bytes": 53352,
-      "store_path": "/nix/store/j2dd2anwbp2hpfmvm4w6kpsa0qn37zq8-qtquick-software-probe-riscv64-unknown-linux-gnu-0.1"
+      "nar_bytes": 53432,
+      "store_path": "/nix/store/5dmlkz40l35dqrdq7c1lfpz833amcxhv-qtquick-software-probe-riscv64-unknown-linux-gnu-0.1"
     }
   },
   "budget_version": "qtq-budgets-1",
@@ -49,18 +49,16 @@
     "regression_report_pct": 10.0,
     "startup_ms": 5000
   },
-  "created_utc": "2026-10-30T16:02:32Z",
-  "hash": "3820d48b32bf53817c768479d5edebc16d3a037026b2a613fd8c0dd3fde3de0e",
+  "created_utc": "2026-10-30T16:36:23Z",
+  "hash": "89f105b3edbd4b83653c9c0d4b2c588387ffaf558894b5a294e75f524b5c9ec9",
   "schema": "qtquick-trial-manifest/1",
   "source": {
     "budget_version": "qtq-budgets-1",
-    "revision": "0254802c09f15f1558bcacea3f0d5d49c765e5c5",
+    "revision": "d5ab7d2a92d0903589bd8e0374d8d6d3d08ae71a",
     "workload_id": "qtq-workload-1"
   },
   "system": {
-    "boot_default_init": "init=/nix/store/49mnsl2si30m1l4fxdx2h114myv3anjf-nixos-system-nixos-26.11.20260919.20b1ddd/init",
     "compositor": "/nix/store/dffv13gk9f21m9k1zf8gdchfd2zwlw4b-sway-unwrapped-riscv64-unknown-linux-gnu-1.12",
-    "pixman": "/nix/store/sn5is273nqmzzy2zx07dc5va8bar82nd-pixman-riscv64-unknown-linux-gnu-0.46.4/lib/libpixman-1.so.0.46.4",
     "toplevel": "/nix/store/49mnsl2si30m1l4fxdx2h114myv3anjf-nixos-system-nixos-26.11.20260919.20b1ddd"
   },
   "workload": {

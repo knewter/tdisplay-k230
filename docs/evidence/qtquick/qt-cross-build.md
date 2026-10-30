@@ -65,7 +65,7 @@ every start parses it with the interpreter.
 ## Identities
 
 ```text
-probe     /nix/store/j2dd2anwbp2hpfmvm4w6kpsa0qn37zq8-qtquick-software-probe-riscv64-unknown-linux-gnu-0.1
+probe     /nix/store/5dmlkz40l35dqrdq7c1lfpz833amcxhv-qtquick-software-probe-riscv64-unknown-linux-gnu-0.1
 baseline  /nix/store/y4qh2n92b7ailf2bw7129b9xynxzbz3h-qtquick-shm-baseline-riscv64-unknown-linux-gnu-0.1
 qt        6.11.2 (qtbase, qtdeclarative, qtwayland); wrapper sets QT_QPA_PLATFORM=wayland QT_QUICK_BACKEND=software QSG_INFO=1, unsets QSG_RHI_BACKEND
 ```
@@ -82,14 +82,14 @@ bytes** is new.
 
 ```text
 nix build .#qtquick-software-probe --max-jobs 1 --cores 4 --no-link --print-out-paths
-  /nix/store/j2dd2anwbp2hpfmvm4w6kpsa0qn37zq8-qtquick-software-probe-riscv64-unknown-linux-gnu-0.1
+  /nix/store/5dmlkz40l35dqrdq7c1lfpz833amcxhv-qtquick-software-probe-riscv64-unknown-linux-gnu-0.1
 nix build .#qtquick-shm-baseline --max-jobs 1 --cores 4 --no-link --print-out-paths
   /nix/store/y4qh2n92b7ailf2bw7129b9xynxzbz3h-qtquick-shm-baseline-riscv64-unknown-linux-gnu-0.1
 python3 tests/test_qtquick_probe_scene.py     OK (14 tests; host scene/output fixtures)
 python3 tools/qtquick-trial.py --self-test    OK
 python3 tests/test_qtquick_trial_recovery.py  OK (host simulation)
 python3 tools/qtquick-trial.py prepare --qt PROBE --baseline BASELINE --output docs/evidence/qtquick/qt/manifest.json
-  manifest hash 3820d48b32bf5381 (system and compositor read from the board, read-only)
+  manifest hash 89f105b3edbd4b83 (system and compositor read from the board, read-only)
 prepare with a missing --qt path        -> error: qt: .../bin/qtquick-software-probe is missing (exit 2, no manifest written)
 prepare with --qt equal to --baseline   -> error: qt: ...: bin/qtquick-software-probe is missing (exit 2, no manifest written)
 ```
@@ -98,3 +98,15 @@ The host also compiled `nix/qtquick-software-probe/main.cpp` natively against
 the host's Qt 6.11.1 and ran it with `QT_QPA_PLATFORM=offscreen
 QT_QUICK_BACKEND=software`: it printed `start`, `commit`, `first_frame`,
 `exit` events (host, not board).
+
+## Rebuild after the first board attempt
+
+The first board attempt (`attempt-1/README.md`) showed the Qt window never
+appeared under the expected `app_id` (the wrapper renames the binary, so Qt
+reported `.qtquick-software-probe-wrapped`). `main.cpp` now calls
+`QGuiApplication::setDesktopFileName("qtquick-software-probe")`; that changes
+only the final probe derivation (about one minute). The identities above are
+the rebuilt probe; the manifest was re-pinned (hash `89f105b3edbd4b83`) with
+the same running system and compositor identities as attempt 1, taken from
+the board earlier the same day (`prepare --system ... --compositor ...`, no board contact).
+The earlier probe `j2dd2anwbp2hpfmvm4w6kpsa0qn37zq8` was used for attempt 1 only.

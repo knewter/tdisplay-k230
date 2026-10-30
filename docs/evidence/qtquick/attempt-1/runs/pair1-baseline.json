@@ -1,0 +1,72 @@
+{
+ "schema": "qtquick-run/1",
+ "id": "qtq-3820d48b-p12-baseline",
+ "toolkit": "baseline",
+ "pair": 1,
+ "order": 2,
+ "manifest_hash": "3820d48b32bf53817c768479d5edebc16d3a037026b2a613fd8c0dd3fde3de0e",
+ "artifact": "/nix/store/y4qh2n92b7ailf2bw7129b9xynxzbz3h-qtquick-shm-baseline-riscv64-unknown-linux-gnu-0.1",
+ "boundary": "client_commit",
+ "evidence_class": "board; injected uinput touch; native grim capture",
+ "phases": {},
+ "interactions": [],
+ "functional": {
+  "restored": true,
+  "software_route": true
+ },
+ "captures": [],
+ "log": [
+  "6571.193 launched"
+ ],
+ "pre": {
+  "sway_pid": "1058",
+  "windows": [
+   "k230-terminal"
+  ],
+  "focused_app_id": "k230-terminal",
+  "focused_con": 5,
+  "shell_active": true,
+  "qtq_units": []
+ },
+ "boot_id": "0b49504f-2d64-4acf-a62e-d95281ae4cc6",
+ "uptime_s": 6571.04,
+ "memory": {
+  "before_kib": 379032
+ },
+ "system": "/nix/store/49mnsl2si30m1l4fxdx2h114myv3anjf-nixos-system-nixos-26.11.20260919.20b1ddd",
+ "launch_mono_ms": 6571125,
+ "window": {
+  "x": 0,
+  "y": 0,
+  "w": 1232,
+  "h": 568,
+  "id": 62,
+  "floating": true,
+  "focused": true
+ },
+ "error": "TimeoutExpired: Command '['runuser', '-u', 'shell', '--', 'env', 'SWAYSOCK=/run/shell/sway-ipc.sock', 'WAYLAND_DISPLAY=wayland-1', 'XDG_RUNTIME_DIR=/run/shell', 'grim', '-o', 'DSI-1', '/var/tmp/qtq/qtq-3820d48b-p12-baseline/a0-startup.png']' timed out after 40 seconds",
+ "status": "error",
+ "restoration": {
+  "ok": true,
+  "reason": "arm-finally",
+  "id": "qtq-3820d48b-p12-baseline",
+  "actions": [
+   "unit-stopped"
+  ],
+  "post": {
+   "sway_pid": "1058",
+   "windows": [
+    "k230-terminal"
+   ],
+   "focused_app_id": "k230-terminal",
+   "focused_con": 5,
+   "shell_active": true,
+   "qtq_units": []
+  },
+  "focus_same_as_before": true
+ },
+ "events_file": "pair1-baseline.jsonl",
+ "gates": {
+  "software_route": true
+ }
+}

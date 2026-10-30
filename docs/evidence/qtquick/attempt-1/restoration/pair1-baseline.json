@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "reason": "arm-finally",
+  "id": "qtq-3820d48b-p12-baseline",
+  "actions": [
+    "unit-stopped"
+  ],
+  "post": {
+    "sway_pid": "1058",
+    "windows": [
+      "k230-terminal"
+    ],
+    "focused_app_id": "k230-terminal",
+    "focused_con": 5,
+    "shell_active": true,
+    "qtq_units": []
+  },
+  "focus_same_as_before": true
+}

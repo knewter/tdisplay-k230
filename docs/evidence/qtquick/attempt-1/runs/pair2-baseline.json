@@ -1,0 +1,395 @@
+{
+ "schema": "qtquick-run/1",
+ "id": "qtq-3820d48b-p21-baseline",
+ "toolkit": "baseline",
+ "pair": 2,
+ "order": 1,
+ "manifest_hash": "3820d48b32bf53817c768479d5edebc16d3a037026b2a613fd8c0dd3fde3de0e",
+ "artifact": "/nix/store/y4qh2n92b7ailf2bw7129b9xynxzbz3h-qtquick-shm-baseline-riscv64-unknown-linux-gnu-0.1",
+ "boundary": "client_commit",
+ "evidence_class": "board; injected uinput touch; native grim capture",
+ "phases": {
+  "idle": {
+   "elapsed_s": 30.001,
+   "client_cpu_us": null,
+   "sway_cpu_us": 320000,
+   "start_mono_ms": 6650094,
+   "end_mono_ms": 6680095,
+   "mem_used_kib_samples": [
+    396192,
+    397788,
+    397772,
+    397768,
+    397768,
+    397768,
+    378900
+   ],
+   "runner_cpu_s": 0.01,
+   "thermal_start": {
+    "zone0_mC": 52706,
+    "zone1_mC": 38000,
+    "zone2_mC": 31100
+   },
+   "thermal_end": {
+    "zone0_mC": 50604,
+    "zone1_mC": 38000,
+    "zone2_mC": 31100
+   }
+  },
+  "active": {
+   "elapsed_s": 30.001,
+   "client_cpu_us": null,
+   "sway_cpu_us": 2450000,
+   "start_mono_ms": 6680199,
+   "end_mono_ms": 6710201,
+   "mem_used_kib_samples": [
+    378900,
+    382352,
+    382348,
+    382348,
+    382340,
+    382340,
+    383092
+   ],
+   "runner_cpu_s": 0.11,
+   "thermal_start": {
+    "zone0_mC": 50905,
+    "zone1_mC": 38000,
+    "zone2_mC": 31100
+   },
+   "thermal_end": {
+    "zone0_mC": 50905,
+    "zone1_mC": 38000,
+    "zone2_mC": 31100
+   }
+  }
+ },
+ "interactions": [
+  {
+   "kind": "drag",
+   "mono_ms": 6680298
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6681070
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6681682
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6682454
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6683073
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6683254
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6683965
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6684585
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6685360
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6685981
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6686759
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6687379
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6687560
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6688273
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6688893
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6689671
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6690290
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6691070
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6691691
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6691872
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6692583
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6693204
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6693982
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6694601
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6695383
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6696002
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6696184
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6696895
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6697516
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6698293
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6698913
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6699692
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6700313
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6700494
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6701205
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6701825
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6702604
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6703223
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6704003
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6704622
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6704804
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6705518
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6706139
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6706915
+  },
+  {
+   "kind": "drag",
+   "mono_ms": 6707535
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6708313
+  },
+  {
+   "kind": "tap",
+   "mono_ms": 6708934
+  }
+ ],
+ "functional": {
+  "bounded_lifetime": true,
+  "restored": true,
+  "software_route": true,
+  "pixels_correct": true,
+  "readable": true
+ },
+ "captures": [
+  {
+   "name": "a0-startup",
+   "file": "a0-startup.png",
+   "window": {
+    "x": 0,
+    "y": 0,
+    "w": 1232,
+    "h": 568,
+    "id": 64,
+    "floating": true,
+    "focused": true
+   },
+   "mono_s": 6650.092,
+   "osk_visible": true
+  },
+  {
+   "name": "f0-initial",
+   "file": "f0-initial.png",
+   "window": null,
+   "mono_s": 6716.594,
+   "osk_visible": true
+  },
+  {
+   "name": "f1-after-row-tap",
+   "file": "f1-after-row-tap.png",
+   "window": null,
+   "mono_s": 6717.546,
+   "osk_visible": true
+  },
+  {
+   "name": "f2-after-scroll",
+   "file": "f2-after-scroll.png",
+   "window": null,
+   "mono_s": 6719.954,
+   "osk_visible": true
+  },
+  {
+   "name": "f3-after-interrupt",
+   "file": "f3-after-interrupt.png",
+   "window": null,
+   "mono_s": 6721.379,
+   "osk_visible": true
+  },
+  {
+   "name": "f4-field-focused",
+   "file": "f4-field-focused.png",
+   "window": null,
+   "mono_s": 6723.738,
+   "osk_visible": true
+  },
+  {
+   "name": "f5-after-keys",
+   "file": "f5-after-keys.png",
+   "window": null,
+   "mono_s": 6725.966,
+   "osk_visible": true
+  }
+ ],
+ "log": [
+  "6645.724 launched"
+ ],
+ "pre": {
+  "sway_pid": "1058",
+  "windows": [
+   "k230-terminal"
+  ],
+  "focused_app_id": "k230-terminal",
+  "focused_con": 5,
+  "shell_active": true,
+  "qtq_units": []
+ },
+ "boot_id": "0b49504f-2d64-4acf-a62e-d95281ae4cc6",
+ "uptime_s": 6645.57,
+ "memory": {
+  "before_kib": 383436,
+  "active_used_kib": 383092,
+  "idle_used_kib": 378900
+ },
+ "system": "/nix/store/49mnsl2si30m1l4fxdx2h114myv3anjf-nixos-system-nixos-26.11.20260919.20b1ddd",
+ "launch_mono_ms": 6645650,
+ "window": {
+  "x": 0,
+  "y": 0,
+  "w": 1232,
+  "h": 568,
+  "id": 64,
+  "floating": true,
+  "focused": true
+ },
+ "injector_cpu_s": 0.11,
+ "functional_reset": {
+  "row0_selected_after_reset": false
+ },
+ "functional_raw": {
+  "osk_visible_after_focus": true,
+  "text_input_enable_logged": false
+ },
+ "status": "ok",
+ "restoration": {
+  "ok": true,
+  "reason": "arm-finally",
+  "id": "qtq-3820d48b-p21-baseline",
+  "actions": [
+   "unit-stopped"
+  ],
+  "post": {
+   "sway_pid": "1058",
+   "windows": [
+    "k230-terminal"
+   ],
+   "focused_app_id": "k230-terminal",
+   "focused_con": 5,
+   "shell_active": true,
+   "qtq_units": []
+  },
+  "focus_same_as_before": true
+ },
+ "events_file": "pair2-baseline.jsonl",
+ "gates": {
+  "pixels_correct": true,
+  "_pixel_probe": {
+   "10,10": true,
+   "3,300": true,
+   "790,480": true,
+   "640,250": true,
+   "40,105": true
+  },
+  "readable": true,
+  "software_route": true
+ }
+}

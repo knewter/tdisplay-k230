@@ -1,0 +1,5 @@
+{"e":"start","t":6571294,"client":"qtquick-shm-baseline","buffer":"wl_shm XRGB8888","text_input":true,"boundary":"client_commit"}
+{"e":"configured","t":6571297,"w":1232,"h":568}
+{"e":"commit","t":6571314}
+{"e":"first_frame","t":6571314}
+{"e":"exit","t":6615031}

@@ -1,0 +1,390 @@
+{
+  "schema": "qtquick-decision/1",
+  "manifest_hash": "3820d48b32bf53817c768479d5edebc16d3a037026b2a613fd8c0dd3fde3de0e",
+  "overall": "INCOMPLETE",
+  "criteria": {
+    "functional.software_route": "PASS",
+    "functional.pixels_correct": "INCOMPLETE",
+    "functional.scroll": "INCOMPLETE",
+    "functional.tap": "INCOMPLETE",
+    "functional.interrupted_motion": "INCOMPLETE",
+    "functional.text_focus": "INCOMPLETE",
+    "functional.text_entry": "INCOMPLETE",
+    "functional.readable": "INCOMPLETE",
+    "functional.bounded_lifetime": "INCOMPLETE",
+    "functional.restored": "PASS",
+    "ceiling.startup_ms": "PASS",
+    "ceiling.incremental_memory_mib": "INCOMPLETE",
+    "ceiling.idle_client_cpu_pct": "INCOMPLETE",
+    "measurements_complete": "INCOMPLETE",
+    "baseline_control": "INCOMPLETE"
+  },
+  "problems": [
+    "baseline: expected pairs 1..3, got [1, 2]"
+  ],
+  "runs": {
+    "qt": [
+      {
+        "metrics": {
+          "startup_ms": 861,
+          "incremental_memory_mib": null,
+          "idle_client_cpu_pct": null,
+          "idle_sway_cpu_pct": null,
+          "idle_combined_cpu_pct": null,
+          "active_client_cpu_pct": null,
+          "active_sway_cpu_pct": null,
+          "active_combined_cpu_pct": null,
+          "input_to_commit_p50_ms": null,
+          "input_to_commit_p95_ms": null,
+          "input_to_commit_max_ms": null,
+          "input_samples": 0,
+          "commit_gap_p95_ms": null,
+          "commit_gap_max_ms": null,
+          "interactions": 0,
+          "injector_cpu_s": null
+        },
+        "missing": [
+          "active.client_cpu_us",
+          "active.sway_cpu_us",
+          "idle.client_cpu_us",
+          "idle.sway_cpu_us",
+          "interactions",
+          "memory",
+          "presentation_samples"
+        ],
+        "boundary": "client_commit",
+        "pair": 1,
+        "ceilings": {
+          "startup_ms": {
+            "limit": 5000,
+            "value": 861,
+            "status": "PASS"
+          },
+          "incremental_memory_mib": {
+            "limit": 128,
+            "value": null,
+            "status": "INCOMPLETE"
+          },
+          "idle_client_cpu_pct": {
+            "limit": 2.0,
+            "value": null,
+            "status": "INCOMPLETE"
+          }
+        },
+        "functional": {
+          "software_route": "PASS",
+          "pixels_correct": "INCOMPLETE",
+          "scroll": "INCOMPLETE",
+          "tap": "INCOMPLETE",
+          "interrupted_motion": "INCOMPLETE",
+          "text_focus": "INCOMPLETE",
+          "text_entry": "INCOMPLETE",
+          "readable": "INCOMPLETE",
+          "bounded_lifetime": "INCOMPLETE",
+          "restored": "PASS"
+        }
+      },
+      {
+        "metrics": {
+          "startup_ms": 1793,
+          "incremental_memory_mib": null,
+          "idle_client_cpu_pct": null,
+          "idle_sway_cpu_pct": null,
+          "idle_combined_cpu_pct": null,
+          "active_client_cpu_pct": null,
+          "active_sway_cpu_pct": null,
+          "active_combined_cpu_pct": null,
+          "input_to_commit_p50_ms": null,
+          "input_to_commit_p95_ms": null,
+          "input_to_commit_max_ms": null,
+          "input_samples": 0,
+          "commit_gap_p95_ms": null,
+          "commit_gap_max_ms": null,
+          "interactions": 0,
+          "injector_cpu_s": null
+        },
+        "missing": [
+          "active.client_cpu_us",
+          "active.sway_cpu_us",
+          "idle.client_cpu_us",
+          "idle.sway_cpu_us",
+          "interactions",
+          "memory",
+          "presentation_samples"
+        ],
+        "boundary": "client_commit",
+        "pair": 2,
+        "ceilings": {
+          "startup_ms": {
+            "limit": 5000,
+            "value": 1793,
+            "status": "PASS"
+          },
+          "incremental_memory_mib": {
+            "limit": 128,
+            "value": null,
+            "status": "INCOMPLETE"
+          },
+          "idle_client_cpu_pct": {
+            "limit": 2.0,
+            "value": null,
+            "status": "INCOMPLETE"
+          }
+        },
+        "functional": {
+          "software_route": "PASS",
+          "pixels_correct": "INCOMPLETE",
+          "scroll": "INCOMPLETE",
+          "tap": "INCOMPLETE",
+          "interrupted_motion": "INCOMPLETE",
+          "text_focus": "INCOMPLETE",
+          "text_entry": "INCOMPLETE",
+          "readable": "INCOMPLETE",
+          "bounded_lifetime": "INCOMPLETE",
+          "restored": "PASS"
+        }
+      },
+      {
+        "metrics": {
+          "startup_ms": 909,
+          "incremental_memory_mib": null,
+          "idle_client_cpu_pct": null,
+          "idle_sway_cpu_pct": null,
+          "idle_combined_cpu_pct": null,
+          "active_client_cpu_pct": null,
+          "active_sway_cpu_pct": null,
+          "active_combined_cpu_pct": null,
+          "input_to_commit_p50_ms": null,
+          "input_to_commit_p95_ms": null,
+          "input_to_commit_max_ms": null,
+          "input_samples": 0,
+          "commit_gap_p95_ms": null,
+          "commit_gap_max_ms": null,
+          "interactions": 0,
+          "injector_cpu_s": null
+        },
+        "missing": [
+          "active.client_cpu_us",
+          "active.sway_cpu_us",
+          "idle.client_cpu_us",
+          "idle.sway_cpu_us",
+          "interactions",
+          "memory",
+          "presentation_samples"
+        ],
+        "boundary": "client_commit",
+        "pair": 3,
+        "ceilings": {
+          "startup_ms": {
+            "limit": 5000,
+            "value": 909,
+            "status": "PASS"
+          },
+          "incremental_memory_mib": {
+            "limit": 128,
+            "value": null,
+            "status": "INCOMPLETE"
+          },
+          "idle_client_cpu_pct": {
+            "limit": 2.0,
+            "value": null,
+            "status": "INCOMPLETE"
+          }
+        },
+        "functional": {
+          "software_route": "PASS",
+          "pixels_correct": "INCOMPLETE",
+          "scroll": "INCOMPLETE",
+          "tap": "INCOMPLETE",
+          "interrupted_motion": "INCOMPLETE",
+          "text_focus": "INCOMPLETE",
+          "text_entry": "INCOMPLETE",
+          "readable": "INCOMPLETE",
+          "bounded_lifetime": "INCOMPLETE",
+          "restored": "PASS"
+        }
+      }
+    ],
+    "baseline": [
+      {
+        "metrics": {
+          "startup_ms": 189,
+          "incremental_memory_mib": null,
+          "idle_client_cpu_pct": null,
+          "idle_sway_cpu_pct": null,
+          "idle_combined_cpu_pct": null,
+          "active_client_cpu_pct": null,
+          "active_sway_cpu_pct": null,
+          "active_combined_cpu_pct": null,
+          "input_to_commit_p50_ms": null,
+          "input_to_commit_p95_ms": null,
+          "input_to_commit_max_ms": null,
+          "input_samples": 0,
+          "commit_gap_p95_ms": null,
+          "commit_gap_max_ms": null,
+          "interactions": 0,
+          "injector_cpu_s": null
+        },
+        "missing": [
+          "active.client_cpu_us",
+          "active.sway_cpu_us",
+          "idle.client_cpu_us",
+          "idle.sway_cpu_us",
+          "interactions",
+          "memory",
+          "presentation_samples"
+        ],
+        "boundary": "client_commit",
+        "pair": 1,
+        "ceilings": {
+          "startup_ms": {
+            "limit": 5000,
+            "value": 189,
+            "status": "PASS"
+          },
+          "incremental_memory_mib": {
+            "limit": 128,
+            "value": null,
+            "status": "INCOMPLETE"
+          },
+          "idle_client_cpu_pct": {
+            "limit": 2.0,
+            "value": null,
+            "status": "INCOMPLETE"
+          }
+        },
+        "functional": {
+          "software_route": "PASS",
+          "pixels_correct": "INCOMPLETE",
+          "scroll": "INCOMPLETE",
+          "tap": "INCOMPLETE",
+          "interrupted_motion": "INCOMPLETE",
+          "text_focus": "INCOMPLETE",
+          "text_entry": "INCOMPLETE",
+          "readable": "INCOMPLETE",
+          "bounded_lifetime": "INCOMPLETE",
+          "restored": "PASS"
+        }
+      },
+      {
+        "metrics": {
+          "startup_ms": 192,
+          "incremental_memory_mib": -0.3359375,
+          "idle_client_cpu_pct": null,
+          "idle_sway_cpu_pct": 1.0666311122962568,
+          "idle_combined_cpu_pct": null,
+          "active_client_cpu_pct": null,
+          "active_sway_cpu_pct": 8.166394453518215,
+          "active_combined_cpu_pct": null,
+          "input_to_commit_p50_ms": null,
+          "input_to_commit_p95_ms": null,
+          "input_to_commit_max_ms": null,
+          "input_samples": 0,
+          "commit_gap_p95_ms": null,
+          "commit_gap_max_ms": null,
+          "interactions": 47,
+          "injector_cpu_s": 0.11
+        },
+        "missing": [
+          "active.client_cpu_us",
+          "idle.client_cpu_us",
+          "presentation_samples"
+        ],
+        "boundary": "client_commit",
+        "pair": 2,
+        "ceilings": {
+          "startup_ms": {
+            "limit": 5000,
+            "value": 192,
+            "status": "PASS"
+          },
+          "incremental_memory_mib": {
+            "limit": 128,
+            "value": -0.3359375,
+            "status": "PASS"
+          },
+          "idle_client_cpu_pct": {
+            "limit": 2.0,
+            "value": null,
+            "status": "INCOMPLETE"
+          }
+        },
+        "functional": {
+          "software_route": "PASS",
+          "pixels_correct": "PASS",
+          "scroll": "INCOMPLETE",
+          "tap": "INCOMPLETE",
+          "interrupted_motion": "INCOMPLETE",
+          "text_focus": "INCOMPLETE",
+          "text_entry": "INCOMPLETE",
+          "readable": "PASS",
+          "bounded_lifetime": "PASS",
+          "restored": "PASS"
+        }
+      }
+    ]
+  },
+  "comparison": {
+    "active_combined_cpu_pct": {
+      "status": "INCOMPLETE"
+    },
+    "input_to_commit_p95_ms": {
+      "status": "INCOMPLETE"
+    },
+    "idle_combined_cpu_pct": {
+      "status": "INCOMPLETE"
+    },
+    "startup_ms": {
+      "qt_mean": 1327.0,
+      "qt_sd": 466.0,
+      "baseline_mean": 190.5,
+      "baseline_sd": 1.5,
+      "regression_pct": 596.5879265091863,
+      "pairs": [
+        [
+          861,
+          189
+        ],
+        [
+          1793,
+          192
+        ]
+      ],
+      "status": "INCONCLUSIVE",
+      "baseline_noisy": false
+    }
+  },
+  "production_budget": {
+    "status": "NOT_ASSESSED",
+    "reason": "This trial measures a minimal app against a matched client; the card budgets (frame CPU p95 16.667 ms, tracking interval p95 33.334 ms, 64 MiB) are unchanged and a passing prerequisite does not certify them.",
+    "card_budgets": {
+      "frame_update_cpu_ms": {
+        "max": 33.334,
+        "p95": 16.667
+      },
+      "incremental_session_memory_bytes": {
+        "max": 67108864
+      },
+      "motion_to_present_ms": {
+        "max": 133.334,
+        "p95": 66.667
+      },
+      "motion_to_submit_ms": {
+        "max": 100.0,
+        "p95": 50.0
+      },
+      "release_to_final_submit_ms": {
+        "max": 200.0
+      },
+      "release_to_present_ms": {
+        "max": 266.667
+      },
+      "tracking_present_interval_ms": {
+        "max": 100.0,
+        "p95": 33.334
+      }
+    }
+  },
+  "boundary": "client_commit: submission only; not presentation or optical input-to-photon latency",
+  "stage": "qt"
+}

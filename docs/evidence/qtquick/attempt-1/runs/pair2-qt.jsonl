@@ -1,0 +1,6 @@
+{"e":"start","t":6856965,"client":"qtquick-software-probe","qt":"6.11.2","platform":"wayland","quick_backend":"software","boundary":"client_commit"}
+{"e":"commit","t":6857436}
+{"e":"first_frame","t":6857436,"w":1232,"h":568}
+{"e":"commit","t":6857470}
+{"e":"commit","t":6857479}
+{"e":"commit","t":6857481}

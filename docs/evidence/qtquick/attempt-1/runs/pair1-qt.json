@@ -1,0 +1,64 @@
+{
+ "schema": "qtquick-run/1",
+ "id": "qtq-3820d48b-p11-qt",
+ "toolkit": "qt",
+ "pair": 1,
+ "order": 1,
+ "manifest_hash": "3820d48b32bf53817c768479d5edebc16d3a037026b2a613fd8c0dd3fde3de0e",
+ "artifact": "/nix/store/j2dd2anwbp2hpfmvm4w6kpsa0qn37zq8-qtquick-software-probe-riscv64-unknown-linux-gnu-0.1",
+ "boundary": "client_commit",
+ "evidence_class": "board; injected uinput touch; native grim capture",
+ "phases": {},
+ "interactions": [],
+ "functional": {
+  "restored": true,
+  "software_route": true
+ },
+ "captures": [],
+ "log": [
+  "6485.118 launched"
+ ],
+ "pre": {
+  "sway_pid": "1058",
+  "windows": [
+   "k230-terminal"
+  ],
+  "focused_app_id": "k230-terminal",
+  "focused_con": 5,
+  "shell_active": true,
+  "qtq_units": []
+ },
+ "boot_id": "0b49504f-2d64-4acf-a62e-d95281ae4cc6",
+ "uptime_s": 6484.97,
+ "memory": {
+  "before_kib": 377692
+ },
+ "system": "/nix/store/49mnsl2si30m1l4fxdx2h114myv3anjf-nixos-system-nixos-26.11.20260919.20b1ddd",
+ "launch_mono_ms": 6485046,
+ "window": null,
+ "error": "RuntimeError: client window not found in the compositor tree",
+ "status": "no-window",
+ "restoration": {
+  "ok": true,
+  "reason": "arm-finally",
+  "id": "qtq-3820d48b-p11-qt",
+  "actions": [
+   "unit-stopped"
+  ],
+  "post": {
+   "sway_pid": "1058",
+   "windows": [
+    "k230-terminal"
+   ],
+   "focused_app_id": "k230-terminal",
+   "focused_con": 5,
+   "shell_active": true,
+   "qtq_units": []
+  },
+  "focus_same_as_before": true
+ },
+ "events_file": "pair1-qt.jsonl",
+ "gates": {
+  "software_route": true
+ }
+}
