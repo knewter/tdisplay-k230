@@ -24,10 +24,15 @@ What failed (the runs in `runs/`, all `status` fields retained):
   `../qt-cross-build.md`). Both restored the session.
 * `pair1-baseline`: a `grim` call timed out after 40 s and aborted the run
   (a runner weakness, now a 90 s non-fatal timeout); restored.
-* Pair 2 and the negative control also did not complete. The controller was
-  terminated on the coordinator's instruction to free the board for the
-  U-Boot trial, so no pair has measurements. `decide` on this directory
-  reports INCOMPLETE (`decision.json`); no measurement from it is used.
+* `pair2-baseline`: `status ok`, 47 injected interactions, restored, and the
+  startup capture matched the expected scene (`gates.pixels_correct`), but
+  `client_cpu_us` was unreadable (`None`: the unit cgroup file was not read),
+  and none of the scroll/tap/text gates exist (the later `grim` captures did
+  not complete). It is therefore not a usable measurement.
+* `pair2-qt` also failed with `no-window`. The negative-control arm and pair 3
+  baseline never ran: the controller was terminated on the coordinator's
+  instruction to free the board for the U-Boot trial. `decide` on this
+  directory reports INCOMPLETE (`decision.json`); no measurement from it is used.
 * The raw captures of this attempt were deleted by mistake before commit;
   they were never evidence for a claim.
 
