@@ -104,6 +104,9 @@ pub enum Priority {
     Critical,
 }
 
+/// At most this many of an app's actions are drawn (and kept) per notification.
+pub const NOTIFICATION_ACTIONS_MAX: usize = 2;
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct NotificationEvent {
     pub id: u64,
@@ -116,6 +119,9 @@ pub struct NotificationEvent {
     pub error: Option<String>,
     pub dismissible: bool,
     pub action_available: bool,
+    /// Labels of the app's own actions, in the broker's order. The broker
+    /// keeps the keys; a tap names an action by its index.
+    pub actions: Vec<String>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -257,6 +263,16 @@ fn icon(value: Option<&Value>) -> Result<Option<String>, String> {
     Ok(icon)
 }
 
+/// An older broker sends none. Past the shade's limit the rest are dropped.
+fn actions(value: Option<&Value>) -> Result<Vec<String>, String> {
+    let Some(rows) = value else { return Ok(Vec::new()) };
+    let rows = rows.as_array().ok_or("invalid notification actions")?;
+    rows.iter()
+        .take(NOTIFICATION_ACTIONS_MAX)
+        .map(|row| string(row, 40))
+        .collect()
+}
+
 fn id(value: &Value) -> Result<u64, String> {
     let id = value.as_u64().ok_or("invalid notification id")?;
     if id == 0 || id >= (1 << 53) {
@@ -301,6 +317,7 @@ pub fn parse_history(bytes: &[u8]) -> Result<NotificationSnapshot, String> {
                 .get("action_available")
                 .and_then(Value::as_bool)
                 .ok_or("invalid action availability")?,
+            actions: actions(row.get("actions"))?,
         });
     }
     let preview = match data.get("preview") {
@@ -375,6 +392,8 @@ pub enum ServiceRequest {
     NotificationDismiss(u64),
     NotificationDismissAll,
     NotificationAction(u64),
+    /// The person tapped the app's `index`th action button on event `id`.
+    NotificationInvoke { id: u64, index: usize },
     /// A received text for the broker (`modem::notification_for`). `SecretText`
     /// prints as redacted, so a logged request never carries the text.
     NotificationEmit {
@@ -586,6 +605,16 @@ fn execute(
             )?)
             .map(ServiceResponse::Action)
         }
+        ServiceRequest::NotificationInvoke { id, index } => {
+            if *id == 0 || *id >= 1 << 53 || *index >= NOTIFICATION_ACTIONS_MAX {
+                return Err("invalid notification action".into());
+            }
+            parse_action(&notification_request(
+                socket,
+                json!({"operation":"invoke","id":id,"index":index}),
+            )?)
+            .map(ServiceResponse::Action)
+        }
         // No `private` flag: the broker's default keeps the body out of the
         // preview and leaves the full text in the shade's history.
         ServiceRequest::NotificationEmit { summary, body } => parse_action(&notification_request(
@@ -626,6 +655,7 @@ fn parse_action(bytes: &[u8]) -> Result<ActionOutcome, String> {
             | "confirmation"
             | "cancelled"
             | "dismissed"
+            | "invoked"
             | "accepted"
     ) {
         return Err("invalid action state".into());

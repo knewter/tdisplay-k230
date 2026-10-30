@@ -326,6 +326,7 @@ pub fn fixture_notification_events(count: usize) -> Vec<crate::service_data::Not
                 error: None,
                 dismissible,
                 action_available: action,
+                actions: Vec::new(),
             }
         })
         .collect()

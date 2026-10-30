@@ -64,6 +64,7 @@ fn the_count_reads_only_the_integer() {
                 error: None,
                 dismissible: true,
                 action_available: true,
+                actions: Vec::new(),
             })
             .collect(),
         preview: None,

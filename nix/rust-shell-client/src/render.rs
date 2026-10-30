@@ -4143,8 +4143,9 @@ fn scene(
                 let offset = services.map_or(0.0, |view| view.notification_scroll);
                 let row = crate::service_ui::notification_row();
                 for (index, event) in items.events.iter().enumerate() {
-                    let y = list_top + index as f64 * row - offset;
-                    if y + row < list_top || y >= list_bottom {
+                    let y = list_top + crate::service_ui::notification_row_top(&items.events, index) - offset;
+                    let card_h = crate::service_ui::notification_pitch(event) - 8.0;
+                    if y + card_h < list_top || y >= list_bottom {
                         continue;
                     }
                     let drag = services
@@ -4179,9 +4180,18 @@ fn scene(
                         24.0,
                         y,
                         w - 48.0,
-                        row - 8.0,
+                        card_h,
                         false,
                     );
+                    // The app's own actions: buttons at the touch floor under
+                    // the text, each a Control card with a centred label.
+                    for (which, label) in event.actions.iter().enumerate() {
+                        let (bx, by, bw, bh) =
+                            crate::service_ui::notification_action_rect(event.actions.len(), which, w - 48.0);
+                        paint_card(cr, theme, "notifications", CardJob::Control, 24.0 + bx, y + by, bw, bh);
+                        let label_y = y + by + (bh - vision_line(TYPE_LABEL)) / 2.0;
+                        centered_label(cr, label, 24.0 + bx + 8.0, label_y, bw - 16.0, TYPE_LABEL, style.text);
+                    }
                     let painted = event
                         .icon
                         .as_deref()
@@ -8548,6 +8558,7 @@ mod tests {
                     error: None,
                     dismissible: true,
                     action_available: false,
+                    actions: Vec::new(),
                 }],
             }),
             ..ServiceView::default()
@@ -9653,6 +9664,7 @@ mod tests {
             error: None,
             dismissible: true,
             action_available: false,
+            actions: Vec::new(),
         };
         let mut view = ServiceView {
             notifications: Some(NotificationSnapshot {
@@ -10225,6 +10237,7 @@ mod tests {
                     error: None,
                     dismissible: true,
                     action_available: false,
+                    actions: Vec::new(),
                 }],
             }),
             ..ServiceView::default()

@@ -93,6 +93,7 @@ fn services() -> ServiceView {
                     error: None,
                     dismissible: true,
                     action_available: false,
+                    actions: Vec::new(),
                 },
                 NotificationEvent {
                     id: 2,
@@ -105,6 +106,7 @@ fn services() -> ServiceView {
                     error: None,
                     dismissible: true,
                     action_available: false,
+                    actions: Vec::new(),
                 },
             ],
         }),

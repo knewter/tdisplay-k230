@@ -2471,6 +2471,11 @@ DATA 53cd47895761b1f174c611dfa88d7a75a5d6a1a8ec92c0de522a47a8db4cab24 docs/evide
 DATA 55fc62e9b2af0e35ef7d2df82e9ecd912a28eac5024ccb2a4b436800331a0aed docs/evidence/time-zone/board/tz-12-date-time-after-reboot.png
 DATA 074d24ce73861ccd2e7c4c01ee97943fe0e4bddcb20b45d0399c7f0aab9cd3ce docs/evidence/time-zone/board/tz-13-america-3.png
 DATA e2d1d3f73c3b22becc3089e86350235fc91d31dc9a70db48c55b289e911f25f8 docs/evidence/time-zone/board/tz-14-restored.png
+DATA 678367829bf66639c943f97576391d288f68e61dda66db7ec999c4e7c35fbbc0 docs/evidence/notification-actions/host/shade-actions-100-1232x568.png
+DATA 9f8cdafb7e50f19be53f31d00f197f2a555254914059c9386a65ed3d1d3450a1 docs/evidence/notification-actions/host/shade-actions-100-568x1232.png
+DATA 047c2616339b278350d069d5e899e6a9911ba08af72119d5db7a1bd302b58ded docs/evidence/notification-actions/host/shade-actions-200-1232x568.png
+DATA 9b59aaf70f5e2090ac2ee43d219eb2da44891d89f26f93bcc297034bcfbaba11 docs/evidence/notification-actions/host/shade-actions-200-568x1232-scrolled.png
+DATA b73e5e22cdf135f25ecc0bb9a5fdec208a043c22c0a43abd25a4c46c59c195ab docs/evidence/notification-actions/host/shade-actions-200-568x1232.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4852,3 +4857,15 @@ Board captures of the time zone chooser and network time switch (settings-sets-t
 | `docs/evidence/time-zone/board/tz-12-date-time-after-reboot.png` | 33719 | DATA | `55fc62e9b2af0e35ef7d2df82e9ecd912a28eac5024ccb2a4b436800331a0aed` |
 | `docs/evidence/time-zone/board/tz-13-america-3.png` | 51260 | DATA | `074d24ce73861ccd2e7c4c01ee97943fe0e4bddcb20b45d0399c7f0aab9cd3ce` |
 | `docs/evidence/time-zone/board/tz-14-restored.png` | 36506 | DATA | `e2d1d3f73c3b22becc3089e86350235fc91d31dc9a70db48c55b289e911f25f8` |
+
+## Notification actions host renders
+
+Host renders of an app's notification actions in the shade (pending-timers-survive-restarts-and-apps-hear-dismissals task 2.3); see docs/evidence/notification-actions/host/README.md.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/notification-actions/host/shade-actions-100-1232x568.png` | 64485 | DATA | `678367829bf66639c943f97576391d288f68e61dda66db7ec999c4e7c35fbbc0` |
+| `docs/evidence/notification-actions/host/shade-actions-100-568x1232.png` | 55715 | DATA | `9f8cdafb7e50f19be53f31d00f197f2a555254914059c9386a65ed3d1d3450a1` |
+| `docs/evidence/notification-actions/host/shade-actions-200-1232x568.png` | 69585 | DATA | `047c2616339b278350d069d5e899e6a9911ba08af72119d5db7a1bd302b58ded` |
+| `docs/evidence/notification-actions/host/shade-actions-200-568x1232-scrolled.png` | 67812 | DATA | `9b59aaf70f5e2090ac2ee43d219eb2da44891d89f26f93bcc297034bcfbaba11` |
+| `docs/evidence/notification-actions/host/shade-actions-200-568x1232.png` | 67621 | DATA | `b73e5e22cdf135f25ecc0bb9a5fdec208a043c22c0a43abd25a4c46c59c195ab` |

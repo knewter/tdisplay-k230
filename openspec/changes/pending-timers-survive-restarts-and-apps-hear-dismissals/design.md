@@ -38,6 +38,15 @@ Settled by task 1.1 (`docs/evidence/timer-restart/board/design-check.md`).
 - **Actions: the broker keeps an app's action list,** the shade draws at
   most a fixed small number of action buttons at the 99 px floor, and a tap
   reaches the adaptor as `ActionInvoked`.
+- **As built (host, 2026-10-30).** The adaptor holds one subscription to the
+  broker, which pushes close and action notices; the broker refuses a tap
+  (`app-unavailable`) when no adaptor listens. The shade draws at most two
+  actions and names a tap by index (`invoke`); the broker keeps the keys. A tap
+  sends `ActionInvoked`, then closes the notification with reason 2. The timer
+  instance records `{pid, deadline, initial}` in `/run/k230-timer-state`
+  (outside `shell.service`'s `RuntimeDirectory`) so a reopened card can adopt
+  it; the request carries seconds left, and the instance adds its own
+  `CLOCK_MONOTONIC`.
 
 Rejected:
 

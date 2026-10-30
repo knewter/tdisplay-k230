@@ -1610,6 +1610,7 @@ fn suppresses_action_message(request: &ServiceRequest, outcome_error: Option<&st
         ServiceRequest::Brightness(_)
             | ServiceRequest::KeyboardToggle
             | ServiceRequest::NotificationDismiss(_)
+            | ServiceRequest::NotificationInvoke { .. }
             | ServiceRequest::NotificationDismissAll
     ) && outcome_error.is_none()
 }
@@ -3086,7 +3087,7 @@ impl ShellClient {
                     ) {
                         self.service_view.notification_scroll =
                             self.service_view.notification_scroll.min(notification_max_scroll(
-                                snapshot.events.len(),
+                                &snapshot.events,
                                 self.width,
                                 self.height,
                             ));
@@ -3126,7 +3127,7 @@ impl ShellClient {
                     self.service_view
                         .notification_scroll
                         .min(notification_max_scroll(
-                            notifications.events.len(),
+                            &notifications.events,
                             self.width,
                             self.height,
                         ));
@@ -3172,7 +3173,8 @@ impl ShellClient {
                 match reply.request {
                     ServiceRequest::NotificationDismiss(_)
                     | ServiceRequest::NotificationDismissAll
-                    | ServiceRequest::NotificationAction(_) => self.refresh_route(Route::Shade),
+                    | ServiceRequest::NotificationAction(_)
+                    | ServiceRequest::NotificationInvoke { .. } => self.refresh_route(Route::Shade),
                     ServiceRequest::Brightness(_) | ServiceRequest::KeyboardToggle => {
                         self.refresh_route(Route::Settings)
                     }
@@ -3324,7 +3326,7 @@ impl ShellClient {
                     .notifications
                     .as_ref()
                     .map_or(0.0, |snapshot| {
-                        notification_max_scroll(snapshot.events.len(), self.width, self.height)
+                        notification_max_scroll(&snapshot.events, self.width, self.height)
                     });
                 self.service_view.notification_scroll =
                     (self.service_view.notification_scroll + delta).clamp(0.0, max);
@@ -3355,7 +3357,7 @@ impl ShellClient {
             .notifications
             .as_ref()
             .map_or(0.0, |snapshot| {
-                notification_max_scroll(snapshot.events.len(), self.width, self.height)
+                notification_max_scroll(&snapshot.events, self.width, self.height)
             });
         let mut changed = self.notification_coast.tick(
             &mut self.service_view.notification_scroll,
@@ -6696,7 +6698,7 @@ impl ShellClient {
                             .notifications
                             .as_ref()
                             .map_or(0.0, |snapshot| {
-                                notification_max_scroll(snapshot.events.len(), self.width, self.height)
+                                notification_max_scroll(&snapshot.events, self.width, self.height)
                             });
                         let next = (self.panel_origin_scroll - dy).clamp(0.0, max);
                         if (next - self.service_view.notification_scroll).abs() >= 1.0 {
@@ -6955,7 +6957,7 @@ impl ShellClient {
             Route::Shade => {
                 self.notification_coast.stop();
                 let max = self.service_view.notifications.as_ref().map_or(0.0,
-                    |snapshot| notification_max_scroll(snapshot.events.len(), self.width, self.height));
+                    |snapshot| notification_max_scroll(&snapshot.events, self.width, self.height));
                 let old = self.service_view.notification_scroll;
                 self.service_view.notification_scroll = (old + dy).clamp(0.0, max);
                 changed = old != self.service_view.notification_scroll;
@@ -8718,6 +8720,9 @@ mod route_tests {
         // feedback, and the bare "dismissed" state lingered in red.
         assert!(suppresses_action_message(&ServiceRequest::NotificationDismiss(3), None));
         assert!(suppresses_action_message(&ServiceRequest::NotificationDismissAll, None));
+        // So is a tapped app action: the row leaving says it was taken.
+        assert!(suppresses_action_message(&ServiceRequest::NotificationInvoke { id: 3, index: 0 }, None));
+        assert!(!suppresses_action_message(&ServiceRequest::NotificationInvoke { id: 3, index: 0 }, Some("app-unavailable")));
         assert!(!suppresses_action_message(
             &ServiceRequest::NotificationDismissAll,
             Some("history-unavailable")

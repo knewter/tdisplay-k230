@@ -12,7 +12,7 @@ use crate::{
         settings_layout_for, settings_power_card_h, settings_row_h,
     },
     service_data::{
-        ActionOutcome, ControlState, NotificationSnapshot, PowerAction, Priority, ServiceRequest,
+        ActionOutcome, ControlState, NotificationEvent, NotificationSnapshot, PowerAction, Priority, ServiceRequest,
         SettingsSnapshot,
     },
     slider,
@@ -690,8 +690,8 @@ pub fn shade_panel_close_zone(pos: (f64, f64), width: u32, height: u32, view: &S
     if notification_index(pos, width, height, view).is_none() {
         return true;
     }
-    let count = view.notifications.as_ref().map_or(0, |items| items.events.len());
-    view.notification_scroll >= notification_max_scroll(count, width, height) - 0.5
+    let events = view.notifications.as_ref().map_or(&[][..], |items| &items.events[..]);
+    view.notification_scroll >= notification_max_scroll(events, width, height) - 0.5
 }
 
 /// Which routes' touches at `y` land on the shared brightness slider (the
@@ -1151,19 +1151,91 @@ pub fn settings_reveal_scroll(
     scroll.clamp(0.0, settings_max_scroll(width, height, view))
 }
 
-pub fn notification_max_scroll(count: usize, width: u32, height: u32) -> f64 {
+pub use crate::service_data::NOTIFICATION_ACTIONS_MAX;
+/// An action button is as tall as the shell's touch floor.
+pub const NOTIFICATION_ACTION_H: f64 = SHADE_TAP_MIN;
+const NOTIFICATION_ACTION_GAP: f64 = 8.0;
+const NOTIFICATION_ACTION_SIDE: f64 = 16.0;
+
+/// A row's extra height when the app offered actions: the buttons at the
+/// touch floor with the row's gutter above and below them.
+pub fn notification_action_band(event: &NotificationEvent) -> f64 {
+    if event.actions.is_empty() {
+        0.0
+    } else {
+        NOTIFICATION_ACTION_H + 2.0 * NOTIFICATION_ACTION_GAP
+    }
+}
+
+/// A row's pitch: the text row, and the buttons when there are any.
+pub fn notification_pitch(event: &NotificationEvent) -> f64 {
+    notification_row() + notification_action_band(event)
+}
+
+/// Where row `index` starts, measured from the top of the list at no scroll.
+pub fn notification_row_top(events: &[NotificationEvent], index: usize) -> f64 {
+    events.iter().take(index).map(notification_pitch).sum()
+}
+
+/// The row under `y`, measured from the top of the list at no scroll, and
+/// how far down that row `y` is.
+fn notification_row_at(events: &[NotificationEvent], y: f64) -> Option<(usize, f64)> {
+    if y < 0.0 {
+        return None;
+    }
+    let mut top = 0.0;
+    for (index, event) in events.iter().enumerate() {
+        let pitch = notification_pitch(event);
+        if y < top + pitch {
+            return Some((index, y - top));
+        }
+        top += pitch;
+    }
+    None
+}
+
+/// An action button's rectangle in its card's own coordinates (the card's
+/// top-left is the origin; the card is `card_w` wide).
+pub fn notification_action_rect(count: usize, which: usize, card_w: f64) -> (f64, f64, f64, f64) {
+    let count = count.clamp(1, NOTIFICATION_ACTIONS_MAX);
+    let gap = 12.0;
+    let w = (card_w - 2.0 * NOTIFICATION_ACTION_SIDE - gap * (count - 1) as f64) / count as f64;
+    let x = NOTIFICATION_ACTION_SIDE + which as f64 * (w + gap);
+    (x, notification_row() - 8.0 + NOTIFICATION_ACTION_GAP, w, NOTIFICATION_ACTION_H)
+}
+
+pub fn notification_max_scroll(events: &[NotificationEvent], width: u32, height: u32) -> f64 {
     let layout = shade_layout(width, height);
-    (layout.list_top + count as f64 * notification_row() - layout.list_bottom).max(0.0)
+    (layout.list_top + notification_row_top(events, events.len()) - layout.list_bottom).max(0.0)
 }
 
 fn notification_index(pos: (f64, f64), width: u32, height: u32, view: &ServiceView) -> Option<usize> {
+    notification_hit(pos, width, height, view).map(|(index, _)| index)
+}
+
+/// The row under `pos` and how far down that row `pos` is.
+fn notification_hit(pos: (f64, f64), width: u32, height: u32, view: &ServiceView) -> Option<(usize, f64)> {
     let layout = shade_layout(width, height);
     if pos.1 < layout.list_top || pos.1 >= layout.list_bottom || pos.0 < layout.list_x {
         return None;
     }
-    let index =
-        ((pos.1 - layout.list_top + view.notification_scroll) / notification_row()).floor() as usize;
-    (index < view.notifications.as_ref()?.events.len()).then_some(index)
+    notification_row_at(
+        &view.notifications.as_ref()?.events,
+        pos.1 - layout.list_top + view.notification_scroll,
+    )
+}
+
+/// The action button under `pos`, as (event id, index into its actions).
+pub fn notification_action_at(pos: (f64, f64), width: u32, height: u32, view: &ServiceView) -> Option<(u64, usize)> {
+    let layout = shade_layout(width, height);
+    let (index, down) = notification_hit(pos, width, height, view)?;
+    let event = &view.notifications.as_ref()?.events[index];
+    let card_w = layout.list_w - 48.0;
+    (0..event.actions.len().min(NOTIFICATION_ACTIONS_MAX)).find_map(|which| {
+        let (x, y, w, h) = notification_action_rect(event.actions.len(), which, card_w);
+        let local_x = pos.0 - layout.list_x - 24.0;
+        (local_x >= x && local_x < x + w && down >= y && down < y + h).then_some((event.id, which))
+    })
 }
 
 pub fn notification_swipe_start(
@@ -1183,13 +1255,11 @@ pub fn notification_swipe_start(
     {
         return None;
     }
-    let row_y =
-        (start.1 - layout.list_top + view.notification_scroll).rem_euclid(notification_row());
-    if row_y >= notification_row() - 8.0 {
+    let (row_index, row_y) = notification_hit(start, width, height, view)?;
+    let event = &view.notifications.as_ref()?.events[row_index];
+    if row_y >= notification_pitch(event) - 8.0 {
         return None;
     }
-    let row_index = notification_index(start, width, height, view)?;
-    let event = &view.notifications.as_ref()?.events[row_index];
     (event.dismissible && event.priority != Priority::Critical).then_some(NotificationSwipe {
         event_id: event.id,
         row_index,
@@ -1221,9 +1291,10 @@ pub fn notification_swipe_hit(
         return false;
     }
     let layout = shade_layout(width, height);
-    let y = layout.list_top + swipe.row_index as f64 * notification_row() - view.notification_scroll;
+    let events = view.notifications.as_ref().map_or(&[][..], |items| &items.events[..]);
+    let y = layout.list_top + notification_row_top(events, swipe.row_index) - view.notification_scroll;
     pos.1 >= y.max(layout.list_top)
-        && pos.1 < (y + notification_row() - 8.0).min(layout.list_bottom)
+        && pos.1 < (y + notification_pitch(&events[swipe.row_index]) - 8.0).min(layout.list_bottom)
         && pos.0 >= layout.list_x + 24.0 + swipe.offset
         && pos.0 < f64::from(width) - 24.0 + swipe.offset
 }
@@ -1376,6 +1447,11 @@ pub fn panel_intent(
                 let event = &view.notifications.as_ref()?.events[index];
                 if dy.abs() > 22.0 {
                     return Some(PanelIntent::ScrollNotifications(-dy));
+                }
+                // An app's own action button takes the tap before the row.
+                if let Some((id, which)) = notification_action_at(start, width, height, view) {
+                    return (dx.abs() <= 18.0 && view.notification_swipe.is_none())
+                        .then_some(PanelIntent::Request(ServiceRequest::NotificationInvoke { id, index: which }));
                 }
                 // The painted row can be displaced or waiting for its dismiss
                 // reply. A tap at its old slot must not activate that event.
@@ -2074,6 +2150,7 @@ mod tests {
                 error: None,
                 dismissible: true,
                 action_available: false,
+                actions: Vec::new(),
             }],
             preview: None,
         };
@@ -2099,6 +2176,7 @@ mod tests {
             error: None,
             dismissible: true,
             action_available: false,
+            actions: Vec::new(),
         };
         let empty = ServiceView::default();
         // Header, quick controls and an empty list area all close.
@@ -2125,7 +2203,7 @@ mod tests {
         };
         assert!(!shade_panel_close_zone((300.0, 514.0), 568, 1232, &long));
         // ...until it is scrolled to its end.
-        long.notification_scroll = notification_max_scroll(8, 568, 1232);
+        long.notification_scroll = notification_max_scroll(&long.notifications.as_ref().unwrap().events, 568, 1232);
         assert!(shade_panel_close_zone((300.0, 514.0), 568, 1232, &long));
         // The header above the list always closes.
         long.notification_scroll = 0.0;
@@ -2570,6 +2648,7 @@ mod tests {
                         error: None,
                         dismissible: true,
                         action_available: true,
+                        actions: Vec::new(),
                     })
                     .collect(),
                 preview: None,
@@ -2751,6 +2830,7 @@ mod tests {
                     error: None,
                     dismissible: true,
                     action_available: true,
+                    actions: Vec::new(),
                 }],
                 preview: None,
             }),
@@ -2887,6 +2967,7 @@ mod tests {
             error: None,
             dismissible: true,
             action_available: true,
+            actions: Vec::new(),
         };
         let mut view = ServiceView {
             notifications: Some(NotificationSnapshot {
@@ -3315,7 +3396,7 @@ mod tests {
     fn the_wide_shade_scrolls_to_its_last_notification_and_swipes_dismiss_inside_the_list() {
         let layout = shade_layout(1232, 568);
         let mut view = wide_shade_view(6, false);
-        let max = notification_max_scroll(6, 1232, 568);
+        let max = notification_max_scroll(&view.notifications.as_ref().unwrap().events, 1232, 568);
         assert!(max > 0.0, "six rows overflow the list");
         view.notification_scroll = max;
         // The last row now ends at the list's bottom: reachable.
@@ -3545,5 +3626,99 @@ mod tests {
             }
         }
         crate::set_layout_text_scale(1.0);
+    }
+
+    fn event_with_actions(id: u64, actions: &[&str]) -> NotificationEvent {
+        NotificationEvent {
+            id,
+            source: "Calculator".into(),
+            icon: None,
+            summary: "Done".into(),
+            body: "Tap an action".into(),
+            priority: Priority::Ordinary,
+            timestamp: 0,
+            error: None,
+            dismissible: true,
+            action_available: false,
+            actions: actions.iter().map(|label| label.to_string()).collect(),
+        }
+    }
+
+    #[test]
+    fn an_apps_actions_are_touch_floor_tall_and_a_tap_names_the_action() {
+        for step in [1.0, 2.0] {
+            crate::set_layout_text_scale(step);
+            for (w, h) in [(1232u32, 568u32), (568, 1232)] {
+                let events = vec![
+                    event_with_actions(1, &[]),
+                    event_with_actions(2, &["Open", "Snooze"]),
+                    event_with_actions(3, &[]),
+                ];
+                let mut view = ServiceView {
+                    notifications: Some(NotificationSnapshot { count: 3, events: events.clone(), preview: None }),
+                    ..ServiceView::default()
+                };
+                let layout = shade_layout(w, h);
+                let band = NOTIFICATION_ACTION_H + 16.0;
+                assert_eq!(notification_pitch(&events[1]) - notification_pitch(&events[0]), band);
+                assert!(NOTIFICATION_ACTION_H >= crate::device_info::TOUCH_FLOOR);
+                assert_eq!(notification_row_top(&events, 2), notification_row_top(&events, 1) + notification_pitch(&events[1]));
+                let card_w = layout.list_w - 48.0;
+                for which in 0..2 {
+                    let (x, y, bw, bh) = notification_action_rect(2, which, card_w);
+                    // Scroll the buttons into the list: the row's top when it
+                    // fits, else far enough that the buttons' bottom shows
+                    // (at 200% on the portrait panel the row is taller than
+                    // the list).
+                    let top = notification_row_top(&events, 1);
+                    view.notification_scroll = top
+                        .max(top + y + bh - (layout.list_bottom - layout.list_top))
+                        .min(notification_max_scroll(&events, w, h));
+                    let y = y + top - view.notification_scroll;
+                    assert!(bh >= crate::device_info::TOUCH_FLOOR, "{w}x{h} step {step}: {bh}");
+                    assert!(x >= 0.0 && x + bw <= card_w, "button {which} inside the card");
+                    assert!(y + view.notification_scroll - top + bh <= notification_pitch(&events[1]) - 8.0, "button {which} inside the card's height");
+                    let tap = (layout.list_x + 24.0 + x + bw / 2.0, layout.list_top + y + bh / 2.0);
+                    assert!(tap.1 + bh / 2.0 <= layout.list_bottom, "{w}x{h} step {step}: button on the list");
+                    assert_eq!(
+                        panel_intent(Route::Shade, tap, tap, w, h, &view),
+                        Some(PanelIntent::Request(ServiceRequest::NotificationInvoke { id: 2, index: which })),
+                        "{w}x{h} step {step}: button {which}"
+                    );
+                    // A drag that starts on a button is not a tap on it.
+                    assert_ne!(
+                        panel_intent(Route::Shade, tap, (tap.0 + 60.0, tap.1), w, h, &view),
+                        Some(PanelIntent::Request(ServiceRequest::NotificationInvoke { id: 2, index: which }))
+                    );
+                }
+                // The text above the buttons is the row, which has no action here.
+                view.notification_scroll = notification_row_top(&events, 1);
+                let text = (layout.list_x + 24.0 + 40.0, layout.list_top + 20.0);
+                assert_eq!(panel_intent(Route::Shade, text, text, w, h, &view), None);
+                // The rows after the actions row keep their own hit areas.
+                let below = layout.list_top + notification_pitch(&events[1]) + 20.0;
+                if below < layout.list_bottom {
+                    assert_eq!(notification_index((layout.list_x + 100.0, below), w, h, &view), Some(2));
+                }
+                let plain: Vec<_> = events.iter().cloned().map(|e| event_with_actions(e.id, &[])).collect();
+                assert!(
+                    notification_max_scroll(&events, w, h) >= notification_max_scroll(&plain, w, h),
+                    "actions only lengthen the list"
+                );
+            }
+        }
+        crate::set_layout_text_scale(1.0);
+    }
+
+    #[test]
+    fn a_broker_row_with_actions_parses_and_an_older_one_has_none() {
+        let with = br#"{"schema":1,"count":1,"events":[{"id":4,"source":"Calc","icon":null,"summary":"s","body":"b",
+            "priority":"ordinary","timestamp":1,"error":null,"dismissible":true,"action_available":false,
+            "actions":["Open","Snooze","Third"]}],"preview":null}"#;
+        let parsed = crate::service_data::parse_history(with).unwrap();
+        assert_eq!(parsed.events[0].actions, vec!["Open".to_string(), "Snooze".to_string()]);
+        let without = br#"{"schema":1,"count":1,"events":[{"id":4,"source":"Calc","icon":null,"summary":"s","body":"b",
+            "priority":"ordinary","timestamp":1,"error":null,"dismissible":true,"action_available":false}],"preview":null}"#;
+        assert!(crate::service_data::parse_history(without).unwrap().events[0].actions.is_empty());
     }
 }

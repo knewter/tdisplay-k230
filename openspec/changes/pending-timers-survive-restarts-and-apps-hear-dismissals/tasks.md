@@ -12,16 +12,34 @@
 
 ## 2. Host
 
-- [ ] 2.1 Implement the timer decision. Proof (host):
+- [x] 2.1 Implement the timer decision. Proof (host):
   `python3 tests/test_term_apps.py`, with a case that stops the shell's
   process group while a helper waits.
-- [ ] 2.2 Record the close cause in the broker and emit reasons 1, 2 and 3
+  *Host, 2026-10-30: `python3 tests/test_term_apps.py` runs 43 tests, all
+  pass. A fake timer socket starts a `timerd-serve` instance in its own session
+  for each request, as `Accept=yes` does; the test kills the card's process
+  group and the instance still posts "Timer finished" once at its deadline.
+  Adopting ends the instance without an alert, and a paused or reset card
+  hands the socket nothing. `nix eval` of the landscape HDMI configuration
+  succeeds with `k230-timer.socket` and `k230-timer@.service`. Not run: the
+  units on the board (task 3.1).*
+- [x] 2.2 Record the close cause in the broker and emit reasons 1, 2 and 3
   from the adaptor. Store actions and emit `ActionInvoked`. Proof (host):
   `python3 tests/test_notification_center.py && python3 tests/test_notification_dbus.py`,
   on a private bus with the real broker and adaptor.
-- [ ] 2.3 Draw actions in the shade at the 99 px floor. Proof (host):
+  *Host, 2026-10-30: `test_notification_center.py` runs 17 tests and
+  `test_notification_dbus.py` 20, all pass. On a private `dbus-daemon` with the
+  real broker and adaptor, a dismissal reaches the app as
+  `NotificationClosed(id, 2)`, an app's `CloseNotification` as reason 3, and a
+  tapped action as `ActionInvoked(id, key)` then reason 2. Reason 1 (expiry)
+  is covered with the broker's injected clock, not waited for on the bus.*
+- [x] 2.3 Draw actions in the shade at the 99 px floor. Proof (host):
   `cargo test --offline --lib` in `nix/rust-shell-client`, and renders at
   100% and 200% under `docs/evidence/notification-actions/host/`.
+  *Host, 2026-10-30: `cargo test --offline` passes (684 lib tests and the
+  integration tests). Host renders at 100% and 200%, 1232x568 and 568x1232,
+  under `docs/evidence/notification-actions/host/` (host render class, FIXTURE
+  notifications). Not run: a tap on the panel (tasks 3.2 and 3.3).*
 
 ## 3. Board (hardware-only)
 
