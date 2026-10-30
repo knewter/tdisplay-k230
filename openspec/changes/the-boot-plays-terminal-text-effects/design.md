@@ -255,9 +255,9 @@ the list or entropy is unavailable, and is what the fallback sequence encodes.
 
 **D12. Stage 1 timing: animate while loading, or before.** The user wants stage 1 to keep
 animating while U-Boot loads the kernel. The pinned U-Boot 2022.10 tarball has no `common/cyclic.c`
-(checked with `tar tjf`), so a cyclic framework is not there to hook; the Life agent is researching the
-options and will record them at `docs/evidence/game-of-life/uboot-cyclic.md` on its branch, which this
-change will cite rather than duplicate. Without it, two shapes work with this library: (a) play
+(checked with `tar tjf`), so a cyclic framework is not there to hook; the Life agent's findings are in
+`docs/evidence/game-of-life/uboot-cyclic.md` on its branch (not on `master` when this was written), which this
+change cites rather than duplicates. The Life branch's research found the same and back-ports the API shape: `cyclic_register(c, func, delay_us, name)` with `WATCHDOG_RESET()` calling `cyclic_run()`, so a callback runs from every `udelay()`, which the SD read loop hits about every 10 microseconds. A text-effects frame step fits that callback model: one `ttfx_fw_next`, one parse, the changed cells drawn, then return. Without that back-port, two shapes work with this library: (a) play
 the effect to completion, then load (adds the animation's length to boot, a few seconds; simplest);
 (b) a boot command that reads the kernel, device tree and initrd with `fs_read` in chunks of
 1 to 4 MiB and calls `ttfx_fw_next` plus a draw between chunks, so each frame costs
@@ -273,12 +273,17 @@ patch to the pinned source; `nix/ttfx-boot` builds the staticlib with the offici
 U-Boot; the pinned U-Boot is `rv64imac`, `lp64`, with `mstatus.FS` never set). Position-independent
 (`-C relocation-model=pic`) because U-Boot relocates itself.
 
-**D14. Memory.** The engine's peak heap is 1 to 4 MiB for most effects and up to 13 MiB for the largest
+**D14. Memory and stack.** The engine's peak heap is 1 to 4 MiB for most effects and up to 13 MiB for the largest
 (`nostd-feasibility.md`), against U-Boot's default 4 MiB pool. The library therefore allocates from an
 arena the host hands it (`ttfx_fw_init`), never from U-Boot's `malloc`. The arena is either carved from
 a larger `CONFIG_SYS_MALLOC_LEN` or a fixed free DRAM range during stage 1; the memory-map tool from the
 Life change decides which addresses are safe. The default effect subset is chosen so every member
-peaks under 4 MiB, so the first install can use the pool as it is.
+peaks under 4 MiB, so the first install can use the pool as it is. The engine also needs stack: run under
+`ulimit -s`, 17 effects on the board fail at 16 KiB and pass at 24 KiB (`board-engine-stack.txt`), so a
+callback running on a small U-Boot stack, or deep inside an MMC driver loop, is a hazard. The glue therefore runs
+each `ttfx_fw_next` on a private 64 KiB stack taken from the arena, switching `sp` in a few lines of assembly,
+and never calls the engine from a context that already holds U-Boot's malloc or console locks (U-Boot's own heap is
+not used, so a callback from inside an `udelay` in the MMC driver cannot corrupt it).
 
 ## Rejected
 

@@ -35,7 +35,7 @@
 
 - [ ] 4.1 Add the text-effects frame source (source id 2) to the generic stage 1 loop once `src/boot_frame.h` is on `master`: the engine library linked in, the effect/text/seed selection of D11, the replay fallback of D1b, and the record of D5. Proof: `nix build .#uboot-k230-boot-textfx` (laptop claim). Writing it to a board is task 4.2.
 - [ ] 4.2 Install the stage 1 build by the plan in `design.md`, verify readback and a console transcript of one `K230#` run (with and without `tfx_*` overrides, and with the engine forced to fail so the fallback runs), and keep the rollback. Not started: **HARD STOP**, requires the operator's go-ahead and board reservation.
-- [ ] 4.3 Decide how stage 1 animates while U-Boot loads (D12) from the cyclic-framework research on the Life branch and the engine bench of 2.8. Proof: a design note and the frame period achieved in the 4.2 transcript.
+- [ ] 4.3 Decide how stage 1 animates while U-Boot loads (D12) from the cyclic-framework research on the Life branch and the engine bench of 2.8, and run each engine step on a private stack (D14: the engine needs 24 KiB, `board-engine-stack.txt`). Proof: a design note and the frame period achieved in the 4.2 transcript.
 
 ## 5. Placement in Linux and handoff (waits for the operator)
 

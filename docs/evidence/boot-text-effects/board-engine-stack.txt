@@ -1,0 +1,22 @@
+# stack depth of the engine: Linux static executable run under 'ulimit -s N' (KiB), effect passes if it exits 0 and prints the same line as the unlimited run
+# run 2026-10-30T15:19:52Z; bench sha256 23884af40b6277d0
+beams  16K=FAIL 24K=ok 32K=ok 48K=ok 64K=ok 128K=ok
+decrypt  16K=FAIL 24K=ok 32K=ok 48K=ok 64K=ok 128K=ok
+rings  16K=FAIL 24K=ok 32K=ok 48K=ok 64K=ok 128K=ok
+thunderstorm  16K=FAIL 24K=ok 32K=ok 48K=ok 64K=ok 128K=ok
+matrix  16K=FAIL 24K=ok 32K=ok 48K=ok 64K=ok 128K=ok
+spotlights  16K=FAIL 24K=ok 32K=ok 48K=ok 64K=ok 128K=ok
+binarypath  16K=FAIL 24K=ok 32K=ok 48K=ok 64K=ok 128K=ok
+blackhole  16K=FAIL 24K=ok 32K=ok 48K=ok 64K=ok 128K=ok
+synthgrid  16K=FAIL 24K=ok 32K=ok 48K=ok 64K=ok 128K=ok
+vhstape  16K=FAIL 24K=ok 32K=ok 48K=ok 64K=ok 128K=ok
+wipe  16K=FAIL 24K=ok 32K=ok 48K=ok 64K=ok 128K=ok
+middleout  16K=FAIL 24K=ok 32K=ok 48K=ok 64K=ok 128K=ok
+expand  16K=FAIL 24K=ok 32K=ok 48K=ok 64K=ok 128K=ok
+slide  16K=FAIL 24K=ok 32K=ok 48K=ok 64K=ok 128K=ok
+errorcorrect  16K=FAIL 24K=ok 32K=ok 48K=ok 64K=ok 128K=ok
+print  16K=FAIL 24K=ok 32K=ok 48K=ok 64K=ok 128K=ok
+scattered  16K=FAIL 24K=ok 32K=ok 48K=ok 64K=ok 128K=ok
+# cleanup done
+# result: every effect needs more than 16 KiB and fits in 24 KiB of stack (the bench's own frame is small); 17 of 17 effects tried agree. Resolution of this test is 16/24/32/48/64/128 KiB.
+# evidence class: board process run, Linux static executable, not U-Boot.
